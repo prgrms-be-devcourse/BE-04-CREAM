@@ -18,10 +18,23 @@ public class SizedProduct {
     @Column(name = "SIZE")
     private int size;
 
-    protected SizedProduct() {}
+    protected SizedProduct() {
+    }
 
     public SizedProduct(Product product, int size) {
         this.product = product;
         this.size = size;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public int getSize() {
+        return size;
     }
 }
