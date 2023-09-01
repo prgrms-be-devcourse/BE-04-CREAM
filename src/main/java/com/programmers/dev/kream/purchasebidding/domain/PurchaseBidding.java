@@ -34,4 +34,32 @@ public class PurchaseBidding {
     private LocalDateTime dueDate;
 
     protected PurchaseBidding() { }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getPurchaseBidderId() {
+        return purchaseBidderId;
+    }
+
+    public Long getSizedProductId() {
+        return sizedProductId;
+    }
+
+    public Long getPrice() {
+        return price;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
 }
