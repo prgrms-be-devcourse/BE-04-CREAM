@@ -34,4 +34,32 @@ public class SellBidding {
     private LocalDateTime dueDate;
 
     protected SellBidding() { }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Long getSellBidderId() {
+        return sellBidderId;
+    }
+
+    public Long getSizedProductId() {
+        return sizedProductId;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getStartDate() {
+        return startDate;
+    }
+
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
 }

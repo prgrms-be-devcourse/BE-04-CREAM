@@ -16,4 +16,16 @@ public class Address {
     private String addressDetail;
 
     protected Address() {}
+
+    public String getZipcode() {
+        return zipcode;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getAddressDetail() {
+        return addressDetail;
+    }
 }
