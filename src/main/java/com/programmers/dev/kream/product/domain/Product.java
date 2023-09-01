@@ -28,4 +28,20 @@ public class Product {
         this.name = name;
         this.productInfo = productInfo;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Brand getBrand() {
+        return brand;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ProductInfo getProductInfo() {
+        return productInfo;
+    }
 }

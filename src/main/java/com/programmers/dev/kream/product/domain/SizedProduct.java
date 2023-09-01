@@ -24,4 +24,16 @@ public class SizedProduct {
         this.product = product;
         this.size = size;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public int getSize() {
+        return size;
+    }
 }
