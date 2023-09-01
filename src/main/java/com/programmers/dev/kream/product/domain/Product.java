@@ -21,7 +21,8 @@ public class Product {
     @Embedded
     private ProductInfo productInfo;
 
-    protected Product() {}
+    protected Product() {
+    }
 
     public Product(Brand brand, String name, ProductInfo productInfo) {
         this.brand = brand;
@@ -43,5 +44,11 @@ public class Product {
 
     public ProductInfo getProductInfo() {
         return productInfo;
+    }
+    
+    public void updateProduct(Brand brand, String name, ProductInfo productInfo) {
+        this.brand = brand;
+        this.name = name;
+        this.productInfo = productInfo;
     }
 }

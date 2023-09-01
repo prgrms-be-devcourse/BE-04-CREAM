@@ -20,7 +20,8 @@ public class ProductInfo {
     @Column(name = "RELEASE_PRICE")
     private Long releasePrice;
 
-    protected ProductInfo() {}
+    protected ProductInfo() {
+    }
 
     public ProductInfo(String modelNumber, LocalDateTime releaseDate, String color, Long releasePrice) {
         this.modelNumber = modelNumber;

@@ -18,7 +18,8 @@ public class SizedProduct {
     @Column(name = "SIZE")
     private int size;
 
-    protected SizedProduct() {}
+    protected SizedProduct() {
+    }
 
     public SizedProduct(Product product, int size) {
         this.product = product;
