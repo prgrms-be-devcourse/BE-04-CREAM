@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 @Embeddable
 public class ProductInfo {
 
-    @Column(name = "PRICE")
-    private Long price;
-
     @Column(name = "MODEL_NUMBER")
     private String modelNumber;
 
@@ -25,8 +22,7 @@ public class ProductInfo {
 
     protected ProductInfo() {}
 
-    public ProductInfo(Long price, String modelNumber, LocalDateTime releaseDate, String color, Long releasePrice) {
-        this.price = price;
+    public ProductInfo(String modelNumber, LocalDateTime releaseDate, String color, Long releasePrice) {
         this.modelNumber = modelNumber;
         this.releaseDate = releaseDate;
         this.color = color;
