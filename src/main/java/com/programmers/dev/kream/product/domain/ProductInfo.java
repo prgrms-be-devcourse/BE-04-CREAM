@@ -28,4 +28,20 @@ public class ProductInfo {
         this.color = color;
         this.releasePrice = releasePrice;
     }
+
+    public String getModelNumber() {
+        return modelNumber;
+    }
+
+    public LocalDateTime getReleaseDate() {
+        return releaseDate;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public Long getReleasePrice() {
+        return releasePrice;
+    }
 }
