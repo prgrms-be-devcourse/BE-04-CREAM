@@ -6,6 +6,7 @@ import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductInfo;
 import com.programmers.dev.kream.product.ui.ProductUpdateRequest;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +25,15 @@ class ProductServiceTest {
 
     @Autowired
     ProductService productService;
+
     @Autowired
     BrandRepository brandRepository;
+
     @Autowired
     EntityManager em;
 
     @Test
+    @DisplayName("상품을 저장할 수 있다")
     void saveTest() {
         //given
         ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
@@ -47,6 +51,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("상품을 삭제할 수 있다")
     void deleteTest() {
         //given
         ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
@@ -64,6 +69,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("상품을 Id로 조회할 수 있다")
     void findByIdTest() {
         //given
         ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
@@ -81,8 +87,20 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("상품 전체를 조회할 수 있다")
     void findAllTest() {
         //given
+        ProductInfo productInfoA = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
+        ProductInfo productInfoB = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
+
+        Brand brandA = new Brand("NIKE");
+        Brand brandB = new Brand("ADIDAS");
+
+        brandRepository.save(brandA);
+        brandRepository.save(brandB);
+
+        productService.save(brandA.getId(),"Air Jordan", productInfoA);
+        productService.save(brandB.getId(), "Stan-Smith", productInfoB);
 
         //when
         List<Product> allProduct = productService.findAll();
@@ -92,6 +110,7 @@ class ProductServiceTest {
     }
 
     @Test
+    @DisplayName("상품을 수정할 수 있다")
     void updateTest() {
         //given
         ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);

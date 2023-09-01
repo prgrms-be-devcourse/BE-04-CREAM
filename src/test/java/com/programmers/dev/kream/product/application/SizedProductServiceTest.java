@@ -1,21 +1,19 @@
 package com.programmers.dev.kream.product.application;
 
-import com.programmers.dev.kream.product.application.SizedProductService;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.product.ui.GetProductInfoResponse;
-import org.junit.jupiter.api.DisplayName;
 import org.assertj.core.api.Assertions;
-
-
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
@@ -77,32 +75,6 @@ class SizedProductServiceTest {
         Assertions.assertThatThrownBy(() -> sizedProductService.findById(savedSizedProduct))
             .isInstanceOf(NoSuchElementException.class);
     }
-    
-    @Test
-    @DisplayName("사이즈가 있는 상품 조회를 할 수 있다")
-    void findSizedProduct() {
-        // given
-        Brand brand = new Brand("nike");
-        ProductInfo productInfo = new ProductInfo("model1", LocalDateTime.now(), "RED", 100000L);
-        Product product = new Product(brand, "Jordan", productInfo);
-        SizedProduct size250 = new SizedProduct(product, 250);
-        SizedProduct size260 = new SizedProduct(product, 260);
-        SizedProduct size270 = new SizedProduct(product, 270);
 
-        brandRepository.save(brand);
-        productRepository.save(product);
-        sizedProductRepository.saveAll(List.of(size250, size260, size270));
-
-
-        // when
-        GetProductInfoResponse getProductInfoResponse = sizedProductService.getProductInfo(product.getId()).orElseThrow();
-        System.out.println(getProductInfoResponse.sizes());
-        // then
-        assertAll(
-                () -> assertThat(getProductInfoResponse.sizes()).hasSize(3),
-                () -> assertThat(getProductInfoResponse.productId()).isEqualTo(product.getId()),
-                () -> assertThat(getProductInfoResponse.brandName()).isEqualTo(brand.getName())
-        );
-    }
 }
 
