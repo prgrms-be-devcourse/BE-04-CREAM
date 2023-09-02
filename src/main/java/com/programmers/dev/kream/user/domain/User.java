@@ -32,6 +32,15 @@ public class User {
 
     protected User() { }
 
+    public User(String email, String password, String nickname, Long account, Address address, UserRole userRole) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.account = account;
+        this.address = address;
+        this.userRole = userRole;
+    }
+
     public Long getId() {
         return id;
     }
