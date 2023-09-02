@@ -1,6 +1,7 @@
 package com.programmers.dev.kream.sellbidding.domain;
 
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,23 @@ public class SellBidding {
     private LocalDateTime dueDate;
 
     protected SellBidding() { }
+
+    private SellBidding(Long sellBidderId, Long sizedProductId, Integer price, Long dueDate) {
+        this.sellBidderId = sellBidderId;
+        this.sizedProductId = sizedProductId;
+        this.price = price;
+        this.status = Status.LIVE;
+        this.startDate = LocalDateTime.now();
+        this.dueDate = startDate.plusDays(dueDate);
+    }
+
+    public static SellBidding of(Long sellBidderId, Long sizedProductId, SellBiddingRequest sellBiddingRequest) {
+        return new SellBidding(
+                sellBidderId,
+                sizedProductId,
+                sellBiddingRequest.price(),
+                sellBiddingRequest.dueDate());
+    }
 
     public Long getId() {
         return id;
