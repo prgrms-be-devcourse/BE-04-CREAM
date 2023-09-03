@@ -45,8 +45,8 @@ public class Product {
     public ProductInfo getProductInfo() {
         return productInfo;
     }
-    
-    public void updateProduct(Brand brand, String name, ProductInfo productInfo) {
+
+    public void update(Brand brand, String name, ProductInfo productInfo) {
         this.brand = brand;
         this.name = name;
         this.productInfo = productInfo;

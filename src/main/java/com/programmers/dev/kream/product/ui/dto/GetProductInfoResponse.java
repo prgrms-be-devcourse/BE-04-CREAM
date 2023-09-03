@@ -1,4 +1,4 @@
-package com.programmers.dev.kream.product.ui;
+package com.programmers.dev.kream.product.ui.dto;
 
 import com.programmers.dev.kream.product.domain.SizedProduct;
 

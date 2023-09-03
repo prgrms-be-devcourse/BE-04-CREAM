@@ -2,6 +2,7 @@ package com.programmers.dev.kream.product.application;
 
 import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
+import com.programmers.dev.kream.product.ui.dto.BrandResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,8 @@ class BrandServiceTest {
         Long savedId = brandService.save(brandName);
 
         //then
-        Brand findBrand = brandService.findByName(brandName);
-        assertThat(findBrand.getId()).isEqualTo(savedId);
+        BrandResponse findBrand = brandService.findByName(brandName);
+        assertThat(findBrand.id()).isEqualTo(savedId);
     }
 
     @Test
@@ -47,7 +48,7 @@ class BrandServiceTest {
         brandService.save(brandName);
 
         //when
-        brandService.delete(brandName);
+        brandService.deleteByName(brandName);
 
         //then
         assertThatThrownBy(() -> brandService.findByName(brandName)).isInstanceOf(NoSuchElementException.class);
@@ -63,9 +64,40 @@ class BrandServiceTest {
         brandRepository.save(brand2);
 
         //when
-        List<Brand> result = brandService.findAll();
+        List<BrandResponse> result = brandService.findAll();
 
         //then
         assertThat(result.size()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Id로 저장된 브랜드를 조회할 수 있다.")
+    void findByIdTest() {
+        //given
+        Brand nike = new Brand("NIKE");
+        brandRepository.save(nike);
+
+        //when
+        BrandResponse findBrandById = brandService.findById(nike.getId());
+
+        //then
+        assertThat(findBrandById.name()).isEqualTo("NIKE");
+    }
+
+    @Test
+    @DisplayName("Id로 저장된 브랜드를 삭제할 수 있다.")
+    void deleteByIdTest() {
+        //given
+        Brand nike = new Brand("NIKE");
+        Brand savedBrand = brandRepository.save(nike);
+
+        BrandResponse findBrand = brandService.findById(savedBrand.getId());
+
+        //when
+        brandService.deleteById(findBrand.id());
+
+        //then
+        assertThatThrownBy(() -> brandService.findById(findBrand.id()))
+            .isInstanceOf(NoSuchElementException.class);
     }
 }
