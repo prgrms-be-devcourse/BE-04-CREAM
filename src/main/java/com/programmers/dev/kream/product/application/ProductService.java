@@ -1,13 +1,15 @@
 package com.programmers.dev.kream.product.application;
 
 import com.programmers.dev.kream.product.domain.*;
+import com.programmers.dev.kream.product.ui.dto.BrandResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
+import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,61 +27,71 @@ public class ProductService {
     }
 
     @Transactional
-    public Long save(Long brandId, String ProductName, ProductInfo productInfo) {
-        Brand brand = brandRepository.findById(brandId)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드가 존재하지 않습니다."));
+    public ProductResponse save(ProductSaveRequest productSaveRequest) {
+        Brand brand = findBrandById(productSaveRequest.brandId());
 
-        Product product = new Product(brand, ProductName, productInfo);
+        Product product = new Product(brand, productSaveRequest.name(), productSaveRequest.productInfo());
         Product savedProduct = productRepository.save(product);
 
-        return savedProduct.getId();
+        return new ProductResponse(
+            savedProduct.getId(),
+            new BrandResponse(savedProduct.getBrand().getId(), savedProduct.getBrand().getName()),
+            savedProduct.getName(),
+            savedProduct.getProductInfo());
     }
 
     @Transactional
     public void deleteById(Long id) {
-        Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 상품입니다."));
+        Product product = findProductById(id);
 
-        sizedProductRepository.findAll()
-                .forEach(sizedProduct -> {
-                    if (sizedProduct.getProduct() == product) {
-                        sizedProductRepository.delete(sizedProduct);
-                    }
-                });
+        sizedProductRepository.deleteSizedProductByProductId(id);
 
         productRepository.delete(product);
     }
 
     public ProductResponse findById(Long id) {
-        Product product = productRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+        Product product = findProductById(id);
 
         return ProductResponse.fromEntity(product);
     }
 
     public ProductResponse findByName(String productName) {
         Product product = productRepository.findByName(productName)
-            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
 
         return ProductResponse.fromEntity(product);
     }
 
     @Transactional
-    public void update(Long id, ProductUpdateRequest productUpdateRequest) {
-        Product updateProduct = productRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("상품을 찾을 수 없습니다."));
+    public ProductResponse update(Long id, ProductUpdateRequest productUpdateRequest) {
+        Product updateProduct = findProductById(id);
 
-        Brand brand = brandRepository.findById(productUpdateRequest.brandId())
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드가 존재하지 않습니다."));
+        Brand brand = findBrandById(productUpdateRequest.brandId());
 
         ProductInfo productInfo = new ProductInfo(productUpdateRequest, updateProduct.getProductInfo().getReleaseDate());
 
         updateProduct.update(brand, productUpdateRequest.productName(), productInfo);
+
+        return new ProductResponse(
+            id,
+            new BrandResponse(brand.getId(), brand.getName()),
+            productUpdateRequest.productName(),
+            productInfo);
     }
 
     public List<ProductResponse> findAll() {
         return productRepository.findAll().stream()
             .map(ProductResponse::fromEntity)
             .collect(Collectors.toList());
+    }
+
+    private Brand findBrandById(Long id) {
+        return brandRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드가 존재하지 않습니다."));
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다."));
     }
 }

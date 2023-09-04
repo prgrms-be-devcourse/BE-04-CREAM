@@ -1,7 +1,10 @@
 package com.programmers.dev.kream.product.application;
 
 import com.programmers.dev.kream.product.domain.*;
+import com.programmers.dev.kream.product.ui.dto.ProductResponse;
+import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.SizedProductResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,10 +44,14 @@ class SizedProductServiceTest {
         Brand nike = new Brand("NIKE");
         Brand savedBrand = brandRepository.save(nike);
 
-        Long productId = productService.save(savedBrand.getId(), "jordan", productInfo);
+
+        ProductResponse savedProductResponse = productService.save(new ProductSaveRequest(
+            savedBrand.getId(),
+            "jordan",
+            productInfo));
 
         //when
-        Long savedSizedProduct = sizedProductService.save(productId, 260);
+        Long savedSizedProduct = sizedProductService.save(savedProductResponse.id(), 260);
 
         //then
         SizedProductResponse findSizedProduct = sizedProductService.findById(savedSizedProduct);
@@ -60,16 +67,19 @@ class SizedProductServiceTest {
         Brand nike = new Brand("NIKE");
         Brand savedBrand = brandRepository.save(nike);
 
-        Long productId = productService.save(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse savedProductResponse = productService.save(new ProductSaveRequest(
+            savedBrand.getId(),
+            "jordan",
+            productInfo));
 
-        Long savedSizedProduct = sizedProductService.save(productId, 260);
+        Long savedSizedProduct = sizedProductService.save(savedProductResponse.id(), 260);
 
         //when
         sizedProductService.deleteById(savedSizedProduct);
 
         //then
         Assertions.assertThatThrownBy(() -> sizedProductService.findById(savedSizedProduct))
-            .isInstanceOf(NoSuchElementException.class);
+            .isInstanceOf(EntityNotFoundException.class);
     }
 
 }

@@ -1,12 +1,13 @@
 package com.programmers.dev.kream.product.application;
 
-import com.programmers.dev.kream.product.domain.*;
+import com.programmers.dev.kream.product.domain.Brand;
+import com.programmers.dev.kream.product.domain.BrandRepository;
 import com.programmers.dev.kream.product.ui.dto.BrandResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -14,53 +15,18 @@ import java.util.stream.Collectors;
 public class BrandService {
 
     private final BrandRepository brandRepository;
-    private final ProductRepository productRepository;
-    private final SizedProductRepository sizedProductRepository;
 
-    public BrandService(BrandRepository brandRepository, ProductRepository productRepository, SizedProductRepository sizedProductRepository) {
+    public BrandService(BrandRepository brandRepository) {
         this.brandRepository = brandRepository;
-        this.productRepository = productRepository;
-        this.sizedProductRepository = sizedProductRepository;
     }
 
     @Transactional
-    public Long save(String name) {
+    public BrandResponse save(String name) {
         Brand brand = new Brand(name);
         Brand savedBrand = brandRepository.save(brand);
 
-        return savedBrand.getId();
+        return new BrandResponse(savedBrand.getId(), savedBrand.getName());
     }
-
-    @Transactional
-    public void deleteByName(String name) {
-        Brand brand = brandRepository.findByName(name)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드가 존재하지 않습니다."));
-
-        brandRepository.delete(brand);
-    }
-
-    @Transactional
-    public void deleteById(Long id) {
-        Brand brand = brandRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드가 존재하지 않습니다."));
-
-        sizedProductRepository.findAll()
-                    .forEach(sizedProduct -> {
-                        if (sizedProduct.getProduct().getBrand() == brand) {
-                            sizedProductRepository.delete(sizedProduct);
-                        }
-                    });
-
-        productRepository.findAll()
-                    .forEach(product -> {
-                        if (product.getBrand() == brand) {
-                            productRepository.delete(product);
-                        }
-                    });
-
-        brandRepository.delete(brand);
-    }
-
     public List<BrandResponse> findAll() {
         return brandRepository.findAll().stream()
             .map(BrandResponse::fromEntity)
@@ -68,16 +34,24 @@ public class BrandService {
     }
 
     public BrandResponse findByName(String name) {
-        Brand brand = brandRepository.findByName(name)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드는 존재하지 않습니다."));
+        Brand brand = findBrandByName(name);
 
         return BrandResponse.fromEntity(brand);
     }
 
     public BrandResponse findById(Long id) {
-        Brand brand = brandRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드는 존재하지 않습니다."));
+        Brand brand = findBrandById(id);
 
         return BrandResponse.fromEntity(brand);
+    }
+
+    private Brand findBrandById(Long id) {
+        return brandRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
+    }
+
+    private Brand findBrandByName(String name) {
+        return brandRepository.findByName(name)
+            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
     }
 }

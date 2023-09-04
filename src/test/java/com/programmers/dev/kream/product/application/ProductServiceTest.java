@@ -4,8 +4,10 @@ import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
 import com.programmers.dev.kream.product.domain.ProductInfo;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
+import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -42,10 +43,10 @@ class ProductServiceTest {
         Brand savedBrand = brandRepository.save(nike);
 
         //when
-        Long productId = productService.save(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse savedProductResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
 
         //then
-        ProductResponse findProduct = productService.findById(productId);
+        ProductResponse findProduct = productService.findById(savedProductResponse.id());
 
         assertThat(findProduct.name()).isEqualTo("jordan");
     }
@@ -59,13 +60,13 @@ class ProductServiceTest {
         Brand nike = new Brand("NIKE");
         Brand savedBrand = brandRepository.save(nike);
 
-        Long productId = productService.save(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse productResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
 
         //when
-        productService.deleteById(productId);
+        productService.deleteById(productResponse.id());
 
         //then
-        assertThatThrownBy(() -> productService.findById(productId)).isInstanceOf(NoSuchElementException.class);
+        assertThatThrownBy(() -> productService.findById(productResponse.id())).isInstanceOf(EntityNotFoundException.class);
     }
 
     @Test
@@ -77,10 +78,10 @@ class ProductServiceTest {
         Brand nike = new Brand("NIKE");
         Brand savedBrand = brandRepository.save(nike);
 
-        Long productId = productService.save(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse productResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
 
         //when
-        ProductResponse product = productService.findById(productId);
+        ProductResponse product = productService.findById(productResponse.id());
 
         //then
         assertThat(product.name()).isEqualTo("jordan");
@@ -99,8 +100,8 @@ class ProductServiceTest {
         brandRepository.save(brandA);
         brandRepository.save(brandB);
 
-        productService.save(brandA.getId(),"Air Jordan", productInfoA);
-        productService.save(brandB.getId(), "Stan-Smith", productInfoB);
+        ProductResponse productResponseA = saveProduct(brandA.getId(), "Air Jordan", productInfoA);
+        ProductResponse productResponseB = saveProduct(brandB.getId(), "Stan-Smith", productInfoB);
 
         //when
         List<ProductResponse> productList = productService.findAll();
@@ -127,18 +128,25 @@ class ProductServiceTest {
 
         ProductInfo productInfo = new ProductInfo(productUpdateRequest, LocalDateTime.now());
 
-        Long productId = productService.save(oldBrand.getId(), "jordan", productInfo);
+        ProductResponse productResponse = saveProduct(oldBrand.getId(), "jordan", productInfo);
 
         //when
-        productService.update(productId, productUpdateRequest);
+        productService.update(productResponse.id(), productUpdateRequest);
 
         //then
         em.flush();
         em.clear();
 
-        ProductResponse findProduct = productService.findById(productId);
+        ProductResponse findProduct = productService.findById(productResponse.id());
 
         assertThat(findProduct.name()).isEqualTo("Dunk");
         assertThat(findProduct.brand().id()).isEqualTo(newBrand.getId());
+    }
+
+    private ProductResponse saveProduct(Long savedBrandId, String productName, ProductInfo productInfo) {
+        return productService.save(new ProductSaveRequest(
+            savedBrandId,
+            productName,
+            productInfo));
     }
 }

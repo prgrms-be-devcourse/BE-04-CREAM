@@ -2,8 +2,8 @@ package com.programmers.dev.kream.product.ui.dto;
 
 import java.util.List;
 
-public record ListResponse<T>(
+public record BrandsGetResponse(
     int size,
-    List<T> data
+    List<BrandResponse> brandList
 ) {
 }

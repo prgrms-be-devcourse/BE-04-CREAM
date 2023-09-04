@@ -1,103 +1,102 @@
 package com.programmers.dev.kream.product.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.programmers.dev.kream.product.domain.Brand;
-import com.programmers.dev.kream.product.domain.BrandRepository;
+import com.programmers.dev.kream.product.application.BrandService;
+import com.programmers.dev.kream.product.ui.dto.BrandResponse;
 import com.programmers.dev.kream.product.ui.dto.BrandSaveRequest;
+import com.programmers.dev.kream.product.ui.dto.BrandsGetResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Transactional
-@SpringBootTest
-@AutoConfigureMockMvc
+
+@WebMvcTest(BrandController.class)
 class BrandControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    ObjectMapper objectMapper;
+    @MockBean
+    BrandService brandService;
 
     @Autowired
-    BrandRepository brandRepository;
+    ObjectMapper objectMapper;
 
     @Test
     @DisplayName("브랜드 등록을 할 수 있다.")
     void saveBrand() throws Exception {
         //given
-        BrandSaveRequest brandSaveRequest = new BrandSaveRequest("NIKE");
-
-        //when
-        ResultActions resultActions = this.mockMvc.perform(
-            post("/api/brands")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(brandSaveRequest))
+        given(brandService.save("NIKE")).willReturn(
+            new BrandResponse(1L, "NIKE")
         );
 
-        //then
-        resultActions.andExpect(status().isCreated());
+        String requestBody = objectMapper.writeValueAsString(new BrandSaveRequest("NIKE"));
+
+        //when & then
+        mockMvc.perform(
+                post("/api/brands")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(1L))
+            .andExpect(jsonPath("$.name").value("NIKE"));
+
+        verify(brandService).save("NIKE");
     }
 
     @Test
     @DisplayName("id로 브랜드를 조회할 수 있다.")
     void getBrandInfoTest() throws Exception {
         //given
-        Brand brand = new Brand("NIKE");
-        Brand savedBrand = brandRepository.save(brand);
-
-        //when
-        ResultActions resultActions = this.mockMvc.perform(
-            get("/api/brands/{brandId}", savedBrand.getId())
+        given(brandService.findById(1L)).willReturn(
+            new BrandResponse(1L, "NIKE")
         );
 
-        //then
-        resultActions.andExpect(status().isOk());
+        //when & then
+        mockMvc.perform(
+                get("/api/brands/{brandId}", 1L))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1L))
+            .andExpect(jsonPath("$.name").value("NIKE"))
+            .andDo(print());
+
+        verify(brandService).findById(1L);
     }
 
     @Test
     @DisplayName("모든 브랜드를 조회할 수 있다.")
     void getBrandsInfoTest() throws Exception {
         //given
-        Brand nike = new Brand("NIKE");
-        Brand adidas = new Brand("ADIDAS");
-        brandRepository.save(nike);
-        brandRepository.save(adidas);
+        List<BrandResponse> brandResponses = List.of(
+            new BrandResponse(1L, "NIKE"),
+            new BrandResponse(2L, "ADIDAS"));
 
-        //when
-        ResultActions resultActions = this.mockMvc.perform(
-            get("/api/brands")
+        given(brandService.findAll()).willReturn(
+            new BrandsGetResponse(brandResponses.size(), brandResponses).brandList()
         );
 
-        //then
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.size").exists());
-    }
+        //when & then
+        mockMvc.perform(
+                get("/api/brands"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.size").value(2))
+            .andExpect(jsonPath("$.brandList[0].name").value("NIKE"))
+            .andDo(print());
 
-    @Test
-    @DisplayName("id로 브랜드를 삭제할 수 있다.")
-    void deleteBrandInfoTest() throws Exception{
-        //given
-        Brand nike = new Brand("NIKE");
-        Brand adidas = new Brand("ADIDAS");
-        Brand brandNike = brandRepository.save(nike);
-        brandRepository.save(adidas);
-
-        //when
-        ResultActions resultActions = this.mockMvc.perform(
-            delete("/api/brands/{brandId}",brandNike.getId())
-        );
-
-        //then
-        resultActions.andExpect(status().isOk());
+        verify(brandService).findAll();
     }
 }

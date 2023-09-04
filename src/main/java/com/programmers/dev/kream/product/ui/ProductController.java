@@ -1,17 +1,15 @@
 package com.programmers.dev.kream.product.ui;
 
 import com.programmers.dev.kream.product.application.ProductService;
-import com.programmers.dev.kream.product.ui.dto.ListResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
+import com.programmers.dev.kream.product.ui.dto.ProductsGetResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -24,35 +22,29 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<ListResponse<ProductResponse>> getProducts() {
+    public ResponseEntity<ProductsGetResponse> getProducts() {
         List<ProductResponse> productList = productService.findAll();
 
-        return ResponseEntity.ok(new ListResponse<>(productList.size(), productList));
+        return ResponseEntity.ok(new ProductsGetResponse(productList.size(), productList));
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> saveProduct(@RequestBody ProductSaveRequest productSaveRequest) {
-        productService.save(
-            productSaveRequest.brandId(),
-            productSaveRequest.name(),
-            productSaveRequest.productInfo());
+    public ResponseEntity<ProductResponse> saveProduct(@RequestBody ProductSaveRequest productSaveRequest) {
+        ProductResponse savedProductResponse = productService.save(productSaveRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(Collections.singletonMap("productName", productSaveRequest.name()));
+            .body(savedProductResponse);
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Long> deleteProduct(@PathVariable Long productId) {
+    public void deleteProduct(@PathVariable Long productId) {
         productService.deleteById(productId);
-
-        return ResponseEntity.ok().body(productId);
     }
 
     @PostMapping("/{productId}")
-    public ResponseEntity<String> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest productUpdateRequest) {
-        productService.update(productId, productUpdateRequest);
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest productUpdateRequest) {
+        ProductResponse updatedProductResponse = productService.update(productId, productUpdateRequest);
 
-        return ResponseEntity.ok().body(productUpdateRequest.productName());
+        return ResponseEntity.ok().body(updatedProductResponse);
     }
-
 }

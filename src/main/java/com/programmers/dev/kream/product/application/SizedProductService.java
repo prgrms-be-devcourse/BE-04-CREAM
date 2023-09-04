@@ -7,11 +7,11 @@ import com.programmers.dev.kream.product.domain.SizedProduct;
 import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.product.ui.dto.GetProductInfoResponse;
 import com.programmers.dev.kream.product.ui.dto.SizedProductResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -28,8 +28,7 @@ public class SizedProductService {
 
     @Transactional
     public Long save(Long productId, int size) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new NoSuchElementException("해당 제품이 존재하지 않습니다."));
+        Product product = findProductById(productId);
 
         SizedProduct sizedProduct = new SizedProduct(product, size);
         SizedProduct savedSizedProduct = sizedProductRepository.save(sizedProduct);
@@ -39,15 +38,13 @@ public class SizedProductService {
 
     @Transactional
     public void deleteById(Long id) {
-        SizedProduct sizedProduct = sizedProductRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 사이즈의 상품은 존재하지 않습니다."));
+        SizedProduct sizedProduct = findSizedProductById(id);
 
         sizedProductRepository.delete(sizedProduct);
     }
 
     public SizedProductResponse findById(Long id) {
-        SizedProduct sizedProduct = sizedProductRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 사이즈의 상품은 존재하지 않습니다."));
+        SizedProduct sizedProduct = findSizedProductById(id);
 
         return SizedProductResponse.fromEntity(sizedProduct);
     }
@@ -56,5 +53,15 @@ public class SizedProductService {
         List<SizedProduct> sizedProductList = sizedProductRepository.findAllByProductId(productId);
 
         return GetProductInfoResponse.of(sizedProductList);
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 제품이 존재하지 않습니다."));
+    }
+
+    private SizedProduct findSizedProductById(Long id) {
+        return sizedProductRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 사이즈의 상품은 존재하지 않습니다."));
     }
 }
