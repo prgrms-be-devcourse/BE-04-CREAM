@@ -2,6 +2,8 @@ package com.programmers.dev.kream.sellbidding.application;
 
 import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.product.domain.*;
+import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
+import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.sellbidding.domain.SellBidding;
 import com.programmers.dev.kream.sellbidding.domain.SellBiddingRepository;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
@@ -38,6 +40,9 @@ class SellBiddingServiceTest {
 
     @Autowired
     SellBiddingService sellBiddingService;
+
+    @Autowired
+    PurchaseBiddingRepository purchaseBiddingRepository;
 
 
     @Test
@@ -79,6 +84,43 @@ class SellBiddingServiceTest {
 
     }
 
+    @Test
+    @DisplayName("구매 입찰에 등록된 건을 판매입찰 할 수 있다")
+    void transactPurchaseBidding() {
+        // given
+        User user1 = makeUser("naver.com", "tommy");
+        User user2 = makeUser("google.com", "axis");
+        SizedProduct sizedProduct = makeSizedProduct("Nike", "air jordan", 260);
+        PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
+
+        // when
+        SellBiddingResponse sellBiddingResponse = sellBiddingService.transactPurchaseBidding(user2.getId(), purchaseBidding.getId());
+
+        // then
+        SellBidding findSellBidding = sellBiddingRepository.findById(sellBiddingResponse.sellBiddingId()).get();
+        PurchaseBidding findPurchaseBidding = purchaseBiddingRepository.findById(purchaseBidding.getId()).get();
+        assertAll(
+                () -> assertThat(findSellBidding.getStatus()).isEqualTo(Status.SHIPPED),
+                () -> assertThat(findPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
+                () -> assertThat(Long.valueOf(findSellBidding.getPrice())).isEqualTo(findPurchaseBidding.getPrice()),
+                () -> assertThat(findSellBidding.getDueDate()).isEqualTo(findPurchaseBidding.getDueDate())
+        );
+
+    }
+
+    @Test
+    @DisplayName("구매입찰을 올린 회원은 판매를 할 수 없다")
+    void transactPurchaseBidding_InvalidPurchase() {
+        // given
+        User user1 = makeUser("naver.com", "tommy");
+        SizedProduct sizedProduct = makeSizedProduct("Nike", "air jordan", 260);
+        PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
+
+        // when && then
+        assertThatThrownBy(
+                () -> sellBiddingService.transactPurchaseBidding(user1.getId(), purchaseBidding.getId())
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
 
     private User makeUser(String email, String nickname) {
         User user = new User(email, "password", nickname, 10000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
@@ -95,6 +137,12 @@ class SellBiddingServiceTest {
         sizedProductRepository.save(sizedProduct);
 
         return sizedProduct;
+    }
+
+    private PurchaseBidding makePurchaseBidding(User user1, SizedProduct sizedProduct) {
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user1.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+        purchaseBiddingRepository.save(purchaseBidding);
+        return purchaseBidding;
     }
 
 }
