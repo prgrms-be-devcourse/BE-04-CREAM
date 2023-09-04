@@ -1,7 +1,10 @@
 package com.programmers.dev.kream.sellbidding.application;
 
+import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.product.domain.SizedProduct;
 import com.programmers.dev.kream.product.domain.SizedProductRepository;
+import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
+import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.sellbidding.domain.SellBidding;
 import com.programmers.dev.kream.sellbidding.domain.SellBiddingRepository;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
@@ -15,11 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class SellBiddingService {
 
     private final SellBiddingRepository sellBiddingRepository;
+    private final PurchaseBiddingRepository purchaseBiddingRepository;
     private final SizedProductRepository sizedProductRepository;
     private final UserRepository userRepository;
 
-    public SellBiddingService(SellBiddingRepository sellBiddingRepository, SizedProductRepository sizedProductRepository, UserRepository userRepository) {
+    public SellBiddingService(SellBiddingRepository sellBiddingRepository, PurchaseBiddingRepository purchaseBiddingRepository, SizedProductRepository sizedProductRepository, UserRepository userRepository) {
         this.sellBiddingRepository = sellBiddingRepository;
+        this.purchaseBiddingRepository = purchaseBiddingRepository;
         this.sizedProductRepository = sizedProductRepository;
         this.userRepository = userRepository;
     }
@@ -57,4 +62,36 @@ public class SellBiddingService {
                 );
     }
 
+    /**
+     * 구매 입찰에 등록된 건 판매 비즈니스 로직
+     *
+     * @param userId : 판매자 id
+     * @param purchaseBiddingId : 구매 입찰 id
+     *
+     * @throws IllegalStateException : 구매입찰 등록한 유저가 팔려고 하는 경우, 잘못된 id인 경우
+     */
+    @Transactional
+    public SellBiddingResponse transactPurchaseBidding(Long userId, Long purchaseBiddingId) {
+        validateUserId(userId);
+        PurchaseBidding purchaseBidding = findPurchaseBidding(purchaseBiddingId);
+        validateSellUserAndPurchaseUser(userId, purchaseBidding);
+        SellBidding sellBidding = SellBidding.of(userId, purchaseBidding);
+        purchaseBidding.changeStatus(Status.SHIPPED);
+        sellBiddingRepository.save(sellBidding);
+
+        return new SellBiddingResponse(sellBidding.getId());
+    }
+
+    private PurchaseBidding findPurchaseBidding(Long purchaseBiddingId) {
+        return purchaseBiddingRepository.findById(purchaseBiddingId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("해당 구매 입찰 정보가 없습니다.")
+                );
+    }
+
+    private static void validateSellUserAndPurchaseUser(Long userId, PurchaseBidding purchaseBidding) {
+        if (userId == purchaseBidding.getPurchaseBidderId()) {
+            throw new IllegalArgumentException("비정상적인 접근입니다.");
+        }
+    }
 }
