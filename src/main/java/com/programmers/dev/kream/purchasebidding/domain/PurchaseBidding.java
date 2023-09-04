@@ -35,6 +35,15 @@ public class PurchaseBidding {
 
     protected PurchaseBidding() { }
 
+    public PurchaseBidding(Long purchaseBidderId, Long sizedProductId, Long price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
+        this.purchaseBidderId = purchaseBidderId;
+        this.sizedProductId = sizedProductId;
+        this.price = price;
+        this.status = status;
+        this.startDate = startDate;
+        this.dueDate = dueDate;
+    }
+
     public Long getId() {
         return id;
     }

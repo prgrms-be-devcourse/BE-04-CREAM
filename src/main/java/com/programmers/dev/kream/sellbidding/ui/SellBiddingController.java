@@ -17,6 +17,16 @@ public class SellBiddingController {
         this.sellBiddingService = sellBiddingService;
     }
 
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductInformation> getProductInformation(
+            @PathVariable Long productId
+    ) {
+        ProductInformation productInformation = sellBiddingService.getProductInformation(productId);
+
+        return ResponseEntity.ok(productInformation);
+    }
+
+
     /**
      * 판매 입찰 등록 API
      * todo : 추후에 로그인 기능을 사용할 경우 Cookie로 값을 받아 올 수 있도록 구현
@@ -29,6 +39,7 @@ public class SellBiddingController {
      * @return
      */
     @PostMapping
+
     public ResponseEntity<SellBiddingResponse> saveSellBidding(
             @RequestParam Long userId,
             @RequestParam Long sizedProductId,
