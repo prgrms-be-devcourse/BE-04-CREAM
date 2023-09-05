@@ -6,6 +6,7 @@ import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.sellbidding.domain.SellBidding;
 import com.programmers.dev.kream.sellbidding.domain.SellBiddingRepository;
+import com.programmers.dev.kream.sellbidding.ui.ProductInformation;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingResponse;
 import com.programmers.dev.kream.user.domain.Address;
@@ -39,18 +40,64 @@ class SellBiddingServiceTest {
     SellBiddingRepository sellBiddingRepository;
 
     @Autowired
+    BrandRepository brandRepository;
+
+    @Autowired
+    ProductRepository productRepository;
+
+    @Autowired
     SellBiddingService sellBiddingService;
 
     @Autowired
     PurchaseBiddingRepository purchaseBiddingRepository;
 
+    @Test
+    @DisplayName("판매입찰 페이지 조회시 상품 정보를 조회할 수 있다")
+    void getProductInformation() {
+        // given
+        User user = makeUser("email.com", "조단 사랑");
+        Product product = makeProduct("nike", "Air Jordan");
+        SizedProduct sizedProduct1 = makeSizedProduct(product, 255);
+        SizedProduct sizedProduct2 = makeSizedProduct(product, 260);
+        SizedProduct sizedProduct3 = makeSizedProduct(product, 265);
+        makePurchaseBidding(user, sizedProduct1);
+        makePurchaseBidding(user, sizedProduct2);
+        // when
+        ProductInformation productInformation = sellBiddingService.getProductInformation(sizedProduct1.getProduct().getId());
+
+        // then
+        assertAll(
+                () -> assertThat(productInformation.productName()).isEqualTo(sizedProduct1.getProduct().getName()),
+                () -> assertThat(productInformation.biddingSelectLines().size()).isEqualTo(3),
+                () -> assertThat(productInformation.biddingSelectLines().get(2).lived()).isEqualTo(false)
+        );
+    }
+
+    @Test
+    @DisplayName("판매입찰 페이지 조회시 잘못된 id로 조회할 경우 예외가 발생해야 한다")
+    void getProductInformation_InvalidProductId() {
+        // given
+        User user = makeUser("email.com", "조단 사랑");
+        Product product = makeProduct("nike", "Air Jordan");
+        SizedProduct sizedProduct1 = makeSizedProduct(product, 255);
+        SizedProduct sizedProduct2 = makeSizedProduct(product, 260);
+        SizedProduct sizedProduct3 = makeSizedProduct(product, 265);
+        makePurchaseBidding(user, sizedProduct1);
+        makePurchaseBidding(user, sizedProduct2);
+
+        // when && then
+        assertThatThrownBy(
+                () -> sellBiddingService.getProductInformation(sizedProduct1.getProduct().getId() + 1)
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
 
     @Test
     @DisplayName("saveSellBidding 메서드를 통해 판매입찰 저장을 할 수 있다")
     void saveSellBidding() {
         // given
         User user = makeUser("email.com", "조단 사랑");
-        SizedProduct sizedProduct = makeSizedProduct("nike", "Air Jordan", 255);
+        Product product = makeProduct("nike", "Air Jordan");
+        SizedProduct sizedProduct = makeSizedProduct(product, 255);
         SellBiddingRequest sellBiddingRequest = new SellBiddingRequest(190000, 30L);
 
         // when
@@ -70,7 +117,8 @@ class SellBiddingServiceTest {
     void saveSellBiddingInvalidSizedProductId() {
         // given
         User user = makeUser("naver.com", "tommy");
-        SizedProduct sizedProduct = makeSizedProduct("adidas", "푸마", 300);
+        Product product = makeProduct("adidas", "푸마");
+        SizedProduct sizedProduct = makeSizedProduct(product, 300);
         SellBiddingRequest sellBiddingRequest = new SellBiddingRequest(190000, 30L);
 
         // when && then
@@ -129,18 +177,26 @@ class SellBiddingServiceTest {
         return user;
     }
 
-    private SizedProduct makeSizedProduct(String brandName, String productName, int size) {
+    private Product makeProduct(String brandName, String productName) {
         Brand nike = new Brand(brandName);
+        brandRepository.save(nike);
         ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 180000L);
         Product product = new Product(nike, productName, productInfo);
+        productRepository.save(product);
+
+        return product;
+    }
+
+
+    private SizedProduct makeSizedProduct(Product product, int size) {
         SizedProduct sizedProduct = new SizedProduct(product, size);
         sizedProductRepository.save(sizedProduct);
 
         return sizedProduct;
     }
 
-    private PurchaseBidding makePurchaseBidding(User user1, SizedProduct sizedProduct) {
-        PurchaseBidding purchaseBidding = new PurchaseBidding(user1.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+    private PurchaseBidding makePurchaseBidding(User user, SizedProduct sizedProduct) {
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
         purchaseBiddingRepository.save(purchaseBidding);
         return purchaseBidding;
     }
