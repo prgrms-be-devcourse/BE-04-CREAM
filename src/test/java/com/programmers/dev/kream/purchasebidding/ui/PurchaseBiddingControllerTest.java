@@ -12,17 +12,25 @@ import com.programmers.dev.kream.purchasebidding.application.PurchaseBiddingServ
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseSelectViewDao;
 import com.programmers.dev.kream.purchasebidding.ui.dto.BiddingSelectLine;
 import com.programmers.dev.kream.purchasebidding.ui.dto.PurchaseSelectView;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -46,6 +54,20 @@ class PurchaseBiddingControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @BeforeEach
+    void setup(
+        WebApplicationContext webApplicationContext,
+        RestDocumentationContextProvider restDocumentationContextProvider
+    ) {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+            .addFilter(new CharacterEncodingFilter("UTF-8", true))
+            .apply(documentationConfiguration(restDocumentationContextProvider)
+                .operationPreprocessors()
+                .withRequestDefaults(modifyUris().host("localhost").port(8080), prettyPrint())
+                .withResponseDefaults(modifyUris().host("localhost").port(8080), prettyPrint()))
+            .build();
+    }
 
     @Test
     @DisplayName("구매자는 입찰 구입하고 싶은 제품번호의 제품이름과 사이즈 별 최저가를 확인할 수 있다.")
