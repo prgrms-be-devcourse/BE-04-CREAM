@@ -2,11 +2,13 @@ package com.programmers.dev.kream.product.application;
 
 import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
+import com.programmers.dev.kream.product.ui.dto.BrandResponse;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -18,27 +20,38 @@ public class BrandService {
         this.brandRepository = brandRepository;
     }
 
-    public Long save(String name) {
-        Brand brand = new Brand(name);
-        brandRepository.save(brand);
-
-        return brand.getId();
-    }
-
     @Transactional
-    public void delete(String name) {
-        Brand brand = brandRepository.findByName(name)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드가 존재하지 않습니다."));
+    public BrandResponse save(String name) {
+        Brand brand = new Brand(name);
+        Brand savedBrand = brandRepository.save(brand);
 
-        brandRepository.delete(brand);
+        return new BrandResponse(savedBrand.getId(), savedBrand.getName());
+    }
+    public List<BrandResponse> findAll() {
+        return brandRepository.findAll().stream()
+            .map(BrandResponse::fromEntity)
+            .collect(Collectors.toList());
     }
 
-    public List<Brand> findAll() {
-        return brandRepository.findAll();
+    public BrandResponse findByName(String name) {
+        Brand brand = findBrandByName(name);
+
+        return BrandResponse.fromEntity(brand);
     }
 
-    public Brand findByName(String name) {
+    public BrandResponse findById(Long id) {
+        Brand brand = findBrandById(id);
+
+        return BrandResponse.fromEntity(brand);
+    }
+
+    private Brand findBrandById(Long id) {
+        return brandRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
+    }
+
+    private Brand findBrandByName(String name) {
         return brandRepository.findByName(name)
-            .orElseThrow(() -> new NoSuchElementException("해당 브랜드는 존재하지 않습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
     }
 }
