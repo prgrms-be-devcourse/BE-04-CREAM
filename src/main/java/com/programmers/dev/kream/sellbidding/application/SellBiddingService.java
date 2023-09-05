@@ -14,6 +14,7 @@ import com.programmers.dev.kream.sellbidding.ui.ProductInformation;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingResponse;
 import com.programmers.dev.kream.sellbidding.ui.SizeInformation;
+import com.programmers.dev.kream.user.domain.User;
 import com.programmers.dev.kream.user.domain.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,7 +98,22 @@ public class SellBiddingService {
         purchaseBidding.changeStatus(Status.SHIPPED);
         sellBiddingRepository.save(sellBidding);
 
+        User seller = getUser(userId);
+        User buyer = getUser(purchaseBidding.getPurchaseBidderId());
+
+        transportMoney(seller, buyer, sellBidding.getPrice());
+
         return new SellBiddingResponse(sellBidding.getId());
+    }
+
+    private User getUser(Long userId) {
+        User seller = userRepository.findById(userId).get();
+        return seller;
+    }
+
+    private void transportMoney(User seller, User buyer, Integer price) {
+        seller.deposit(price);
+        buyer.withdraw(price.longValue());
     }
 
     private PurchaseBidding findPurchaseBidding(Long purchaseBiddingId) {
