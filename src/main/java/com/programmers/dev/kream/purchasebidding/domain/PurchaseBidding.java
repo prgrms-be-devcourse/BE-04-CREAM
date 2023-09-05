@@ -71,4 +71,8 @@ public class PurchaseBidding {
     public LocalDateTime getDueDate() {
         return dueDate;
     }
+
+    public void changeStatus(Status status) {
+        this.status = status;
+    }
 }

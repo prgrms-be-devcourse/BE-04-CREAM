@@ -49,4 +49,20 @@ public class SellBiddingController {
                 sellBiddingService.saveSellBidding(userId, sizedProductId, sellBiddingRequest)
         );
     }
+
+    /**
+     * 구매 입찰에 등록된 건 판매 API
+     * todo : 추후에 로그인 기능을 사용할 경우 Cookie로 값을 받아 올 수 있도록 구현
+     * @param userId : 판매자 id
+     * @param purchaseBiddingId : 구매 입찰 id
+     */
+    @PostMapping("/transact")
+    public ResponseEntity<SellBiddingResponse> transactPurchaseBidding(
+            @RequestParam Long userId,
+            @RequestParam Long purchaseBiddingId
+    ) {
+        SellBiddingResponse sellBiddingResponse = sellBiddingService.transactPurchaseBidding(userId, purchaseBiddingId);
+
+        return ResponseEntity.ok(sellBiddingResponse);
+    }
 }
