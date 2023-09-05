@@ -31,7 +31,6 @@ public class SellBiddingService {
     private final SizedProductRepository sizedProductRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final PurchaseBiddingRepository purchaseBiddingRepository;
 
     public SellBiddingService(SellBiddingRepository sellBiddingRepository, SizedProductRepository sizedProductRepository, UserRepository userRepository, ProductRepository productRepository, PurchaseBiddingRepository purchaseBiddingRepository) {
         this.sellBiddingRepository = sellBiddingRepository;
@@ -39,7 +38,6 @@ public class SellBiddingService {
         this.sizedProductRepository = sizedProductRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
-        this.purchaseBiddingRepository = purchaseBiddingRepository;
     }
 
     public ProductInformation getProductInformation(Long productId) {

@@ -163,7 +163,8 @@ class SellBiddingControllerTest {
         // given
         User user1 = makeUser("naver.com", "tommy");
         User user2 = makeUser("google.com", "Nick");
-        SizedProduct sizedProduct = makeSizedProduct("Nike", "air jordan", 255);
+        Product product = makeProduct("Nike", "air jordan");
+        SizedProduct sizedProduct = makeSizedProduct(product, 255);
         PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
 
         // when

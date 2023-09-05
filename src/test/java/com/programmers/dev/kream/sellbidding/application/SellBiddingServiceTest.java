@@ -138,7 +138,8 @@ class SellBiddingServiceTest {
         // given
         User user1 = makeUser("naver.com", "tommy");
         User user2 = makeUser("google.com", "axis");
-        SizedProduct sizedProduct = makeSizedProduct("Nike", "air jordan", 260);
+        Product product = makeProduct("Nike", "air jordan");
+        SizedProduct sizedProduct = makeSizedProduct(product, 260);
         PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
 
         // when
@@ -161,7 +162,8 @@ class SellBiddingServiceTest {
     void transactPurchaseBidding_InvalidPurchase() {
         // given
         User user1 = makeUser("naver.com", "tommy");
-        SizedProduct sizedProduct = makeSizedProduct("Nike", "air jordan", 260);
+        Product product = makeProduct("Nike", "air jordan");
+        SizedProduct sizedProduct = makeSizedProduct(product, 260);
         PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
 
         // when && then
