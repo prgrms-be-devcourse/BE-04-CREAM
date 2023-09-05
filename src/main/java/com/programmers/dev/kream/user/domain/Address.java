@@ -17,6 +17,12 @@ public class Address {
 
     protected Address() {}
 
+    public Address(String zipcode, String address, String addressDetail) {
+        this.zipcode = zipcode;
+        this.address = address;
+        this.addressDetail = addressDetail;
+    }
+
     public String getZipcode() {
         return zipcode;
     }
