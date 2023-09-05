@@ -3,17 +3,25 @@ package com.programmers.dev.kream.product.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.product.ui.dto.SizedProductSaveRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +45,19 @@ class SizedProductControllerTest {
     @Autowired
     SizedProductRepository sizedProductRepository;
 
+    @BeforeEach
+    void setup(
+        WebApplicationContext webApplicationContext,
+        RestDocumentationContextProvider restDocumentationContextProvider
+    ) {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+            .addFilter(new CharacterEncodingFilter("UTF-8", true))
+            .apply(documentationConfiguration(restDocumentationContextProvider)
+                .operationPreprocessors()
+                .withRequestDefaults(modifyUris().host("localhost").port(8080), prettyPrint())
+                .withResponseDefaults(modifyUris().host("localhost").port(8080), prettyPrint()))
+            .build();
+    }
 
     @Test
     @DisplayName("상품 조회 로직 검증")
