@@ -1,10 +1,9 @@
 package com.programmers.dev.kream.sellbidding.application;
 
 
+import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
-import com.programmers.dev.kream.common.bidding.Status;
-
 import com.programmers.dev.kream.product.domain.SizedProduct;
 import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
@@ -63,13 +62,6 @@ public class SellBiddingService {
         return new ProductInformation(product.getName(), sizeInformationList);
     }
 
-
-    /**
-     * todo : 해당 비즈니스 예외 처리 구현
-     * 판매입찰 등록 비즈니스 로직
-     *
-     * @throws IllegalArgumentException : 회원 id 및 사이즈가 있는 상품 id가 유효하지 않을 경우 예외 발생
-      */
     @Transactional
     public SellBiddingResponse saveSellBidding(Long userId, Long sizedProductId, SellBiddingRequest sellBiddingRequest) {
         validateUserId(userId);
@@ -96,14 +88,6 @@ public class SellBiddingService {
                 );
     }
 
-    /**
-     * 구매 입찰에 등록된 건 판매 비즈니스 로직
-     *
-     * @param userId : 판매자 id
-     * @param purchaseBiddingId : 구매 입찰 id
-     *
-     * @throws IllegalStateException : 구매입찰 등록한 유저가 팔려고 하는 경우, 잘못된 id인 경우
-     */
     @Transactional
     public SellBiddingResponse transactPurchaseBidding(Long userId, Long purchaseBiddingId) {
         validateUserId(userId);
