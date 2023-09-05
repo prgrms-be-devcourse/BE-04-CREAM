@@ -3,6 +3,7 @@ package com.programmers.dev.kream.purchasebidding.ui;
 
 import com.programmers.dev.kream.product.application.ProductService;
 import com.programmers.dev.kream.product.domain.Product;
+import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.purchasebidding.application.PurchaseBiddingService;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseSelectViewDao;
 import com.programmers.dev.kream.purchasebidding.ui.dto.*;
@@ -35,10 +36,10 @@ public class PurchaseBiddingController {
      */
     @GetMapping("/{productId}")
     public ResponseEntity<PurchaseSelectView> getProductSelectView(@PathVariable Long productId) {
-        Product product = productService.findById(productId);
+        ProductResponse product = productService.findById(productId);
         List<BiddingSelectLine> biddingSelectLines = productSelectViewDao.getPurchaseView(productId);
 
-        return ResponseEntity.ok(new PurchaseSelectView(product.getName(), biddingSelectLines));
+        return ResponseEntity.ok(new PurchaseSelectView(product.name(), biddingSelectLines));
     }
 
     /**
