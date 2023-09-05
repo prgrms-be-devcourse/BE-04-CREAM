@@ -3,7 +3,7 @@ package com.programmers.dev.kream.sellbidding.domain;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import java.util.List;
 import java.util.Optional;
 
 public interface SellBiddingRepository extends JpaRepository<SellBidding, Long> {
@@ -16,4 +16,6 @@ public interface SellBiddingRepository extends JpaRepository<SellBidding, Long> 
                         "LIMIT 1"
         )
     Optional<SellBidding> findLowPriceBidding(@Param("price") Long price, @Param("sizedProductId") Long sizedProductId);
+
+    List<SellBidding> findBySizedProductId(Long id);
 }
