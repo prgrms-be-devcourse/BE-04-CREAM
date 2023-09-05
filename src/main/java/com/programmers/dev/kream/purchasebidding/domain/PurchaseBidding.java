@@ -35,6 +35,10 @@ public class PurchaseBidding {
 
     protected PurchaseBidding() { }
 
+    public PurchaseBidding(Long purchaseBidderId, Long sizedProductId, Long price, Status status) {
+        this(purchaseBidderId, sizedProductId, price, status, LocalDateTime.now(), LocalDateTime.now());
+    }
+
     public PurchaseBidding(Long purchaseBidderId, Long sizedProductId, Long price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
         this.purchaseBidderId = purchaseBidderId;
         this.sizedProductId = sizedProductId;
@@ -71,8 +75,21 @@ public class PurchaseBidding {
     public LocalDateTime getDueDate() {
         return dueDate;
     }
-
+  
     public void changeStatus(Status status) {
         this.status = status;
+    }
+  
+    @Override
+    public String toString() {
+        return "PurchaseBidding{" +
+                "id=" + id +
+                ", purchaseBidderId=" + purchaseBidderId +
+                ", sizedProductId=" + sizedProductId +
+                ", price=" + price +
+                ", status=" + status +
+                ", startDate=" + startDate +
+                ", dueDate=" + dueDate +
+                '}';
     }
 }

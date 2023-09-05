@@ -36,6 +36,15 @@ public class SellBidding {
     private LocalDateTime dueDate;
 
     protected SellBidding() { }
+  
+    public SellBidding(Long sellBidderId, Long sizedProductId, Integer price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
+        this.sellBidderId = sellBidderId;
+        this.sizedProductId = sizedProductId;
+        this.price = price;
+        this.status = status;
+        this.startDate = startDate;
+        this.dueDate = dueDate;
+    }
 
     /**
      * 판매 입찰 등록시 사용하는 Constructor
@@ -127,5 +136,9 @@ public class SellBidding {
 
     public LocalDateTime getDueDate() {
         return dueDate;
+    }
+
+    public void changeStatus(Status status) {
+        this.status = status;
     }
 }
