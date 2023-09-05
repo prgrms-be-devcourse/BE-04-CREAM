@@ -1,10 +1,9 @@
 package com.programmers.dev.kream.sellbidding.application;
 
 
+import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
-import com.programmers.dev.kream.common.bidding.Status;
-
 import com.programmers.dev.kream.product.domain.SizedProduct;
 import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
@@ -15,6 +14,7 @@ import com.programmers.dev.kream.sellbidding.ui.ProductInformation;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
 import com.programmers.dev.kream.sellbidding.ui.SellBiddingResponse;
 import com.programmers.dev.kream.sellbidding.ui.SizeInformation;
+import com.programmers.dev.kream.user.domain.User;
 import com.programmers.dev.kream.user.domain.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,13 +63,6 @@ public class SellBiddingService {
         return new ProductInformation(product.getName(), sizeInformationList);
     }
 
-
-    /**
-     * todo : 해당 비즈니스 예외 처리 구현
-     * 판매입찰 등록 비즈니스 로직
-     *
-     * @throws IllegalArgumentException : 회원 id 및 사이즈가 있는 상품 id가 유효하지 않을 경우 예외 발생
-      */
     @Transactional
     public SellBiddingResponse saveSellBidding(Long userId, Long sizedProductId, SellBiddingRequest sellBiddingRequest) {
         validateUserId(userId);
@@ -96,14 +89,6 @@ public class SellBiddingService {
                 );
     }
 
-    /**
-     * 구매 입찰에 등록된 건 판매 비즈니스 로직
-     *
-     * @param userId : 판매자 id
-     * @param purchaseBiddingId : 구매 입찰 id
-     *
-     * @throws IllegalStateException : 구매입찰 등록한 유저가 팔려고 하는 경우, 잘못된 id인 경우
-     */
     @Transactional
     public SellBiddingResponse transactPurchaseBidding(Long userId, Long purchaseBiddingId) {
         validateUserId(userId);
@@ -113,7 +98,22 @@ public class SellBiddingService {
         purchaseBidding.changeStatus(Status.SHIPPED);
         sellBiddingRepository.save(sellBidding);
 
+        User seller = getUser(userId);
+        User buyer = getUser(purchaseBidding.getPurchaseBidderId());
+
+        transportMoney(seller, buyer, sellBidding.getPrice());
+
         return new SellBiddingResponse(sellBidding.getId());
+    }
+
+    private User getUser(Long userId) {
+        User seller = userRepository.findById(userId).get();
+        return seller;
+    }
+
+    private void transportMoney(User seller, User buyer, Integer price) {
+        seller.deposit(price);
+        buyer.withdraw(price.longValue());
     }
 
     private PurchaseBidding findPurchaseBidding(Long purchaseBiddingId) {

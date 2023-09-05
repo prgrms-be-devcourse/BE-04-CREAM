@@ -148,11 +148,16 @@ class SellBiddingServiceTest {
         // then
         SellBidding findSellBidding = sellBiddingRepository.findById(sellBiddingResponse.sellBiddingId()).get();
         PurchaseBidding findPurchaseBidding = purchaseBiddingRepository.findById(purchaseBidding.getId()).get();
+        User buyer = userRepository.findById(user1.getId()).get();
+        User seller = userRepository.findById(user2.getId()).get();
+
         assertAll(
                 () -> assertThat(findSellBidding.getStatus()).isEqualTo(Status.SHIPPED),
                 () -> assertThat(findPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
                 () -> assertThat(Long.valueOf(findSellBidding.getPrice())).isEqualTo(findPurchaseBidding.getPrice()),
-                () -> assertThat(findSellBidding.getDueDate()).isEqualTo(findPurchaseBidding.getDueDate())
+                () -> assertThat(findSellBidding.getDueDate()).isEqualTo(findPurchaseBidding.getDueDate()),
+                ()-> assertThat(buyer.getAccount()).isEqualTo(80000L),
+                ()-> assertThat(seller.getAccount()).isEqualTo(120000L)
         );
 
     }
@@ -173,7 +178,7 @@ class SellBiddingServiceTest {
     }
 
     private User makeUser(String email, String nickname) {
-        User user = new User(email, "password", nickname, 10000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
+        User user = new User(email, "password", nickname, 100000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
         userRepository.save(user);
 
         return user;
@@ -182,7 +187,7 @@ class SellBiddingServiceTest {
     private Product makeProduct(String brandName, String productName) {
         Brand nike = new Brand(brandName);
         brandRepository.save(nike);
-        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 180000L);
+        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 20000L);
         Product product = new Product(nike, productName, productInfo);
         productRepository.save(product);
 
@@ -198,7 +203,7 @@ class SellBiddingServiceTest {
     }
 
     private PurchaseBidding makePurchaseBidding(User user, SizedProduct sizedProduct) {
-        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 20000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
         purchaseBiddingRepository.save(purchaseBidding);
         return purchaseBidding;
     }

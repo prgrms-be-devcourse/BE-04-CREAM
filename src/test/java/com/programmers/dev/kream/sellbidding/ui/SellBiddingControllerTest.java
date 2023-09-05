@@ -177,18 +177,22 @@ class SellBiddingControllerTest {
         // then
         resultActions.andExpect(status().isOk());
         SellBidding savedSellBidding = sellBiddingRepository.findAll().get(0);
+        User buyer = userRepository.findById(user1.getId()).get();
+        User seller = userRepository.findById(user2.getId()).get();
         assertAll(
                 () -> assertThat(savedSellBidding.getSizedProductId()).isEqualTo(purchaseBidding.getSizedProductId()),
                 () -> assertThat(savedSellBidding.getSellBidderId()).isEqualTo(user2.getId()),
                 () -> assertThat(savedSellBidding.getDueDate()).isEqualTo(purchaseBidding.getDueDate()),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.SHIPPED),
-                () -> assertThat(purchaseBidding.getStatus()).isEqualTo(Status.SHIPPED)
+                () -> assertThat(purchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
+                () -> assertThat(buyer.getAccount()).isEqualTo(80000L),
+                () -> assertThat(seller.getAccount()).isEqualTo(120000L)
         );
 
     }
 
     private User makeUser(String email, String nickname) {
-        User user = new User(email, "password", nickname, 10000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
+        User user = new User(email, "password", nickname, 100000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
         userRepository.save(user);
 
         return user;
@@ -197,7 +201,7 @@ class SellBiddingControllerTest {
     private Product makeProduct(String brandName, String productName) {
         Brand nike = new Brand(brandName);
         brandRepository.save(nike);
-        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 180000L);
+        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 20000L);
         Product product = new Product(nike, productName, productInfo);
         productRepository.save(product);
 
@@ -212,7 +216,7 @@ class SellBiddingControllerTest {
     }
 
     private PurchaseBidding makePurchaseBidding(User user, SizedProduct sizedProduct) {
-        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 20000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
         purchaseBiddingRepository.save(purchaseBidding);
         return purchaseBidding;
     }
