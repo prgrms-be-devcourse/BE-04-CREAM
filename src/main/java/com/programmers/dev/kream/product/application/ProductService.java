@@ -1,5 +1,7 @@
 package com.programmers.dev.kream.product.application;
 
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.product.ui.dto.BrandResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
@@ -87,11 +89,11 @@ public class ProductService {
 
     private Brand findBrandById(Long id) {
         return brandRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드가 존재하지 않습니다."));
+            .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
 
     private Product findProductById(Long id) {
         return productRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다."));
+            .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
 }

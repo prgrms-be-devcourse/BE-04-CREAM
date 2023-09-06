@@ -1,5 +1,6 @@
 package com.programmers.dev.kream.product.application;
 
+import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
 import com.programmers.dev.kream.product.domain.ProductInfo;
@@ -7,7 +8,6 @@ import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ class ProductServiceTest {
         productService.deleteById(productResponse.id());
 
         //then
-        assertThatThrownBy(() -> productService.findById(productResponse.id())).isInstanceOf(EntityNotFoundException.class);
+        assertThatThrownBy(() -> productService.findById(productResponse.id())).isInstanceOf(CreamException.class);
     }
 
     @Test
