@@ -5,9 +5,5 @@
 :toc: left
 :toclevels: 2
 
-[[Product-API]]
-== Product API
-
-[[Product-단일-조회]]
-=== Product 단일 조회
-operation::find-all-brands[]
+== 구매 입찰 API
+include::api/purchasebidding/purchase-bid-select-view.adoc[]
