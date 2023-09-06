@@ -1,6 +1,7 @@
 package com.programmers.dev.kream.sellbidding.application;
 
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
@@ -88,7 +89,7 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.getProductInformation(sizedProduct1.getProduct().getId() + 1)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
     }
 
     @Test
@@ -124,11 +125,11 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.saveSellBidding(user.getId(), sizedProduct.getId() + 1, sellBiddingRequest)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
 
         assertThatThrownBy(
                 () -> sellBiddingService.saveSellBidding(user.getId() + 1, sizedProduct.getId(), sellBiddingRequest)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
 
     }
 
@@ -174,7 +175,7 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.transactPurchaseBidding(user1.getId(), purchaseBidding.getId())
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
     }
 
     private User makeUser(String email, String nickname) {

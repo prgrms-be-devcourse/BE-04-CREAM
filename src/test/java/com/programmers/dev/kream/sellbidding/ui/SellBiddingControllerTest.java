@@ -191,7 +191,6 @@ class SellBiddingControllerTest {
 
     @Test
     @DisplayName("잘못된 id로 요청 시 요청 응답은 실패한다 ")
-    @Disabled
     void saveSellBidding_BadId() throws Exception {
         // given
         User user = makeUser("daum.net", "tommy");
