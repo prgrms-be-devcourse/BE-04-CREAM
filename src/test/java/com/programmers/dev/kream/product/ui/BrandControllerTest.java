@@ -38,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(RestDocumentationExtension.class)
 @WebMvcTest(BrandController.class)
 class BrandControllerTest {
 
@@ -59,8 +60,8 @@ class BrandControllerTest {
             .addFilter(new CharacterEncodingFilter("UTF-8", true))
             .apply(documentationConfiguration(restDocumentationContextProvider)
                 .operationPreprocessors()
-                .withRequestDefaults(modifyUris().host("localhost").port(8080), prettyPrint())
-                .withResponseDefaults(modifyUris().host("localhost").port(8080), prettyPrint()))
+                .withRequestDefaults(modifyUris().host("13.125.254.94"), prettyPrint())
+                .withResponseDefaults(modifyUris().host("13.125.254.94"), prettyPrint()))
             .build();
     }
 
@@ -81,7 +82,22 @@ class BrandControllerTest {
                     .content(requestBody))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(1L))
-            .andExpect(jsonPath("$.name").value("NIKE"));
+            .andExpect(jsonPath("$.name").value("NIKE"))
+            .andDo(document("save-brand",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type")
+                ),
+                requestFields(
+                    fieldWithPath("name").description("name of brand").type(JsonFieldType.STRING)
+                ),
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type")
+                ),
+                responseFields(
+                    fieldWithPath("id").description("id of brand").type(JsonFieldType.NUMBER),
+                    fieldWithPath("name").description("name of brand").type(JsonFieldType.STRING)
+                )
+            ));
 
         verify(brandService).save("NIKE");
     }
@@ -100,7 +116,16 @@ class BrandControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1L))
             .andExpect(jsonPath("$.name").value("NIKE"))
-            .andDo(print());
+            .andDo(print())
+            .andDo(document("find-brand-by-id",
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type")
+                ),
+                responseFields(
+                    fieldWithPath("id").description("id of brand").type(JsonFieldType.NUMBER),
+                    fieldWithPath("name").description("name of brand").type(JsonFieldType.STRING)
+                )
+            ));
 
         verify(brandService).findById(1L);
     }
@@ -123,7 +148,17 @@ class BrandControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.size").value(2))
             .andExpect(jsonPath("$.brandList[0].name").value("NIKE"))
-            .andDo(print());
+            .andDo(print())
+            .andDo(document("find-all-brands",
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type")
+                ),
+                responseFields(
+                    fieldWithPath("size").description("count of brands").type(JsonFieldType.NUMBER),
+                    fieldWithPath("brandList[].id").description("id of brand").type(JsonFieldType.NUMBER),
+                    fieldWithPath("brandList[].name").description("name of brand").type(JsonFieldType.STRING)
+                )
+            ));
 
         verify(brandService).findAll();
     }

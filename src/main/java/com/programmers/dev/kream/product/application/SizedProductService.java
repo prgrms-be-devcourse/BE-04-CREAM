@@ -1,13 +1,14 @@
 package com.programmers.dev.kream.product.application;
 
 
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
 import com.programmers.dev.kream.product.domain.SizedProduct;
 import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.product.ui.dto.GetProductInfoResponse;
 import com.programmers.dev.kream.product.ui.dto.SizedProductResponse;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,11 +58,11 @@ public class SizedProductService {
 
     private Product findProductById(Long id) {
         return productRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("해당 제품이 존재하지 않습니다."));
+            .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
 
     private SizedProduct findSizedProductById(Long id) {
         return sizedProductRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("해당 사이즈의 상품은 존재하지 않습니다."));
+            .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
 }

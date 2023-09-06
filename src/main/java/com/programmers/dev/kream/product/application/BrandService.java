@@ -1,14 +1,17 @@
 package com.programmers.dev.kream.product.application;
 
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
 import com.programmers.dev.kream.product.ui.dto.BrandResponse;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.programmers.dev.kream.exception.ErrorCode.INVALID_ID;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,11 +50,11 @@ public class BrandService {
 
     private Brand findBrandById(Long id) {
         return brandRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
+            .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 
     private Brand findBrandByName(String name) {
         return brandRepository.findByName(name)
-            .orElseThrow(() -> new EntityNotFoundException("해당 브랜드는 존재하지 않습니다."));
+            .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
 }
