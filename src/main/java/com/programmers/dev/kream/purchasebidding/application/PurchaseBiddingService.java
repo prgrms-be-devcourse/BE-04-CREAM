@@ -4,6 +4,8 @@ package com.programmers.dev.kream.purchasebidding.application;
 import com.programmers.dev.kream.common.application.BankService;
 import com.programmers.dev.kream.common.bidding.BiddingDuration;
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.purchasebidding.ui.dto.PurchaseBiddingBidRequest;
@@ -46,24 +48,19 @@ public class PurchaseBiddingService {
     @Transactional
     public Long purchaseNow(Long purchaserId, PurchaseBiddingNowRequest request) {
         SellBidding sellBidding = sellBiddingRepository.findLowPriceBidding(request.price(), request.sizedProductId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다. " + request.sizedProductId()));
-        User purchaser = userRepository.findById(purchaserId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. " + purchaserId));
-        User seller = userRepository.findById(sellBidding.getSellBidderId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. " + sellBidding.getSellBidderId()));
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
 
-        /*
-            즉시 입찰 구매
-            -구매자: 바로 계좌에서 결제된 가격만큼 인출
-            -판매자: 판매자가 상품을 발송한 후 검수 합격이 완료가 된 다음날 입금
-                -> 1차 스프린트에서는 배송과정 생략 후 검수 합격부터 시작하는 시나리오
-                   구매자, 판매자 계좌에 바로 거래가 반영되도록 구현함.
-         */
-        sellBidding.changeStatus(Status.AUTHENTICATED);
+        User purchaser = userRepository.findById(purchaserId)
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
+
+        User seller = userRepository.findById(sellBidding.getSellBidderId())
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
+
+        sellBidding.changeStatus(Status.SHIPPED);
         bankService.accountTransaction(purchaser, seller, sellBidding.getPrice());
 
         return purchaseBiddingRepository.save(
-                new PurchaseBidding(purchaserId, request.sizedProductId(), request.price(), Status.AUTHENTICATED)).getId();
+                new PurchaseBidding(purchaserId, request.sizedProductId(), request.price(), Status.SHIPPED)).getId();
     }
 
     @Transactional

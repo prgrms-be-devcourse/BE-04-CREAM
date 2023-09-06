@@ -1,6 +1,7 @@
 package com.programmers.dev.kream.sellbidding.application;
 
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
@@ -88,7 +89,7 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.getProductInformation(sizedProduct1.getProduct().getId() + 1)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
     }
 
     @Test
@@ -124,11 +125,11 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.saveSellBidding(user.getId(), sizedProduct.getId() + 1, sellBiddingRequest)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
 
         assertThatThrownBy(
                 () -> sellBiddingService.saveSellBidding(user.getId() + 1, sizedProduct.getId(), sellBiddingRequest)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
 
     }
 
@@ -148,11 +149,16 @@ class SellBiddingServiceTest {
         // then
         SellBidding findSellBidding = sellBiddingRepository.findById(sellBiddingResponse.sellBiddingId()).get();
         PurchaseBidding findPurchaseBidding = purchaseBiddingRepository.findById(purchaseBidding.getId()).get();
+        User buyer = userRepository.findById(user1.getId()).get();
+        User seller = userRepository.findById(user2.getId()).get();
+
         assertAll(
                 () -> assertThat(findSellBidding.getStatus()).isEqualTo(Status.SHIPPED),
                 () -> assertThat(findPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
                 () -> assertThat(Long.valueOf(findSellBidding.getPrice())).isEqualTo(findPurchaseBidding.getPrice()),
-                () -> assertThat(findSellBidding.getDueDate()).isEqualTo(findPurchaseBidding.getDueDate())
+                () -> assertThat(findSellBidding.getDueDate()).isEqualTo(findPurchaseBidding.getDueDate()),
+                ()-> assertThat(buyer.getAccount()).isEqualTo(80000L),
+                ()-> assertThat(seller.getAccount()).isEqualTo(120000L)
         );
 
     }
@@ -169,11 +175,11 @@ class SellBiddingServiceTest {
         // when && then
         assertThatThrownBy(
                 () -> sellBiddingService.transactPurchaseBidding(user1.getId(), purchaseBidding.getId())
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(CreamException.class);
     }
 
     private User makeUser(String email, String nickname) {
-        User user = new User(email, "password", nickname, 10000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
+        User user = new User(email, "password", nickname, 100000L, new Address("12345", "경기도", "일산동구"), UserRole.ROLE_USER);
         userRepository.save(user);
 
         return user;
@@ -182,7 +188,7 @@ class SellBiddingServiceTest {
     private Product makeProduct(String brandName, String productName) {
         Brand nike = new Brand(brandName);
         brandRepository.save(nike);
-        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 180000L);
+        ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 20000L);
         Product product = new Product(nike, productName, productInfo);
         productRepository.save(product);
 
@@ -198,7 +204,7 @@ class SellBiddingServiceTest {
     }
 
     private PurchaseBidding makePurchaseBidding(User user, SizedProduct sizedProduct) {
-        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 150000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 20000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
         purchaseBiddingRepository.save(purchaseBidding);
         return purchaseBidding;
     }

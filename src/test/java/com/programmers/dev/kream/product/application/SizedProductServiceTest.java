@@ -1,10 +1,10 @@
 package com.programmers.dev.kream.product.application;
 
+import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.product.domain.*;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.SizedProductResponse;
-import jakarta.persistence.EntityNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
 
 
 @SpringBootTest
@@ -79,8 +78,7 @@ class SizedProductServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> sizedProductService.findById(savedSizedProduct))
-            .isInstanceOf(EntityNotFoundException.class);
+            .isInstanceOf(CreamException.class);
     }
-
 }
 

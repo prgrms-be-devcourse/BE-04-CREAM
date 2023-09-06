@@ -1,7 +1,6 @@
 spring:
   profiles:
     active: dev
-
   datasource:
     url: jdbc:h2:mem:kream;MODE=MYSQL;DB_CLOSE_DELAY=-1
     username: sa
@@ -21,10 +20,17 @@ spring:
       mode: embedded
       data-locations: classpath:sql/data.sql
       encoding: UTF-8
-
   h2:
     console:
       enabled: true
 
 logging:
-  config: classpath:logback-${spring.profiles.active}.xml
+  config: classpath:log/logback-${spring.profiles.active}.xml
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false

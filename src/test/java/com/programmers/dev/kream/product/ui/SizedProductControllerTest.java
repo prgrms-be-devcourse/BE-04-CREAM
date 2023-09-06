@@ -37,7 +37,6 @@ class SizedProductControllerTest {
     @Autowired
     SizedProductRepository sizedProductRepository;
 
-
     @Test
     @DisplayName("상품 조회 로직 검증")
     void findSizedProduct() throws Exception {

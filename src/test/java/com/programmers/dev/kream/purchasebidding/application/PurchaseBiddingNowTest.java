@@ -64,7 +64,7 @@ class PurchaseBiddingNowTest {
 
         //then
         SoftAssertions.assertSoftly(soft -> {
-            soft.assertThat(purchaseBidding.getStatus()).isEqualTo(Status.AUTHENTICATED);
+            soft.assertThat(purchaseBidding.getStatus()).isEqualTo(Status.SHIPPED);
             soft.assertThat(purchaser.getAccount()).isEqualTo(0L);
         });
     }
