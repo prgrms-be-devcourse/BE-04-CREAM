@@ -7,6 +7,7 @@ import static org.springframework.http.HttpStatus.*;
 public enum ErrorCode {
 
     INVALID_ID(BAD_REQUEST, BAD_REQUEST.value(), "id does not exist in database. please check again"),
+    BAD_BUSINESS_LOGIC(BAD_REQUEST, BAD_REQUEST.value(), "invalid logic for this service"),
     NO_AUTHENTICATION(UNAUTHORIZED, UNAUTHORIZED.value(), "no authentication. please log in"),
     NO_AUTHORITY(FORBIDDEN, FORBIDDEN.value(), "you have no authorization for this access"),
     ;

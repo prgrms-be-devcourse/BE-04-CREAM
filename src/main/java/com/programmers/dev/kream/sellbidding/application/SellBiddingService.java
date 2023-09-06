@@ -2,6 +2,8 @@ package com.programmers.dev.kream.sellbidding.application;
 
 
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
 import com.programmers.dev.kream.product.domain.SizedProduct;
@@ -21,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.programmers.dev.kream.exception.ErrorCode.BAD_BUSINESS_LOGIC;
+import static com.programmers.dev.kream.exception.ErrorCode.INVALID_ID;
 
 @Service
 @Transactional(readOnly = true)
@@ -45,8 +50,9 @@ public class SellBiddingService {
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("존재하지 않는 productId 입니다.")
+                        () -> new CreamException(INVALID_ID)
                 );
+
         List<SizedProduct> sizedProductList = sizedProductRepository.findAllByProductId(productId);
         sizedProductList.forEach(
                 sizedProduct -> {
@@ -55,7 +61,7 @@ public class SellBiddingService {
                     if (!purchaseBiddingList.isEmpty()) {
                         sizeInformationList.add(new SizeInformation(true, sizedProduct.getSize(), sizedProduct.getId(), purchaseBiddingList.get(0).getPrice().intValue()));
                     } else {
-                        sizeInformationList.add(new SizeInformation(false, sizedProduct.getSize(), sizedProduct.getId(), null));
+                        sizeInformationList.add(new SizeInformation(false, sizedProduct.getSize(), sizedProduct.getId(), 0));
                     }
                 }
         );
@@ -78,14 +84,14 @@ public class SellBiddingService {
     private void validateUserId(Long userId) {
         userRepository.findById(userId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("잘못된 회원 id 입니다.")
+                        () -> new CreamException(INVALID_ID)
                 );
     }
 
     private SizedProduct findSizedProduct(Long sizedProductId) {
         return sizedProductRepository.findById(sizedProductId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("해당 상품이 존재하지 않습니다.")
+                        () -> new CreamException(INVALID_ID)
                 );
     }
 
@@ -119,13 +125,13 @@ public class SellBiddingService {
     private PurchaseBidding findPurchaseBidding(Long purchaseBiddingId) {
         return purchaseBiddingRepository.findById(purchaseBiddingId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("해당 구매 입찰 정보가 없습니다.")
+                        () -> new CreamException(INVALID_ID)
                 );
     }
 
     private static void validateSellUserAndPurchaseUser(Long userId, PurchaseBidding purchaseBidding) {
         if (userId == purchaseBidding.getPurchaseBidderId()) {
-            throw new IllegalArgumentException("비정상적인 접근입니다.");
+            throw new CreamException(BAD_BUSINESS_LOGIC);
         }
     }
 }
