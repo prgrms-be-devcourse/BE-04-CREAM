@@ -2,8 +2,6 @@
 
 PROJECT_ROOT="/home/ec2-user/app"
 
-APP_LOG="$PROJECT_ROOT/application.log"
-ERROR_LOG="$PROJECT_ROOT/error.log"
 DEPLOY_LOG="$PROJECT_ROOT/deploy.log"
 
 TIME_NOW=$(date +%c)
@@ -39,7 +37,7 @@ chmod +x $JAR_NAME
 
 echo "> $JAR_NAME 실행" >> $DEPLOY_LOG
 
-nohup java -jar -Dspring.config.location=classpath:application.properties /home/ec2-user/app/kream.jar > $APP_LOG 2> $ERROR_LOG &
+nohup java -jar -Dspring.profiles.active=prod /home/ec2-user/app/kream.jar &
 
 exit 0
 

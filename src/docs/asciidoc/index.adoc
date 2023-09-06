@@ -27,9 +27,6 @@ operation::find-brand-by-id[snippets = 'http-request,http-response']
 
 operation::save-brand[snippets = 'http-request,http-response']
 
-== 구매 입찰 API
-include::api/purchasebidding/purchase-bid-select-view.adoc[]
-
 [[Product-API]]
 == 상품 API
 
@@ -49,7 +46,21 @@ operation::save-product[snippets = 'http-request,http-response']
 === 상품 수정
 해당 API의 경우 상품을 수정하는 경우 사용하는 API입니다.
 
-operation::update-product-by-id[snippets = 'http-request,http-response']]
+operation::update-product-by-id[snippets = 'http-request,http-response']
+
+== 구매 입찰 API
+[[Purchase_Bid_Select_View]]
+=== 구매 입찰 선택 페이지
+
+operation::purchase-bid-select-view[snippets = 'http-request,http-response']
+
+[[Purchase-Bid-Enroll]]
+=== 구매 입찰 등록
+해당 API의 경우 release2.0에서 구현 예정입니다.
+
+[[Purchase-Bid-Transact]]
+=== 즉시 구매
+해당 API의 경우 release2.0에서 구현 예정입니다.
 
 [[Bidding-Sell]]
 == 판매 입찰 API
