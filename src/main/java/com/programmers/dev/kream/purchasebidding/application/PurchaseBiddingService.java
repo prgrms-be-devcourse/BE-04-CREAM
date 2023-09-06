@@ -4,6 +4,8 @@ package com.programmers.dev.kream.purchasebidding.application;
 import com.programmers.dev.kream.common.application.BankService;
 import com.programmers.dev.kream.common.bidding.BiddingDuration;
 import com.programmers.dev.kream.common.bidding.Status;
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.purchasebidding.ui.dto.PurchaseBiddingBidRequest;
@@ -46,11 +48,13 @@ public class PurchaseBiddingService {
     @Transactional
     public Long purchaseNow(Long purchaserId, PurchaseBiddingNowRequest request) {
         SellBidding sellBidding = sellBiddingRepository.findLowPriceBidding(request.price(), request.sizedProductId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 상품입니다. " + request.sizedProductId()));
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
+
         User purchaser = userRepository.findById(purchaserId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. " + purchaserId));
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
+
         User seller = userRepository.findById(sellBidding.getSellBidderId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다. " + sellBidding.getSellBidderId()));
+                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
 
         sellBidding.changeStatus(Status.SHIPPED);
         bankService.accountTransaction(purchaser, seller, sellBidding.getPrice());
