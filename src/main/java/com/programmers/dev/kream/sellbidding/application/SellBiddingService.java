@@ -55,7 +55,7 @@ public class SellBiddingService {
                     if (!purchaseBiddingList.isEmpty()) {
                         sizeInformationList.add(new SizeInformation(true, sizedProduct.getSize(), sizedProduct.getId(), purchaseBiddingList.get(0).getPrice().intValue()));
                     } else {
-                        sizeInformationList.add(new SizeInformation(false, sizedProduct.getSize(), sizedProduct.getId(), null));
+                        sizeInformationList.add(new SizeInformation(false, sizedProduct.getSize(), sizedProduct.getId(), 0));
                     }
                 }
         );

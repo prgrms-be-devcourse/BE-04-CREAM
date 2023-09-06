@@ -18,11 +18,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cglib.core.Local;
+import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -32,9 +35,14 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +57,7 @@ todo : @ControllerAdvice 구현 후 예외 처리에 대한 코드 구체화
 todo : RestDocs 구현 후 API 명세화 하기
  */
 @Transactional
+@ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 class SellBiddingControllerTest {
@@ -79,18 +88,18 @@ class SellBiddingControllerTest {
 
     @BeforeEach
     void setup(
-        WebApplicationContext webApplicationContext,
-        RestDocumentationContextProvider restDocumentationContextProvider
+            WebApplicationContext webApplicationContext,
+            RestDocumentationContextProvider restDocumentationContextProvider
     ) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-            .addFilter(new CharacterEncodingFilter("UTF-8", true))
-            .apply(documentationConfiguration(restDocumentationContextProvider)
-                .operationPreprocessors()
-                .withRequestDefaults(modifyUris().host("localhost").port(8080), prettyPrint())
-                .withResponseDefaults(modifyUris().host("localhost").port(8080), prettyPrint()))
-            .build();
+                .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .apply(documentationConfiguration(restDocumentationContextProvider)
+                        .operationPreprocessors()
+                        .withRequestDefaults(modifyUris().host("13.125.254.94"), prettyPrint())
+                        .withResponseDefaults(modifyUris().host("13.125.254.94"), prettyPrint()))
+                .build();
     }
-  
+
     /**
      * todo : RestDocs 적용 후 api 명세화 하기
      */
@@ -116,7 +125,22 @@ class SellBiddingControllerTest {
 
         // then
         resultActions.andExpect(status().isOk());
-        resultActions.andDo(print());
+
+        resultActions.andDo(
+                document("get-prodcut-information",
+                        responseHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type header")
+                        ),
+                        responseFields(
+                                fieldWithPath("productName").description("name of product"),
+                                fieldWithPath("biddingSelectLines[0].lived").description("boolean value of bidding product"),
+                                fieldWithPath("biddingSelectLines[0].size").description("size of product"),
+                                fieldWithPath("biddingSelectLines[0].sizedProductId").description("id of sizedProductId"),
+                                fieldWithPath("biddingSelectLines[0].price").description("price of bidding")
+                        )
+                )
+        );
+
     }
 
     @Test
@@ -140,6 +164,25 @@ class SellBiddingControllerTest {
 
         // then
         resultActions.andExpect(status().isOk());
+        resultActions.andDo(
+                document("save-sell-bidding",
+                        requestHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type header"),
+                                headerWithName(CONTENT_LENGTH).description("length of content")
+                        ),
+                        requestFields(
+                                fieldWithPath("price").description("price of sell bidding"),
+                                fieldWithPath("dueDate").description("due Date from the time of now")
+                        ),
+                        responseHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type header")
+                        ),
+                        responseFields(
+                                fieldWithPath("sellBiddingId").description("id of created sell bidding")
+                        )
+                )
+        );
+
     }
 
     /*
@@ -198,6 +241,16 @@ class SellBiddingControllerTest {
 
         // then
         resultActions.andExpect(status().isOk());
+        resultActions.andDo(
+                document("transact-purchase-bidding",
+                        responseHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type header")
+                        ),
+                        responseFields(
+                                fieldWithPath("sellBiddingId").description("id of created sell bidding")
+                        ))
+        );
+
         SellBidding savedSellBidding = sellBiddingRepository.findAll().get(0);
         User buyer = userRepository.findById(user1.getId()).get();
         User seller = userRepository.findById(user2.getId()).get();
