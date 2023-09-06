@@ -5,6 +5,9 @@
 :toc: left
 :toclevels: 2
 
+== 구매 입찰 API
+include::api/purchasebidding/purchase-bid-select-view.adoc[]
+
 [[Product-API]]
 == Product API
 
