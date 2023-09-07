@@ -1,6 +1,6 @@
 ---
 name: "\U0001F6E0 Test"
-about: Describe this issue template's purpose here.
+about: 테스트한 기능에 대해 설명해주세요.
 title: ''
 labels: Team-Allen
 assignees: ''
