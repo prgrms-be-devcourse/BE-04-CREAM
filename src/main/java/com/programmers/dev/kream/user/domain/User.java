@@ -1,7 +1,11 @@
 package com.programmers.dev.kream.user.domain;
 
+import com.programmers.dev.kream.exception.CreamException;
+import com.programmers.dev.kream.exception.ErrorCode;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Table(name = "USERS")
@@ -54,6 +58,12 @@ public class User {
     private void validate(Long money) {
         if (this.account - money < 0) {
             throw new IllegalStateException("계좌 잔고가 부족합니다.");
+        }
+    }
+
+    public void checkPassword(PasswordEncoder passwordEncoder, String rawPassword) {
+        if (!passwordEncoder.matches(rawPassword, this.password)) {
+            throw new CreamException(ErrorCode.INVALID_LOGIN_INFO);
         }
     }
 
