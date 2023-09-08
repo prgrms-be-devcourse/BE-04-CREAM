@@ -16,12 +16,13 @@ import java.util.Optional;
 public class JdbcPurchaseSelectViewDao implements PurchaseSelectViewDao {
 
     public static final String PURCHASE_SELECT_VIEW_QUERY =
-            "select SIZE, SIZED_PRODUCT_ID, MIN(PRICE) as PRICE, STATUS " +
-                    "from SELL_BIDDINGS SB " +
-                    "right join SIZED_PRODUCTS SP on SB.SIZED_PRODUCT_ID = SP.ID " +
-                    "where SP.PRODUCT_ID = :productId and (STATUS = 'LIVE' or STATUS IS NULL)" +
-                    "group by SIZED_PRODUCT_ID, SIZE " +
-                    "order by SIZE";
+            "SELECT P.ID, P.SIZE, MIN(SB.PRICE) AS MIN_PRICE, SB.STATUS " +
+                    "FROM PRODUCTS P " +
+                    "LEFT JOIN SELL_BIDDINGS SB " +
+                    "ON P.ID = SB.PRODUCT_ID " +
+                    "WHERE P.PRODUCT_NAME = :productName AND P.BRAND_ID = :brandId AND (SB.STATUS = 'LIVE' OR SB.STATUS IS NULL)" +
+                    "GROUP BY P.SIZE " +
+                    "ORDER BY P.SIZE ";
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -31,25 +32,28 @@ public class JdbcPurchaseSelectViewDao implements PurchaseSelectViewDao {
 
     private final static RowMapper<BiddingSelectLine> biddingSelectLineRowMapper = (resultSet, i) -> {
         String size = resultSet.getString("SIZE");
+        String productId = resultSet.getString("ID");
+
         Optional<String> status = Optional.ofNullable(resultSet.getString("STATUS"));
 
         if (status.isEmpty()) {
-            return new BiddingSelectLine(false, size, "-", "-");
+            return new BiddingSelectLine(false, size, productId, "-");
         }
 
-        String sizedProductId = resultSet.getString("SIZED_PRODUCT_ID");
-        String price = String.valueOf(resultSet.getLong("PRICE"));
+        String minPrice = String.valueOf(resultSet.getLong("MIN_PRICE"));
 
-        return new BiddingSelectLine(true, size, sizedProductId, price);
+        return new BiddingSelectLine(true, size, productId, minPrice);
     };
 
     @Override
-    public List<BiddingSelectLine> getPurchaseView(Long productId) {
-        MapSqlParameterSource source = new MapSqlParameterSource().addValue("productId", productId);
+    public List<BiddingSelectLine> getPurchaseView(String productName, Long brandId) {
+        MapSqlParameterSource source = new MapSqlParameterSource()
+                .addValue("productName", productName)
+                .addValue("brandId", brandId);
         List<BiddingSelectLine> selectLines = jdbcTemplate.query(PURCHASE_SELECT_VIEW_QUERY, source, biddingSelectLineRowMapper);
 
         if (selectLines.isEmpty()) {
-            throw new EntityNotFoundException("존재하지 않는 상품 번호입니다." + productId);
+            throw new EntityNotFoundException("존재하지 않는 상품 이름입니다." + productName);
         }
 
         return selectLines;

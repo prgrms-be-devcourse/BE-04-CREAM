@@ -47,7 +47,7 @@ public class PurchaseBiddingService {
 
     @Transactional
     public Long purchaseNow(Long purchaserId, PurchaseBiddingNowRequest request) {
-        SellBidding sellBidding = sellBiddingRepository.findLowPriceBidding(request.price(), request.sizedProductId())
+        SellBidding sellBidding = sellBiddingRepository.findLowPriceBidding(request.price(), request.productId())
                 .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
 
         User purchaser = userRepository.findById(purchaserId)
@@ -60,7 +60,7 @@ public class PurchaseBiddingService {
         bankService.accountTransaction(purchaser, seller, sellBidding.getPrice());
 
         return purchaseBiddingRepository.save(
-                new PurchaseBidding(purchaserId, request.sizedProductId(), request.price(), Status.SHIPPED)).getId();
+                new PurchaseBidding(purchaserId, request.productId(), request.price(), Status.SHIPPED)).getId();
     }
 
     @Transactional
@@ -69,7 +69,7 @@ public class PurchaseBiddingService {
         LocalDateTime dueDate = addDays(startDate, request.biddingDuration());
 
         return purchaseBiddingRepository.save(
-                new PurchaseBidding(purchaserId, request.sizedProductId(), request.price(), Status.LIVE, startDate, dueDate)).getId();
+                new PurchaseBidding(purchaserId, request.productId(), request.price(), Status.LIVE, startDate, dueDate)).getId();
     }
 
     private LocalDateTime addDays(LocalDateTime now, BiddingDuration biddingDuration) {
