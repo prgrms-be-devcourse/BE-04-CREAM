@@ -5,8 +5,6 @@ import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
-import com.programmers.dev.kream.product.domain.SizedProduct;
-import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.product.ui.dto.GetProductInfoResponse;
 import com.programmers.dev.kream.product.ui.dto.SizedProductResponse;
 import org.springframework.stereotype.Service;

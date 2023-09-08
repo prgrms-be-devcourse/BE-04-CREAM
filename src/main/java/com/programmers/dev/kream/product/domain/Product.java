@@ -21,13 +21,17 @@ public class Product {
     @Embedded
     private ProductInfo productInfo;
 
+    @Column(name = "SIZE")
+    private int size;
+
     protected Product() {
     }
 
-    public Product(Brand brand, String name, ProductInfo productInfo) {
+    public Product(Brand brand, String name, ProductInfo productInfo, int size) {
         this.brand = brand;
         this.name = name;
         this.productInfo = productInfo;
+        this.size = size;
     }
 
     public Long getId() {
@@ -44,6 +48,10 @@ public class Product {
 
     public ProductInfo getProductInfo() {
         return productInfo;
+    }
+
+    public int getSize() {
+        return size;
     }
 
     public void update(Brand brand, String name, ProductInfo productInfo) {

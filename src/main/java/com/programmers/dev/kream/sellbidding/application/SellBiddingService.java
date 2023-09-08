@@ -3,11 +3,8 @@ package com.programmers.dev.kream.sellbidding.application;
 
 import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.exception.CreamException;
-import com.programmers.dev.kream.exception.ErrorCode;
 import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
-import com.programmers.dev.kream.product.domain.SizedProduct;
-import com.programmers.dev.kream.product.domain.SizedProductRepository;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.sellbidding.domain.SellBidding;
