@@ -2,7 +2,6 @@ package com.programmers.dev.kream.sellbidding.domain;
 
 import com.programmers.dev.kream.common.bidding.Status;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
-import com.programmers.dev.kream.sellbidding.ui.SellBiddingRequest;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -19,8 +18,8 @@ public class SellBidding {
     @Column(name = "SELL_BIDDER_ID", nullable = false)
     private Long sellBidderId;
 
-    @Column(name = "SIZED_PRODUCT_ID", nullable = false)
-    private Long sizedProductId;
+    @Column(name = "PRODUCT_ID", nullable = false)
+    private Long productId;
 
     @Column(name = "PRICE", nullable = false)
     private Integer price;
@@ -37,9 +36,9 @@ public class SellBidding {
 
     protected SellBidding() { }
   
-    public SellBidding(Long sellBidderId, Long sizedProductId, Integer price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
+    public SellBidding(Long sellBidderId, Long productId, Integer price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
         this.sellBidderId = sellBidderId;
-        this.sizedProductId = sizedProductId;
+        this.productId = productId;
         this.price = price;
         this.status = status;
         this.startDate = startDate;
@@ -49,13 +48,13 @@ public class SellBidding {
     /**
      * 판매 입찰 등록시 사용하는 Constructor
      * @param sellBidderId : 판매자 id
-     * @param sizedProductId : 상품 id
+     * @param productId : 상품 id
      * @param price : 판매 입찰 가격
      * @param dueDate : 입찰 마감 기한
      */
-    private SellBidding(Long sellBidderId, Long sizedProductId, Integer price, Long dueDate) {
+    private SellBidding(Long sellBidderId, Long productId, Integer price, Long dueDate) {
         this.sellBidderId = sellBidderId;
-        this.sizedProductId = sizedProductId;
+        this.productId = productId;
         this.price = price;
         this.status = Status.LIVE;
         this.startDate = LocalDateTime.now();
@@ -65,13 +64,13 @@ public class SellBidding {
     /**
      * 구매 입찰에 등록된 건을 거래하려고 하는 경우 사용하는 Constructor
      * @param sellBidderId  : 판매자 id
-     * @param sizedProductId : 상품 id
+     * @param productId : 상품 id
      * @param price : 판매 입찰 가격
      * @param dueDate : 입찰 마감 기한
      */
-    private SellBidding(Long sellBidderId, Long sizedProductId, Integer price, LocalDateTime dueDate) {
+    private SellBidding(Long sellBidderId, Long productId, Integer price, LocalDateTime dueDate) {
         this.sellBidderId = sellBidderId;
-        this.sizedProductId = sizedProductId;
+        this.productId = productId;
         this.price = price;
         this.status = Status.SHIPPED;
         this.startDate = LocalDateTime.now();
@@ -82,15 +81,16 @@ public class SellBidding {
      * 판매 입찰 등록시 사용하는 Constructor
      * @param sellBidderId : 판매자 id
      * @param sizedProductId : 상품 id
-     * @param sellBiddingRequest : 판매 입찰 정보
+     * @param price : 판매 입찰 가격
+     * @param dueDate : 입찰 마감 기한 (D+ 몇일)
      * @return  SellBidding
      */
-    public static SellBidding of(Long sellBidderId, Long sizedProductId, SellBiddingRequest sellBiddingRequest) {
+    public static SellBidding of(Long sellBidderId, Long sizedProductId, Integer price, Long dueDate) {
         return new SellBidding(
                 sellBidderId,
                 sizedProductId,
-                sellBiddingRequest.price(),
-                sellBiddingRequest.dueDate());
+                price,
+                dueDate);
     }
 
     /**
@@ -104,7 +104,7 @@ public class SellBidding {
     public static SellBidding of(Long sellBidderId, PurchaseBidding purchaseBidding) {
         return new SellBidding(
                 sellBidderId,
-                purchaseBidding.getSizedProductId(),
+                purchaseBidding.getProductId(),
                 Integer.valueOf(purchaseBidding.getPrice().toString()),
                 purchaseBidding.getDueDate()
         );
@@ -118,8 +118,8 @@ public class SellBidding {
         return sellBidderId;
     }
 
-    public Long getSizedProductId() {
-        return sizedProductId;
+    public Long getProductId() {
+        return productId;
     }
 
     public Integer getPrice() {
