@@ -1,7 +1,5 @@
 package com.programmers.dev.kream.product.ui.dto;
 
-import com.programmers.dev.kream.product.domain.SizedProduct;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

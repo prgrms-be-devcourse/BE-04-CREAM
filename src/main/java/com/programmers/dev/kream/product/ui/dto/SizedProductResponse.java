@@ -1,7 +1,5 @@
 package com.programmers.dev.kream.product.ui.dto;
 
-import com.programmers.dev.kream.product.domain.SizedProduct;
-
 public record SizedProductResponse(
     Long id,
     ProductResponse productResponse,
