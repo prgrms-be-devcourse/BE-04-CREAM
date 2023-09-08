@@ -121,7 +121,7 @@ class ProductControllerTest {
         //given
         BrandResponse nikeResponse = new BrandResponse(1L, "NIKE");
         ProductInfo nikeInfo = new ProductInfo("NIKE_1", LocalDateTime.now(), "RED", 10000L);
-        ProductSaveRequest productSaveRequest = new ProductSaveRequest(1L, "airForce", nikeInfo);
+        ProductSaveRequest productSaveRequest = new ProductSaveRequest(1L, "airForce", nikeInfo, 250);
 
         given(productService.save(any(productSaveRequest.getClass()))).willReturn(
             new ProductResponse(1L, nikeResponse, "airForce", nikeInfo)
@@ -149,7 +149,8 @@ class ProductControllerTest {
                     fieldWithPath("productInfo.releaseDate").description("release date of product")
                         .type(JsonFieldType.STRING),
                     fieldWithPath("productInfo.color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releasePrice").description("release price of product").type(JsonFieldType.NUMBER)
+                    fieldWithPath("productInfo.releasePrice").description("release price of product").type(JsonFieldType.NUMBER),
+                    fieldWithPath("size").description("size of product").type(JsonFieldType.NUMBER)
                 ),
                 responseHeaders(
                     headerWithName(CONTENT_TYPE).description("content type")
