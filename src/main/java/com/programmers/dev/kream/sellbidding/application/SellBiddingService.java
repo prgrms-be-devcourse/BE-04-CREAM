@@ -30,49 +30,42 @@ public class SellBiddingService {
 
     private final SellBiddingRepository sellBiddingRepository;
     private final PurchaseBiddingRepository purchaseBiddingRepository;
-    private final SizedProductRepository sizedProductRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
-    public SellBiddingService(SellBiddingRepository sellBiddingRepository, SizedProductRepository sizedProductRepository, UserRepository userRepository, ProductRepository productRepository, PurchaseBiddingRepository purchaseBiddingRepository) {
+    public SellBiddingService(SellBiddingRepository sellBiddingRepository, UserRepository userRepository, ProductRepository productRepository, PurchaseBiddingRepository purchaseBiddingRepository) {
         this.sellBiddingRepository = sellBiddingRepository;
         this.purchaseBiddingRepository = purchaseBiddingRepository;
-        this.sizedProductRepository = sizedProductRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
     }
 
-    public ProductInformation getProductInformation(Long productId) {
+    public ProductInformation getProductInformation(String productName, String brandName) {
         ArrayList<SizeInformation> sizeInformationList = new ArrayList<>();
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(
-                        () -> new CreamException(INVALID_ID)
-                );
+        List<Product> productList = productRepository.findAllByNameAndBrand(productName, brandName);
 
-        List<SizedProduct> sizedProductList = sizedProductRepository.findAllByProductId(productId);
-        sizedProductList.forEach(
-                sizedProduct -> {
-                    List<PurchaseBidding> purchaseBiddingList = purchaseBiddingRepository.findBySizedProductId(sizedProduct.getId());
-
+        productList.forEach(
+                product -> {
+                    List<PurchaseBidding> purchaseBiddingList = purchaseBiddingRepository.findByProductId(product.getId());
                     if (!purchaseBiddingList.isEmpty()) {
-                        sizeInformationList.add(new SizeInformation(true, sizedProduct.getSize(), sizedProduct.getId(), purchaseBiddingList.get(0).getPrice().intValue()));
+                        sizeInformationList.add(new SizeInformation(true, product.getSize(), product.getId(), purchaseBiddingList.get(0).getPrice().intValue()));
                     } else {
-                        sizeInformationList.add(new SizeInformation(false, sizedProduct.getSize(), sizedProduct.getId(), 0));
+                        sizeInformationList.add(new SizeInformation(false, product.getSize(), product.getId(), 0));
                     }
                 }
         );
 
-        return new ProductInformation(product.getName(), sizeInformationList);
+        return new ProductInformation(productName, sizeInformationList);
     }
 
     @Transactional
-    public SellBiddingResponse saveSellBidding(Long userId, Long sizedProductId, SellBiddingRequest sellBiddingRequest) {
+    public SellBiddingResponse saveSellBidding(Long userId, Long productId, SellBiddingRequest sellBiddingRequest) {
         validateUserId(userId);
-        SizedProduct sizedProduct = findSizedProduct(sizedProductId);
+        Product product = findProduct(productId);
 
         SellBidding savedSellBidding = sellBiddingRepository.save(
-                SellBidding.of(userId, sizedProduct.getId(), sellBiddingRequest)
+                SellBidding.of(userId, product.getId(), sellBiddingRequest.price(), sellBiddingRequest.dueDate())
         );
 
         return new SellBiddingResponse(savedSellBidding.getId());
@@ -85,13 +78,13 @@ public class SellBiddingService {
                 );
     }
 
-    private SizedProduct findSizedProduct(Long sizedProductId) {
-        return sizedProductRepository.findById(sizedProductId)
+    private Product findProduct(Long productId) {
+        return productRepository.findById(productId)
                 .orElseThrow(
                         () -> new CreamException(INVALID_ID)
                 );
     }
-
+    // todo : 로직 고도화 진행
     @Transactional
     public SellBiddingResponse transactPurchaseBidding(Long userId, Long purchaseBiddingId) {
         validateUserId(userId);
@@ -110,8 +103,7 @@ public class SellBiddingService {
     }
 
     private User getUser(Long userId) {
-        User seller = userRepository.findById(userId).get();
-        return seller;
+        return userRepository.findById(userId).get();
     }
 
     private void transportMoney(User seller, User buyer, Integer price) {
