@@ -77,8 +77,8 @@ class ProductControllerTest {
         ProductInfo adidasInfo = new ProductInfo("ADIDAS_1", LocalDateTime.now(), "WHITE", 20000L);
 
         List<ProductResponse> productResponses = List.of(
-            new ProductResponse(1L, nikeResponse, "airForce", nikeInfo),
-            new ProductResponse(2L, adidasResponse, "stanSmith", adidasInfo));
+            new ProductResponse(1L, nikeResponse, "airForce", nikeInfo, 250),
+            new ProductResponse(2L, adidasResponse, "stanSmith", adidasInfo, 260));
 
         given(productService.findAll()).willReturn(
             new ProductsGetResponse(productResponses.size(), productResponses).productList()
@@ -108,7 +108,8 @@ class ProductControllerTest {
                     fieldWithPath("productList[].productInfo.color").description("color of product")
                         .type(JsonFieldType.STRING),
                     fieldWithPath("productList[].productInfo.releasePrice").description("release price of product")
-                        .type(JsonFieldType.NUMBER)
+                        .type(JsonFieldType.NUMBER),
+                    fieldWithPath("productList[].size").description("size of product").type(JsonFieldType.NUMBER)
                 )
             ));
 
@@ -121,10 +122,10 @@ class ProductControllerTest {
         //given
         BrandResponse nikeResponse = new BrandResponse(1L, "NIKE");
         ProductInfo nikeInfo = new ProductInfo("NIKE_1", LocalDateTime.now(), "RED", 10000L);
-        ProductSaveRequest productSaveRequest = new ProductSaveRequest(1L, "airForce", nikeInfo);
+        ProductSaveRequest productSaveRequest = new ProductSaveRequest(1L, "airForce", nikeInfo, 250);
 
         given(productService.save(any(productSaveRequest.getClass()))).willReturn(
-            new ProductResponse(1L, nikeResponse, "airForce", nikeInfo)
+            new ProductResponse(1L, nikeResponse, "airForce", nikeInfo, 250)
         );
 
         String requestBody = objectMapper.writeValueAsString(productSaveRequest);
@@ -149,7 +150,8 @@ class ProductControllerTest {
                     fieldWithPath("productInfo.releaseDate").description("release date of product")
                         .type(JsonFieldType.STRING),
                     fieldWithPath("productInfo.color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releasePrice").description("release price of product").type(JsonFieldType.NUMBER)
+                    fieldWithPath("productInfo.releasePrice").description("release price of product").type(JsonFieldType.NUMBER),
+                    fieldWithPath("size").description("size of product").type(JsonFieldType.NUMBER)
                 ),
                 responseHeaders(
                     headerWithName(CONTENT_TYPE).description("content type")
@@ -165,33 +167,28 @@ class ProductControllerTest {
                         .type(JsonFieldType.STRING),
                     fieldWithPath("productInfo.color").description("color of product").type(JsonFieldType.STRING),
                     fieldWithPath("productInfo.releasePrice").description("release price of product")
-                        .type(JsonFieldType.NUMBER)
+                        .type(JsonFieldType.NUMBER),
+                    fieldWithPath("size").description("size of product").type(JsonFieldType.NUMBER)
                 )
             ));
     }
 
     @Test
-    @DisplayName("id로 상품을 수정할 수 있다.")
+    @DisplayName("modelNumber로 상품을 수정할 수 있다.")
     void updateProductTest() throws Exception {
         //given
         ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
             1L,
             "airForce",
             "AAA",
-            "Blue",
-            3000L);
+            "Blue");
 
-        given(productService.update(1L, productUpdateRequest)).willReturn(
-            new ProductResponse(
-                1L,
-                new BrandResponse(1L, "NIKE"),
-                "airForce",
-                new ProductInfo(
-                    "AAA",
-                    LocalDateTime.now(),
-                    "Blue",
-                    3000L
-                )
+        given(productService.update(productUpdateRequest)).willReturn(
+            new ProductUpdateResponse(
+                "NIKE",
+                "airForce2",
+                "Red",
+                "AAA"
             )
         );
 
@@ -199,12 +196,12 @@ class ProductControllerTest {
 
         //when & then
         mockMvc.perform(
-                post("/api/products/{productId}", 1L)
+                post("/api/products/update")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(1L))
-            .andExpect(jsonPath("$.name").value("airForce"))
+            .andExpect(jsonPath("$.brandName").value("NIKE"))
+            .andExpect(jsonPath("$.name").value("airForce2"))
             .andDo(print())
             .andDo(document("update-product-by-id",
                 requestHeaders(
@@ -214,24 +211,16 @@ class ProductControllerTest {
                     fieldWithPath("brandId").description("id of brand").type(JsonFieldType.NUMBER),
                     fieldWithPath("productName").description("name of product").type(JsonFieldType.STRING),
                     fieldWithPath("modelNumber").description("model number of product").type(JsonFieldType.STRING),
-                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("releasePrice").description("release price of product").type(JsonFieldType.NUMBER)
+                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING)
                 ),
                 responseHeaders(
                     headerWithName(CONTENT_TYPE).description("content type")
                 ),
                 responseFields(
-                    fieldWithPath("id").description("id of product").type(JsonFieldType.NUMBER),
-                    fieldWithPath("brand.id").description("id of brand").type(JsonFieldType.NUMBER),
-                    fieldWithPath("brand.name").description("name of brand").type(JsonFieldType.STRING),
+                    fieldWithPath("brandName").description("name of brand").type(JsonFieldType.STRING),
                     fieldWithPath("name").description("name of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.modelNumber").description("modelNumber of product")
-                        .type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releaseDate").description("release date of product")
-                        .type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releasePrice").description("release price of product")
-                        .type(JsonFieldType.NUMBER)
+                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING),
+                    fieldWithPath("modelNumber").description("number of model").type(JsonFieldType.STRING)
                 )
             ));
     }

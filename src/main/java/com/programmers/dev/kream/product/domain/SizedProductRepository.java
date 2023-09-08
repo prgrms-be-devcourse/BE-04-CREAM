@@ -11,6 +11,4 @@ public interface SizedProductRepository extends JpaRepository<SizedProduct, Long
 
     @Query("select sp from SizedProduct sp where sp.product.id = :productId")
     List<SizedProduct> findAllByProductId(@Param("productId") Long productId);
-
-    void deleteSizedProductByProductId(Long id);
 }

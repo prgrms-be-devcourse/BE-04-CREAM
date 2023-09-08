@@ -31,11 +31,9 @@ public class ProductInfo {
         this.releasePrice = releasePrice;
     }
 
-    public ProductInfo(ProductUpdateRequest productUpdateRequest, LocalDateTime releaseDate) {
+    public ProductInfo(ProductUpdateRequest productUpdateRequest) {
         this.modelNumber = productUpdateRequest.modelNumber();
         this.color = productUpdateRequest.color();
-        this.releasePrice = productUpdateRequest.releasePrice();
-        this.releaseDate = releaseDate;
     }
 
     public String getModelNumber() {

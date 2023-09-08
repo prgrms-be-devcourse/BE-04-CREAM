@@ -1,10 +1,7 @@
 package com.programmers.dev.kream.product.ui;
 
 import com.programmers.dev.kream.product.application.ProductService;
-import com.programmers.dev.kream.product.ui.dto.ProductResponse;
-import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
-import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
-import com.programmers.dev.kream.product.ui.dto.ProductsGetResponse;
+import com.programmers.dev.kream.product.ui.dto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,15 +33,10 @@ public class ProductController {
             .body(savedProductResponse);
     }
 
-    @DeleteMapping("/{productId}")
-    public void deleteProduct(@PathVariable Long productId) {
-        productService.deleteById(productId);
-    }
+    @PostMapping("/update")
+    public ResponseEntity<ProductUpdateResponse> updateProduct(@RequestBody ProductUpdateRequest productUpdateRequest) {
+        ProductUpdateResponse productUpdateResponse = productService.update(productUpdateRequest);
 
-    @PostMapping("/{productId}")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest productUpdateRequest) {
-        ProductResponse updatedProductResponse = productService.update(productId, productUpdateRequest);
-
-        return ResponseEntity.ok().body(updatedProductResponse);
+        return ResponseEntity.ok().body(productUpdateResponse);
     }
 }
