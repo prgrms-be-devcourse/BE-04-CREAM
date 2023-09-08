@@ -36,10 +36,6 @@ public class ProductController {
             .body(savedProductResponse);
     }
 
-    @DeleteMapping("/{productId}")
-    public void deleteProduct(@PathVariable Long productId) {
-        productService.deleteById(productId);
-    }
 
     @PostMapping("/{productId}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long productId, @RequestBody ProductUpdateRequest productUpdateRequest) {

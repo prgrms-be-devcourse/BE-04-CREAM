@@ -20,12 +20,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
-    private final SizedProductRepository sizedProductRepository;
 
-    public ProductService(ProductRepository productRepository, BrandRepository brandRepository, SizedProductRepository sizedProductRepository) {
+    public ProductService(ProductRepository productRepository, BrandRepository brandRepository) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
-        this.sizedProductRepository = sizedProductRepository;
     }
 
     @Transactional
@@ -40,15 +38,6 @@ public class ProductService {
             new BrandResponse(savedProduct.getBrand().getId(), savedProduct.getBrand().getName()),
             savedProduct.getName(),
             savedProduct.getProductInfo());
-    }
-
-    @Transactional
-    public void deleteById(Long id) {
-        Product product = findProductById(id);
-
-        sizedProductRepository.deleteSizedProductByProductId(id);
-
-        productRepository.delete(product);
     }
 
     public ProductResponse findById(Long id) {
