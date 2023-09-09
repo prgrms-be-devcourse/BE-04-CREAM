@@ -9,9 +9,9 @@ INSERT INTO SIZED_PRODUCTS(ID, PRODUCT_ID, SIZE) VALUES
 (8, 2, 250) ,(9, 2, 260), (10, 2, 270), (11, 2, 280);
 
 INSERT INTO USERS(ID, EMAIL, PASSWORD, NICKNAME, USER_ROLE, ACCOUNT, ZIPCODE, ADDRESS, ADDRESS_DETAIL) VALUES
-(1, 'aaa@email.com', 'aaa', 'A', 'ROLE_USER', 500000, '12345', 'SEOUL', 'detail'),
-(2, 'bbb@email.com', 'bbb', 'B', 'ROLE_USER', 200000, '54321', 'DAEGU', 'detail'),
-(3, 'ccc@email.com', 'ccc', 'C', 'ROLE_USER', 100000, '67890', 'DAEGU', 'detail');
+(1, 'aaa@email.com', '$2a$12$t8iA0oBSyN9vpWUEB1o2cef0IlQp0wBTX0xAXj5sOk7l1CVQyovpG', 'A', 'ROLE_USER', 500000, '12345', 'SEOUL', 'detail'),
+(2, 'bbb@email.com', '$2a$12$q5AzUVup5.jaOuegNlG.JOlsT6YvbW8WNE9f/0pt7zIaPyt41Yunq', 'B', 'ROLE_ADMIN', 200000, '54321', 'ROLE_ADMIN', 'detail'),
+(3, 'ccc@email.com', '$2a$12$XhARsp1a5sYfCh8/9hmAru056U4dFQmRwtBPcVMgjYnCAXRlaIR1W', 'C', 'ROLE_USER', 100000, '67890', 'DAEGU', 'detail');
 
 INSERT INTO PURCHASE_BIDDINGS(ID, PURCHASE_BIDDER_ID, SIZED_PRODUCT_ID, PRICE, STATUS, START_DATE, DUE_DATE) VALUES
 (1, 1, 1, 180000, 'LIVE', NOW(), TIMESTAMPADD(DAY, 7, NOW())),
