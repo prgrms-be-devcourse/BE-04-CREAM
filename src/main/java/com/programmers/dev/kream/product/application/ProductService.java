@@ -30,7 +30,7 @@ public class ProductService {
     public ProductResponse save(ProductSaveRequest productSaveRequest) {
         Brand brand = findBrandById(productSaveRequest.brandId());
 
-        Product product = new Product(brand, productSaveRequest.name(), productSaveRequest.productInfo(), 250);
+        Product product = new Product(brand, productSaveRequest.name(), productSaveRequest.productInfo(), productSaveRequest.size());
         Product savedProduct = productRepository.save(product);
 
         return new ProductResponse(
