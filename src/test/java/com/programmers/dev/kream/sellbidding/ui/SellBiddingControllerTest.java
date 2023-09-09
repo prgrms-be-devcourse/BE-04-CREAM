@@ -7,23 +7,17 @@ import com.programmers.dev.kream.purchasebidding.domain.PurchaseBidding;
 import com.programmers.dev.kream.purchasebidding.domain.PurchaseBiddingRepository;
 import com.programmers.dev.kream.sellbidding.domain.SellBidding;
 import com.programmers.dev.kream.sellbidding.domain.SellBiddingRepository;
-
 import com.programmers.dev.kream.user.domain.Address;
 import com.programmers.dev.kream.user.domain.User;
 import com.programmers.dev.kream.user.domain.UserRepository;
 import com.programmers.dev.kream.user.domain.UserRole;
-import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cglib.core.Local;
-import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,6 +29,8 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
@@ -44,18 +40,9 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.mo
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.FactoryBasedNavigableListAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/*
-todo : @ControllerAdvice 구현 후 예외 처리에 대한 코드 구체화
-todo : RestDocs 구현 후 API 명세화 하기
- */
 @Transactional
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
@@ -77,8 +64,6 @@ class SellBiddingControllerTest {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    SizedProductRepository sizedProductRepository;
 
     @Autowired
     PurchaseBiddingRepository purchaseBiddingRepository;
@@ -100,27 +85,24 @@ class SellBiddingControllerTest {
                 .build();
     }
 
-    /**
-     * todo : RestDocs 적용 후 api 명세화 하기
-     */
     @Test
     @DisplayName("판매입찰 관련하여 입찰 관련한 목록을 조회할 수 있다")
     void getProductInformation() throws Exception{
         // given
         User user = makeUser("naver.com", "tommy");
-        Product product = makeProduct("nike", "air jordan");
-        SizedProduct sizedProduct1 = makeSizedProduct(product, 255);
-        SizedProduct sizedProduct2 = makeSizedProduct(product, 260);
-        SizedProduct sizedProduct3 = makeSizedProduct(product, 265);
-        SizedProduct sizedProduct4 = makeSizedProduct(product, 270);
-        makePurchaseBidding(user, sizedProduct1);
-        makePurchaseBidding(user, sizedProduct2);
+        Product product1 = makeProduct("nike", "air jordan",255);
+        Product product2 = makeProduct("nike", "air jordan",260);
+        Product product3 = makeProduct("nike", "air jordan",265);
+        Product product4 = makeProduct("nike", "air jordan",270);
+        makePurchaseBidding(user, product1);
+        makePurchaseBidding(user, product2);
 
 
         // when
         ResultActions resultActions = this.mockMvc.perform(
-                get("/api/sell/biddings/" + product.getId())
-
+                get("/api/sell/biddings")
+                        .param("productName", product1.getName())
+                        .param("brandName", product1.getBrand().getName())
         );
 
         // then
@@ -148,8 +130,7 @@ class SellBiddingControllerTest {
     void saveSellBidding() throws Exception {
         // given
         User user = makeUser("daum.net", "tommy");
-        Product product = makeProduct("puma", "puma-v1");
-        SizedProduct sizedProduct = makeSizedProduct(product, 260);
+        Product product = makeProduct("puma", "puma-v1", 260);
 
         SellBiddingRequest sellBiddingRequest = new SellBiddingRequest(190000, 15L);
 
@@ -157,7 +138,7 @@ class SellBiddingControllerTest {
         ResultActions resultActions = this.mockMvc.perform(
                 post("/api/sell/biddings")
                         .param("userId", user.getId().toString())
-                        .param("sizedProductId", sizedProduct.getId().toString())
+                        .param("productId", product.getId().toString())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(sellBiddingRequest))
         );
@@ -185,17 +166,13 @@ class SellBiddingControllerTest {
 
     }
 
-    /*
-    해당 테스트 코드의 경우 @ControllerAdvice 구현 후 상세화 할 예정
-     */
 
     @Test
     @DisplayName("잘못된 id로 요청 시 요청 응답은 실패한다 ")
     void saveSellBidding_BadId() throws Exception {
         // given
         User user = makeUser("daum.net", "tommy");
-        Product product = makeProduct("puma", "puma-v1");
-        SizedProduct sizedProduct = makeSizedProduct(product, 260);
+        Product product = makeProduct("puma", "puma-v1", 260);
 
         SellBiddingRequest sellBiddingRequest = new SellBiddingRequest(190000, 15L);
 
@@ -203,7 +180,7 @@ class SellBiddingControllerTest {
         ResultActions invalidUserId = this.mockMvc.perform(
                 post("/api/sell/biddings")
                         .param("userId", String.valueOf(user.getId() + 1L))
-                        .param("sizedProductId", sizedProduct.getId().toString())
+                        .param("productId", product.getId().toString())
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(sellBiddingRequest))
         );
@@ -211,7 +188,7 @@ class SellBiddingControllerTest {
         ResultActions invalidSizedProductId = this.mockMvc.perform(
                 post("/api/sell/biddings")
                         .param("userId", user.getId().toString())
-                        .param("sizedProductId", String.valueOf(sizedProduct.getId() + 1L))
+                        .param("productId", String.valueOf(product.getId() + 1L))
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(sellBiddingRequest))
         );
@@ -227,9 +204,8 @@ class SellBiddingControllerTest {
         // given
         User user1 = makeUser("naver.com", "tommy");
         User user2 = makeUser("google.com", "Nick");
-        Product product = makeProduct("Nike", "air jordan");
-        SizedProduct sizedProduct = makeSizedProduct(product, 255);
-        PurchaseBidding purchaseBidding = makePurchaseBidding(user1, sizedProduct);
+        Product product = makeProduct("Nike", "air jordan", 255);
+        PurchaseBidding purchaseBidding = makePurchaseBidding(user1, product);
 
         // when
         ResultActions resultActions = this.mockMvc.perform(
@@ -254,7 +230,7 @@ class SellBiddingControllerTest {
         User buyer = userRepository.findById(user1.getId()).get();
         User seller = userRepository.findById(user2.getId()).get();
         assertAll(
-                () -> assertThat(savedSellBidding.getSizedProductId()).isEqualTo(purchaseBidding.getSizedProductId()),
+                () -> assertThat(savedSellBidding.getProductId()).isEqualTo(purchaseBidding.getProductId()),
                 () -> assertThat(savedSellBidding.getSellBidderId()).isEqualTo(user2.getId()),
                 () -> assertThat(savedSellBidding.getDueDate()).isEqualTo(purchaseBidding.getDueDate()),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.SHIPPED),
@@ -272,25 +248,19 @@ class SellBiddingControllerTest {
         return user;
     }
 
-    private Product makeProduct(String brandName, String productName) {
+    private Product makeProduct(String brandName, String productName, int size) {
         Brand nike = new Brand(brandName);
         brandRepository.save(nike);
         ProductInfo productInfo = new ProductInfo("A-1202020", LocalDateTime.now().minusDays(100), "RED", 20000L);
-        Product product = new Product(nike, productName, productInfo);
+        Product product = new Product(nike, productName, productInfo, size);
         productRepository.save(product);
 
         return product;
     }
 
-    private SizedProduct makeSizedProduct(Product product, int size) {
-        SizedProduct sizedProduct = new SizedProduct(product, size);
-        sizedProductRepository.save(sizedProduct);
 
-        return sizedProduct;
-    }
-
-    private PurchaseBidding makePurchaseBidding(User user, SizedProduct sizedProduct) {
-        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), sizedProduct.getId(), 20000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
+    private PurchaseBidding makePurchaseBidding(User user, Product product) {
+        PurchaseBidding purchaseBidding = new PurchaseBidding(user.getId(), product.getId(), 20000L, Status.LIVE, LocalDateTime.now(), LocalDateTime.now().plusDays(20));
         purchaseBiddingRepository.save(purchaseBidding);
         return purchaseBidding;
     }
