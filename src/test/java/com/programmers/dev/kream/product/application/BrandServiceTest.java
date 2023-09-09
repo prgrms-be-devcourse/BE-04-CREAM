@@ -27,9 +27,6 @@ class BrandServiceTest {
     @Autowired
     ProductRepository productRepository;
 
-    @Autowired
-    SizedProductRepository sizedProductRepository;
-
     @Test
     @DisplayName("브랜드를 저장할 수 있다")
     void save() {
