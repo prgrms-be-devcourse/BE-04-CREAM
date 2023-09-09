@@ -30,13 +30,13 @@ class PurchaseBiddingBidTest {
     private PurchaseBiddingService purchaseBiddingService;
 
     @Autowired
-    private SizedProductRepository sizedProductRepository;
+    private ProductRepository productRepository;
 
     @Test
     @DisplayName("구매자는 입찰구매 만료일을 1일 후로 설정할 수 있다.")
     void 입찰구매_1일_후_만료() {
         //given
-        SizedProduct targetSizedProduct = targetSizedProduct();
+        Product product = targetProduct();
         User purchaser = getPurchaser();
         PurchaseBiddingBidRequest request = new PurchaseBiddingBidRequest(50000L, 1L, BiddingDuration.DAY);
 
@@ -55,7 +55,7 @@ class PurchaseBiddingBidTest {
     @DisplayName("구매자는 입찰구매 만료일을 7일 후로 설정할 수 있다.")
     void 입찰구매_7일_후_만료() {
         //given
-        SizedProduct targetSizedProduct = targetSizedProduct();
+        Product product = targetProduct();
         User purchaser = getPurchaser();
         PurchaseBiddingBidRequest request = new PurchaseBiddingBidRequest(50000L, 1L, BiddingDuration.WEEK);
 
@@ -74,7 +74,7 @@ class PurchaseBiddingBidTest {
     @DisplayName("구매자는 입찰구매의 만료일 30일 후로 설정할 수 있다.")
     void 입찰구매_30일_후_만료() {
         //given
-        SizedProduct targetSizedProduct = targetSizedProduct();
+        Product product = targetProduct();
         User purchaser = getPurchaser();
         PurchaseBiddingBidRequest request = new PurchaseBiddingBidRequest(50000L, 1L, BiddingDuration.MONTH);
 
@@ -94,11 +94,11 @@ class PurchaseBiddingBidTest {
                 new User("purchaser@email.com", "purchaser", "purchaseUser", 10000L, new Address("00000", "인천", "연수구"), UserRole.ROLE_USER));
     }
 
-    private SizedProduct targetSizedProduct() {
+    private Product targetProduct() {
         Brand brand = new Brand("ADIDAS");
         ProductInfo productInfo = new ProductInfo("ADI-001", LocalDateTime.now(), "BLACK", 50000L);
-        Product product = new Product(brand, "아디다스 슈퍼스타", productInfo);
+        Product product = new Product(brand, "SUPER-STAR", productInfo, 250);
 
-        return sizedProductRepository.save(new SizedProduct(product, 270));
+        return productRepository.save(product);
     }
 }

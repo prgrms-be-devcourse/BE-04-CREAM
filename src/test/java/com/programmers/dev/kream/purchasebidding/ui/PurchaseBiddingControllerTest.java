@@ -14,10 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -89,7 +87,7 @@ class PurchaseBiddingControllerTest {
         List<BiddingSelectLine> biddingSelectLines = getBiddingSelectLines();
 
         given(productService.findById(targetProductId)).willReturn(product);
-        given(productSelectViewDao.getPurchaseView(targetProductId)).willReturn(biddingSelectLines);
+        given(productSelectViewDao.getPurchaseView(product.name(), product.brand().id())).willReturn(biddingSelectLines);
 
         PurchaseSelectView purchaseSelectView = new PurchaseSelectView(product.name(), biddingSelectLines);
 
@@ -110,7 +108,7 @@ class PurchaseBiddingControllerTest {
                                 fieldWithPath("productName").type(JsonFieldType.STRING).description("제품 이름"),
                                 fieldWithPath("biddingSelectLines[].lived").type(JsonFieldType.BOOLEAN).description("입찰 상태"),
                                 fieldWithPath("biddingSelectLines[].size").type(JsonFieldType.STRING).description("사이즈"),
-                                fieldWithPath("biddingSelectLines[].sizedProductId").type(JsonFieldType.STRING).description("상품 ID"),
+                                fieldWithPath("biddingSelectLines[].productId").type(JsonFieldType.STRING).description("상품 ID"),
                                 fieldWithPath("biddingSelectLines[].price").type(JsonFieldType.STRING).description("가격")
                         )));
     }
