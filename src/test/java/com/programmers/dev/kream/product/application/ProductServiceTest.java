@@ -6,7 +6,6 @@ import com.programmers.dev.kream.product.domain.ProductInfo;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,6 @@ class ProductServiceTest {
 
     @Autowired
     BrandRepository brandRepository;
-
-    @Autowired
-    EntityManager em;
 
     @Test
     @DisplayName("상품을 저장할 수 있다")
@@ -99,28 +95,25 @@ class ProductServiceTest {
         Brand oldBrand = brandRepository.save(nike);
         Brand newBrand = brandRepository.save(MLB);
 
+
+        ProductInfo productInfo = new ProductInfo("AAA", LocalDateTime.now(), "red", 10000L);
+        ProductResponse productResponse = saveProduct(oldBrand.getId(), "jordan", productInfo, 260);
+
         ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
             newBrand.getId(),
             "Dunk",
-            "bbbb",
-            "blue",
-            5000L);
-
-        ProductInfo productInfo = new ProductInfo(productUpdateRequest, LocalDateTime.now());
-
-        ProductResponse productResponse = saveProduct(oldBrand.getId(), "jordan", productInfo, 260);
+            "AAA",
+            "blue");
 
         //when
-        productService.update(productResponse.id(), productUpdateRequest);
+        productService.update(productUpdateRequest);
 
         //then
-        em.flush();
-        em.clear();
-
         ProductResponse findProduct = productService.findById(productResponse.id());
 
         assertThat(findProduct.name()).isEqualTo("Dunk");
         assertThat(findProduct.brand().id()).isEqualTo(newBrand.getId());
+        assertThat(findProduct.productInfo().getModelNumber()).isEqualTo("AAA");
     }
 
     private ProductResponse saveProduct(Long savedBrandId, String productName, ProductInfo productInfo, int size) {
