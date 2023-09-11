@@ -32,12 +32,12 @@ public class PurchaseOrder {
 
     protected PurchaseOrder() { }
 
-    public PurchaseOrder(Long purchaseOrdererId, Long productId, Long price, Status status, LocalDateTime transactDate) {
+    public PurchaseOrder(Long purchaseOrdererId, Long productId, Long price, Status status, LocalDateTime transactionDate) {
         this.purchaseOrdererId = purchaseOrdererId;
         this.productId = productId;
         this.price = price;
         this.status = status;
-        this.transactDate = transactDate;
+        this.transactionDate = transactionDate;
     }
 
     public Long getId() {
@@ -60,7 +60,7 @@ public class PurchaseOrder {
         return status;
     }
 
-    public LocalDateTime getTransactDate() {
-        return transactDate;
+    public LocalDateTime getTransactionDate() {
+        return transactionDate;
     }
 }
