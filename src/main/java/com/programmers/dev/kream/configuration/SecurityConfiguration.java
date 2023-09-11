@@ -4,17 +4,22 @@ package com.programmers.dev.kream.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.kream.common.jwt.*;
 import com.programmers.dev.kream.user.application.UserLoginService;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
@@ -47,6 +52,9 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtConfigure jwtConfigure) throws Exception {
         http
+                .headers(headers ->
+                        headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
+                )
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
@@ -58,7 +66,8 @@ public class SecurityConfiguration {
                                 .requestMatchers(antMatcher("/healthcheck")).permitAll()
                                 .requestMatchers(antMatcher("/user/login")).permitAll()
                                 .requestMatchers(antMatcher("/user/me")).hasRole("USER")
-                                .anyRequest().authenticated()
+                                .requestMatchers(antMatcher("/h2-console/*")).permitAll()
+                                .anyRequest().permitAll()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtConfigure), AnonymousAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandlingConfigurer ->
