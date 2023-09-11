@@ -7,13 +7,15 @@ public record ProductResponse(
     Long id,
     BrandResponse brand,
     String name,
-    ProductInfo productInfo
+    ProductInfo productInfo,
+    int size
 ) {
     public static ProductResponse fromEntity(Product product) {
         return new ProductResponse(
             product.getId(),
             BrandResponse.fromEntity(product.getBrand()),
             product.getName(),
-            product.getProductInfo());
+            product.getProductInfo(),
+            product.getSize());
     }
 }

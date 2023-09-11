@@ -3,7 +3,9 @@ package com.programmers.dev.kream.product.domain;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "PRODUCTS")
+@Table(name = "PRODUCTS",
+    indexes = @Index(name = "idx_name_size",
+        columnList = "product_name, size"))
 public class Product {
 
     @Id

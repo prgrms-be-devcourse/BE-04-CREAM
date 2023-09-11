@@ -8,6 +8,7 @@ import com.programmers.dev.kream.product.domain.Product;
 import com.programmers.dev.kream.product.domain.ProductRepository;
 import com.programmers.dev.kream.product.ui.dto.*;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ public class ProductService {
             savedProduct.getId(),
             new BrandResponse(savedProduct.getBrand().getId(), savedProduct.getBrand().getName()),
             savedProduct.getName(),
-            savedProduct.getProductInfo());
+            savedProduct.getProductInfo(), savedProduct.getSize());
     }
 
     public ProductResponse findById(Long id) {
@@ -72,7 +73,11 @@ public class ProductService {
     }
 
     public List<ProductResponse> findAll() {
-        return productRepository.findAll().stream()
+        Sort sort = Sort.by(
+            Sort.Order.asc("name"),
+            Sort.Order.asc("size"));
+
+        return productRepository.findAll(sort).stream()
             .map(ProductResponse::fromEntity)
             .collect(Collectors.toList());
     }
