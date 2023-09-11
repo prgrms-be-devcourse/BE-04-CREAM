@@ -33,8 +33,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -179,20 +178,14 @@ class ProductControllerTest {
             1L,
             "airForce",
             "AAA",
-            "Blue",
-            3000L);
+            "Blue");
 
-        given(productService.update(1L, productUpdateRequest)).willReturn(
-            new ProductResponse(
-                1L,
-                new BrandResponse(1L, "NIKE"),
+        given(productService.update(productUpdateRequest)).willReturn(
+            new ProductUpdateResponse(
+                "NIKE",
                 "airForce",
-                new ProductInfo(
-                    "AAA",
-                    LocalDateTime.now(),
-                    "Blue",
-                    3000L
-                )
+                "Blue",
+                "AAA"
             )
         );
 
@@ -200,14 +193,14 @@ class ProductControllerTest {
 
         //when & then
         mockMvc.perform(
-                post("/api/products/{productId}", 1L)
+                patch("/api/products")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(1L))
+            .andExpect(jsonPath("$.brandName").value("NIKE"))
             .andExpect(jsonPath("$.name").value("airForce"))
             .andDo(print())
-            .andDo(document("update-product-by-id",
+            .andDo(document("update-product",
                 requestHeaders(
                     headerWithName(CONTENT_TYPE).description("content type")
                 ),
@@ -215,24 +208,16 @@ class ProductControllerTest {
                     fieldWithPath("brandId").description("id of brand").type(JsonFieldType.NUMBER),
                     fieldWithPath("productName").description("name of product").type(JsonFieldType.STRING),
                     fieldWithPath("modelNumber").description("model number of product").type(JsonFieldType.STRING),
-                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("releasePrice").description("release price of product").type(JsonFieldType.NUMBER)
+                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING)
                 ),
                 responseHeaders(
                     headerWithName(CONTENT_TYPE).description("content type")
                 ),
                 responseFields(
-                    fieldWithPath("id").description("id of product").type(JsonFieldType.NUMBER),
-                    fieldWithPath("brand.id").description("id of brand").type(JsonFieldType.NUMBER),
-                    fieldWithPath("brand.name").description("name of brand").type(JsonFieldType.STRING),
+                    fieldWithPath("brandName").description("name of brand").type(JsonFieldType.STRING),
                     fieldWithPath("name").description("name of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.modelNumber").description("modelNumber of product")
-                        .type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releaseDate").description("release date of product")
-                        .type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.color").description("color of product").type(JsonFieldType.STRING),
-                    fieldWithPath("productInfo.releasePrice").description("release price of product")
-                        .type(JsonFieldType.NUMBER)
+                    fieldWithPath("color").description("color of product").type(JsonFieldType.STRING),
+                    fieldWithPath("modelNumber").description("modelNumber of product").type(JsonFieldType.STRING)
                 )
             ));
     }
