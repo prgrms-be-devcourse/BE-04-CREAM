@@ -2,10 +2,10 @@ package com.programmers.dev.kream.product.ui.dto;
 
 import com.programmers.dev.kream.product.domain.ProductInfo;
 
-public record ProductSaveRequest(
-    Long brandId,
+public record ProductUpdateResponse(
+    String brandName,
     String name,
-    ProductInfo productInfo,
-    int size
+    String color,
+    String modelNumber
 ) {
 }

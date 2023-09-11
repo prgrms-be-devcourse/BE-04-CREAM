@@ -4,7 +4,7 @@ import com.programmers.dev.kream.common.bidding.BiddingDuration;
 
 public record PurchaseBiddingBidRequest(
         Long price,
-        Long sizedProductId,
+        Long productId,
         BiddingDuration biddingDuration
 ) {
 }

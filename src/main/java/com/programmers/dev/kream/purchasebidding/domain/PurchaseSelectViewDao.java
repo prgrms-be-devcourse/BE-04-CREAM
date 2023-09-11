@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface PurchaseSelectViewDao {
 
-    List<BiddingSelectLine> getPurchaseView(Long productId);
+    List<BiddingSelectLine> getPurchaseView(String productName, Long brandId);
 }

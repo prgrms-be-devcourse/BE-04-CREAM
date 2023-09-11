@@ -11,11 +11,10 @@ public interface SellBiddingRepository extends JpaRepository<SellBidding, Long> 
     @Query(
             nativeQuery = true,
             value = "SELECT * FROM SELL_BIDDINGS SB " +
-                        "WHERE SB.PRICE = :price AND SB.SIZED_PRODUCT_ID = :sizedProductId AND SB.STATUS = 'LIVE'" +
+                        "WHERE SB.PRICE = :price AND SB.PRODUCT_ID = :productId AND SB.STATUS = 'LIVE'" +
                         "ORDER BY SB.START_DATE " +
                         "LIMIT 1"
         )
-    Optional<SellBidding> findLowPriceBidding(@Param("price") Long price, @Param("sizedProductId") Long sizedProductId);
+    Optional<SellBidding> findLowPriceBidding(@Param("price") Long price, @Param("productId") Long sizedProductId);
 
-    List<SellBidding> findBySizedProductId(Long id);
 }

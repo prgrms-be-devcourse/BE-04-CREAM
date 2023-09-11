@@ -1,13 +1,11 @@
 package com.programmers.dev.kream.product.application;
 
-import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.product.domain.Brand;
 import com.programmers.dev.kream.product.domain.BrandRepository;
 import com.programmers.dev.kream.product.domain.ProductInfo;
 import com.programmers.dev.kream.product.ui.dto.ProductResponse;
 import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
 import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -30,9 +27,6 @@ class ProductServiceTest {
     @Autowired
     BrandRepository brandRepository;
 
-    @Autowired
-    EntityManager em;
-
     @Test
     @DisplayName("상품을 저장할 수 있다")
     void saveTest() {
@@ -43,30 +37,12 @@ class ProductServiceTest {
         Brand savedBrand = brandRepository.save(nike);
 
         //when
-        ProductResponse savedProductResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse savedProductResponse = saveProduct(savedBrand.getId(), "jordan", productInfo, 250);
 
         //then
         ProductResponse findProduct = productService.findById(savedProductResponse.id());
 
         assertThat(findProduct.name()).isEqualTo("jordan");
-    }
-
-    @Test
-    @DisplayName("상품을 삭제할 수 있다")
-    void deleteTest() {
-        //given
-        ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
-
-        Brand nike = new Brand("NIKE");
-        Brand savedBrand = brandRepository.save(nike);
-
-        ProductResponse productResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
-
-        //when
-        productService.deleteById(productResponse.id());
-
-        //then
-        assertThatThrownBy(() -> productService.findById(productResponse.id())).isInstanceOf(CreamException.class);
     }
 
     @Test
@@ -78,7 +54,7 @@ class ProductServiceTest {
         Brand nike = new Brand("NIKE");
         Brand savedBrand = brandRepository.save(nike);
 
-        ProductResponse productResponse = saveProduct(savedBrand.getId(), "jordan", productInfo);
+        ProductResponse productResponse = saveProduct(savedBrand.getId(), "jordan", productInfo, 270);
 
         //when
         ProductResponse product = productService.findById(productResponse.id());
@@ -100,8 +76,8 @@ class ProductServiceTest {
         brandRepository.save(brandA);
         brandRepository.save(brandB);
 
-        ProductResponse productResponseA = saveProduct(brandA.getId(), "Air Jordan", productInfoA);
-        ProductResponse productResponseB = saveProduct(brandB.getId(), "Stan-Smith", productInfoB);
+        ProductResponse productResponseA = saveProduct(brandA.getId(), "Air Jordan", productInfoA, 250);
+        ProductResponse productResponseB = saveProduct(brandB.getId(), "Stan-Smith", productInfoB, 260);
 
         //when
         List<ProductResponse> productList = productService.findAll();
@@ -119,34 +95,32 @@ class ProductServiceTest {
         Brand oldBrand = brandRepository.save(nike);
         Brand newBrand = brandRepository.save(MLB);
 
+
+        ProductInfo productInfo = new ProductInfo("AAA", LocalDateTime.now(), "red", 10000L);
+        ProductResponse productResponse = saveProduct(oldBrand.getId(), "jordan", productInfo, 260);
+
         ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
             newBrand.getId(),
             "Dunk",
-            "bbbb",
-            "blue",
-            5000L);
-
-        ProductInfo productInfo = new ProductInfo(productUpdateRequest, LocalDateTime.now());
-
-        ProductResponse productResponse = saveProduct(oldBrand.getId(), "jordan", productInfo);
+            "AAA",
+            "blue");
 
         //when
-        productService.update(productResponse.id(), productUpdateRequest);
+        productService.update(productUpdateRequest);
 
         //then
-        em.flush();
-        em.clear();
-
         ProductResponse findProduct = productService.findById(productResponse.id());
 
         assertThat(findProduct.name()).isEqualTo("Dunk");
         assertThat(findProduct.brand().id()).isEqualTo(newBrand.getId());
+        assertThat(findProduct.productInfo().getModelNumber()).isEqualTo("AAA");
     }
 
-    private ProductResponse saveProduct(Long savedBrandId, String productName, ProductInfo productInfo) {
+    private ProductResponse saveProduct(Long savedBrandId, String productName, ProductInfo productInfo, int size) {
         return productService.save(new ProductSaveRequest(
             savedBrandId,
             productName,
-            productInfo));
+            productInfo,
+            size));
     }
 }

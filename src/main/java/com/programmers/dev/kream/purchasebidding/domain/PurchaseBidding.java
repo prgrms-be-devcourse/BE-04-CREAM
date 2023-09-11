@@ -17,8 +17,8 @@ public class PurchaseBidding {
     @Column(name = "PURCHASE_BIDDER_ID", nullable = false)
     private Long purchaseBidderId;
 
-    @Column(name = "SIZED_PRODUCT_ID", nullable = false)
-    private Long sizedProductId;
+    @Column(name = "PRODUCT_ID", nullable = false)
+    private Long productId;
 
     @Column(name = "PRICE", nullable = false)
     private Long price;
@@ -35,13 +35,13 @@ public class PurchaseBidding {
 
     protected PurchaseBidding() { }
 
-    public PurchaseBidding(Long purchaseBidderId, Long sizedProductId, Long price, Status status) {
-        this(purchaseBidderId, sizedProductId, price, status, LocalDateTime.now(), LocalDateTime.now());
+    public PurchaseBidding(Long purchaseBidderId, Long productId, Long price, Status status) {
+        this(purchaseBidderId, productId, price, status, LocalDateTime.now(), LocalDateTime.now());
     }
 
-    public PurchaseBidding(Long purchaseBidderId, Long sizedProductId, Long price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
+    public PurchaseBidding(Long purchaseBidderId, Long productId, Long price, Status status, LocalDateTime startDate, LocalDateTime dueDate) {
         this.purchaseBidderId = purchaseBidderId;
-        this.sizedProductId = sizedProductId;
+        this.productId = productId;
         this.price = price;
         this.status = status;
         this.startDate = startDate;
@@ -56,8 +56,8 @@ public class PurchaseBidding {
         return purchaseBidderId;
     }
 
-    public Long getSizedProductId() {
-        return sizedProductId;
+    public Long getProductId() {
+        return productId;
     }
 
     public Long getPrice() {
@@ -85,7 +85,7 @@ public class PurchaseBidding {
         return "PurchaseBidding{" +
                 "id=" + id +
                 ", purchaseBidderId=" + purchaseBidderId +
-                ", sizedProductId=" + sizedProductId +
+                ", sizedProductId=" + productId +
                 ", price=" + price +
                 ", status=" + status +
                 ", startDate=" + startDate +

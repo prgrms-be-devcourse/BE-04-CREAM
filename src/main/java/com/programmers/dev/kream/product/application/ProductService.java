@@ -2,11 +2,11 @@ package com.programmers.dev.kream.product.application;
 
 import com.programmers.dev.kream.exception.CreamException;
 import com.programmers.dev.kream.exception.ErrorCode;
-import com.programmers.dev.kream.product.domain.*;
-import com.programmers.dev.kream.product.ui.dto.BrandResponse;
-import com.programmers.dev.kream.product.ui.dto.ProductResponse;
-import com.programmers.dev.kream.product.ui.dto.ProductSaveRequest;
-import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
+import com.programmers.dev.kream.product.domain.Brand;
+import com.programmers.dev.kream.product.domain.BrandRepository;
+import com.programmers.dev.kream.product.domain.Product;
+import com.programmers.dev.kream.product.domain.ProductRepository;
+import com.programmers.dev.kream.product.ui.dto.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,19 +20,17 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final BrandRepository brandRepository;
-    private final SizedProductRepository sizedProductRepository;
 
-    public ProductService(ProductRepository productRepository, BrandRepository brandRepository, SizedProductRepository sizedProductRepository) {
+    public ProductService(ProductRepository productRepository, BrandRepository brandRepository) {
         this.productRepository = productRepository;
         this.brandRepository = brandRepository;
-        this.sizedProductRepository = sizedProductRepository;
     }
 
     @Transactional
     public ProductResponse save(ProductSaveRequest productSaveRequest) {
         Brand brand = findBrandById(productSaveRequest.brandId());
 
-        Product product = new Product(brand, productSaveRequest.name(), productSaveRequest.productInfo());
+        Product product = new Product(brand, productSaveRequest.name(), productSaveRequest.productInfo(), productSaveRequest.size());
         Product savedProduct = productRepository.save(product);
 
         return new ProductResponse(
@@ -40,15 +38,6 @@ public class ProductService {
             new BrandResponse(savedProduct.getBrand().getId(), savedProduct.getBrand().getName()),
             savedProduct.getName(),
             savedProduct.getProductInfo());
-    }
-
-    @Transactional
-    public void deleteById(Long id) {
-        Product product = findProductById(id);
-
-        sizedProductRepository.deleteSizedProductByProductId(id);
-
-        productRepository.delete(product);
     }
 
     public ProductResponse findById(Long id) {
@@ -65,20 +54,21 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductResponse update(Long id, ProductUpdateRequest productUpdateRequest) {
-        Product updateProduct = findProductById(id);
-
+    public ProductUpdateResponse update(ProductUpdateRequest productUpdateRequest) {
         Brand brand = findBrandById(productUpdateRequest.brandId());
 
-        ProductInfo productInfo = new ProductInfo(productUpdateRequest, updateProduct.getProductInfo().getReleaseDate());
-
-        updateProduct.update(brand, productUpdateRequest.productName(), productInfo);
-
-        return new ProductResponse(
-            id,
-            new BrandResponse(brand.getId(), brand.getName()),
+        productRepository.updateProductInfo(
+            productUpdateRequest.brandId(),
             productUpdateRequest.productName(),
-            productInfo);
+            productUpdateRequest.color(),
+            productUpdateRequest.modelNumber());
+
+        return new ProductUpdateResponse(
+            brand.getName(),
+            productUpdateRequest.productName(),
+            productUpdateRequest.color(),
+            productUpdateRequest.modelNumber()
+        );
     }
 
     public List<ProductResponse> findAll() {

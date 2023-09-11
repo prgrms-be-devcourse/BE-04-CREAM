@@ -1,6 +1,5 @@
 package com.programmers.dev.kream.product.domain;
 
-import com.programmers.dev.kream.product.ui.dto.ProductUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 
@@ -29,13 +28,6 @@ public class ProductInfo {
         this.releaseDate = releaseDate;
         this.color = color;
         this.releasePrice = releasePrice;
-    }
-
-    public ProductInfo(ProductUpdateRequest productUpdateRequest, LocalDateTime releaseDate) {
-        this.modelNumber = productUpdateRequest.modelNumber();
-        this.color = productUpdateRequest.color();
-        this.releasePrice = productUpdateRequest.releasePrice();
-        this.releaseDate = releaseDate;
     }
 
     public String getModelNumber() {

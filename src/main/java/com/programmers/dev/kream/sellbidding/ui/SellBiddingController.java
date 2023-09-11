@@ -14,11 +14,12 @@ public class SellBiddingController {
         this.sellBiddingService = sellBiddingService;
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping
     public ResponseEntity<ProductInformation> getProductInformation(
-            @PathVariable Long productId
+            @RequestParam String productName,
+            @RequestParam String brandName
     ) {
-        ProductInformation productInformation = sellBiddingService.getProductInformation(productId);
+        ProductInformation productInformation = sellBiddingService.getProductInformation(productName, brandName);
 
         return ResponseEntity.ok(productInformation);
     }
@@ -26,12 +27,12 @@ public class SellBiddingController {
     @PostMapping
     public ResponseEntity<SellBiddingResponse> saveSellBidding(
             @RequestParam Long userId,
-            @RequestParam Long sizedProductId,
+            @RequestParam Long productId,
             @RequestBody SellBiddingRequest sellBiddingRequest
     ) {
 
         return ResponseEntity.ok(
-                sellBiddingService.saveSellBidding(userId, sizedProductId, sellBiddingRequest)
+                sellBiddingService.saveSellBidding(userId, productId, sellBiddingRequest)
         );
     }
 
