@@ -1,1 +1,6 @@
 rootProject.name = 'kream'
+
+include 'module-auction'
+include 'module-bidding'
+include 'module-order'
+include 'module-common'

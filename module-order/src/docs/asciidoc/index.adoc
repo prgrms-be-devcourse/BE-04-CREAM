@@ -1,0 +1,9 @@
+= KREAM API 문서
+:doctype: book
+:icons: front
+:source-highlighter: highlightjs
+:toc: left
+:sectnums:
+:toclevels: 2
+
+operation::healthcheck[snippets = 'http-request,http-response']

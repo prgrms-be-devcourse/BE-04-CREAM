@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.1.3'
+    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+}
+
+group = 'com.programmers'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '17'
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    asciidoctorExtensions
+}
+
+ext {
+    set('snippetsDir', file("build/generated-snippets"))
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    asciidoctorExtensions 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+
+    implementation project(':module-common')
+}
+
+tasks.named('test') {
+    outputs.dir snippetsDir
+    useJUnitPlatform()
+}
+
+tasks.named('asciidoctor') {
+    dependsOn test
+    doFirst {
+        delete file("src/main/resources/static/docs")
+    }
+    inputs.dir snippetsDir
+    configurations 'asciidoctorExtensions'
+}
+
+bootJar {
+    dependsOn asciidoctor
+    from ("${asciidoctor.outputDir}") {
+        into 'static/docs'
+    }
+}
+
+task copyDocument(type: Copy) {
+    dependsOn asciidoctor
+    from file("build/docs/asciidoc")
+    into file("src/main/resources/static/docs")
+}
+
+build {
+    dependsOn copyDocument
+}
+
+tasks.register("prepareKotlinBuildScriptModel") {}
