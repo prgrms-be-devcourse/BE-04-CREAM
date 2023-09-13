@@ -58,4 +58,8 @@ public class Auction {
         this.bidderId = bidderId;
         this.price = price;
     }
+
+    public Auction(Product product, Long startPrice, LocalDateTime startTime, LocalDateTime endTime) {
+        this(product, startPrice, startTime, endTime, AuctionStatus.BEFORE, null, null);
+    }
 }
