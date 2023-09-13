@@ -1,5 +1,6 @@
 package com.programmers.dev.Auction.domain;
 
+import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.product.domain.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,12 +11,6 @@ import java.time.LocalDateTime;
 @Table(name = "AUCTIONS")
 @Getter
 public class Auction {
-
-    enum AuctionStatus {
-        BEFORE,
-        ONGOING,
-        FINISHED
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,5 +56,9 @@ public class Auction {
 
     public Auction(Product product, Long startPrice, LocalDateTime startTime, LocalDateTime endTime) {
         this(product, startPrice, startTime, endTime, AuctionStatus.BEFORE, null, null);
+    }
+
+    public void changeStatus(AuctionStatus auctionStatus) {
+        this.auctionStatus = auctionStatus;
     }
 }
