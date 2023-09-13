@@ -24,4 +24,13 @@ public class AuctionBidding {
     @Column(name = "PRICE")
     private Long price;
 
+    protected AuctionBidding() {
+
+    }
+
+    public AuctionBidding(User user, Auction auction, Long price) {
+        this.user = user;
+        this.auction = auction;
+        this.price = price;
+    }
 }

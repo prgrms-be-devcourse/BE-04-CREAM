@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_LOGIN_INFO(BAD_REQUEST, -103, "invalid email or password."),
     INVALID_SESSION_FORMAT(BAD_REQUEST, -104, "invalid session format"),
     SESSION_EXPIRATION(BAD_REQUEST, -105, "session has expired."),
+    INVALID_AUCTION_BIDDING(BAD_REQUEST, BAD_REQUEST.value(),"this is not the time to bid for an auction")
     ;
 
     private final HttpStatus httpStatus;
