@@ -68,4 +68,7 @@ public class Inventory {
     protected Inventory() {
     }
 
+    public void changeTransactionStatus(Status status) {
+        this.status = status;
+    }
 }
