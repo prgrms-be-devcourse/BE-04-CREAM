@@ -5,11 +5,13 @@ import com.programmers.dev.common.Status;
 import com.programmers.dev.common.TransactionType;
 import com.programmers.dev.user.domain.Address;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "INVENTORIES")
+@Getter
 public class Inventory {
 
     @Id
@@ -65,4 +67,5 @@ public class Inventory {
 
     protected Inventory() {
     }
+
 }
