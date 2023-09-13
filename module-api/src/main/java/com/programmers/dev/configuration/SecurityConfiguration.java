@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -28,7 +27,6 @@ public class SecurityConfiguration {
     public SecurityConfiguration(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
-
 
     @Bean
     public JwtAuthenticationProvider authenticationProvider(UserLoginService loginService, JwtConfigure jwtConfigure) {
@@ -58,7 +56,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/user/login")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/user/me")).hasRole("USER")
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/*")).permitAll()
-                                .anyRequest().permitAll()
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtConfigure), AnonymousAuthenticationFilter.class)
                 .exceptionHandling(exceptionHandlingConfigurer ->
