@@ -2,14 +2,16 @@ package com.programmers.dev.bidding.domain;
 
 import com.programmers.dev.common.Status;
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @Table(name = "BIDDINGS")
 public class Bidding {
 
-    enum BiddingType {
+    public enum BiddingType {
         SELL, PURCHASE
     }
 
@@ -46,4 +48,17 @@ public class Bidding {
 
     }
 
+    private Bidding(Long userId, Long productId, int price, BiddingType biddingType, Long dueDate) {
+        this.userId = userId;
+        this.productId = productId;
+        this.price = price;
+        this.status = Status.LIVE;
+        this.biddingType = biddingType;
+        this.startDate = LocalDateTime.now();
+        this.dueDate = this.startDate.plusDays(dueDate);
+    }
+
+    public static Bidding registerPurchaseBidding(Long userId, Long productId, Integer price, Long dueDate) {
+        return new Bidding(userId, productId, price, BiddingType.PURCHASE, dueDate);
+    }
 }
