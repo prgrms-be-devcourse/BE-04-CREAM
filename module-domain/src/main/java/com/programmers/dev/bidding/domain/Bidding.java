@@ -38,14 +38,22 @@ public class Bidding {
     @Column(name = "START_DATE", nullable = false, updatable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "DUE_DATE", nullable = false)
+    @Column(name = "DUE_DATE")
     private LocalDateTime dueDate;
 
     @Column(name = "TRANSACTION_DATE")
     private LocalDateTime transactionDate;
 
-    protected Bidding() {
+    public Bidding() {
 
+    }
+
+    public static Bidding registerPurchaseBidding(Long userId, Long productId, Integer price, Long dueDate) {
+        return new Bidding(userId, productId, price, BiddingType.PURCHASE, dueDate);
+    }
+
+    public static Bidding registerSellBidding(Long userId, Long productId, Integer price, Long dueDate) {
+        return new Bidding(userId, productId, price, BiddingType.SELL, dueDate);
     }
 
     private Bidding(Long userId, Long productId, int price, BiddingType biddingType, Long dueDate) {
@@ -58,7 +66,24 @@ public class Bidding {
         this.dueDate = this.startDate.plusDays(dueDate);
     }
 
-    public static Bidding registerPurchaseBidding(Long userId, Long productId, Integer price, Long dueDate) {
-        return new Bidding(userId, productId, price, BiddingType.PURCHASE, dueDate);
+    public static Bidding transactSellBidding(Long userId, Bidding sellBidding) {
+        LocalDateTime transactionDate = LocalDateTime.now();
+        sellBidding.transact(transactionDate);
+        return new Bidding(userId, sellBidding.getProductId(), sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, LocalDateTime.now(), transactionDate);
+    }
+
+    public Bidding(Long userId, Long productId, int price, Status status, BiddingType biddingType, LocalDateTime startDate, LocalDateTime transactionDate) {
+        this.userId = userId;
+        this.productId = productId;
+        this.price = price;
+        this.status = status;
+        this.biddingType = biddingType;
+        this.startDate = startDate;
+        this.transactionDate = transactionDate;
+    }
+
+    public void transact(LocalDateTime transactionDate) {
+        this.status = Status.IN_TRANSACTION;
+        this.transactionDate = transactionDate;
     }
 }

@@ -4,6 +4,7 @@ import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.ProductRepository;
@@ -30,15 +31,39 @@ public class BiddingService {
         return BiddingResponse.of(savedBidding.getId());
     }
 
+    private void validateProductId(RegisterPurchaseBiddingRequest request) {
+        productRepository.findById(request.productId()).orElseThrow(
+                () -> new CreamException(ErrorCode.INVALID_ID)
+        );
+    }
+
+    @Transactional
+    public BiddingResponse transactSellBidding(Long userId, TransactSellBiddingRequest request) {
+        validateUserId(userId);
+        Bidding sellBidding = getSellBidding(request.biddingId());
+        validateBadRequest(userId, sellBidding);
+        Bidding bidding = Bidding.transactSellBidding(userId, sellBidding);
+        Bidding savedBidding = biddingRepository.save(bidding);
+
+        return BiddingResponse.of(savedBidding.getId());
+    }
+
+    private static void validateBadRequest(Long userId, Bidding sellBidding) {
+        if (sellBidding.getUserId().equals(userId)) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+    }
+
     private void validateUserId(Long userId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new CreamException(ErrorCode.NO_AUTHENTICATION)
         );
     }
 
-    private void validateProductId(RegisterPurchaseBiddingRequest request) {
-        productRepository.findById(request.productId()).orElseThrow(
-                () -> new CreamException(ErrorCode.INVALID_ID)
-        );
+    private Bidding getSellBidding(Long biddingId) {
+        return biddingRepository.findById(biddingId)
+                .orElseThrow(
+                        () -> new CreamException(ErrorCode.INVALID_ID)
+                );
     }
 }

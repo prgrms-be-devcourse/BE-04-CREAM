@@ -3,6 +3,7 @@ package com.programmers.dev.bidding.ui;
 import com.programmers.dev.bidding.application.BiddingService;
 import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,5 +30,15 @@ public class BiddingController {
         BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(userId, request);
         return ResponseEntity.created(URI.create(url + "/purchase")).body(biddingResponse);
     }
+
+    @PostMapping("purchase-now")
+    public ResponseEntity<BiddingResponse> transactSellBidding(
+            @RequestParam Long userId,
+            @RequestBody @Valid TransactSellBiddingRequest request
+    ) {
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(userId, request);
+        return ResponseEntity.created(URI.create(url + "/purchase-now")).body(biddingResponse);
+    }
+
 
 }

@@ -4,16 +4,19 @@ import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import com.programmers.dev.user.domain.UserRole;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -21,8 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
+@Transactional
 @SpringBootTest
 class BiddingServiceTest {
+
+    @Autowired
+    EntityManager em;
 
     @Autowired
     UserRepository userRepository;
@@ -43,7 +50,7 @@ class BiddingServiceTest {
     @DisplayName("구매자가 입찰 등록 시 정상 등록 되어야 한다.")
     void registerPurchaseBidding() {
         // given
-        User user = saveUser();
+        User user = saveUser("user@naver.com", "USER");
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
@@ -63,8 +70,42 @@ class BiddingServiceTest {
         );
     }
 
-    private User saveUser() {
-        User user = new User("user@naver.com", "password", "USER", 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
+    @Test
+    @DisplayName("구매자가 등록된 판매 입찰을 체결할 경우 체결이 정상적으로 체결 되어야 한다.")
+    void transactSellBidding() {
+        // given
+        User seller = saveUser("user1@naver.com", "USER1");
+        User buyer = saveUser("user2@naver.com", "USER2");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product);
+        TransactSellBiddingRequest transactSellBiddingRequest = new TransactSellBiddingRequest(sellBidding.getId());
+
+
+        // when
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), transactSellBiddingRequest);
+
+        em.flush();
+        em.clear();
+
+        // then
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
+                () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
+                () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
+        );
+
+    }
+
+    private User saveUser(String email, String nickname) {
+        User user = new User(email, "password", nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
         return userRepository.save(user);
     }
 
@@ -79,4 +120,8 @@ class BiddingServiceTest {
         return productRepository.save(product);
     }
 
+    private Bidding saveSellBidding(User seller, Product product) {
+        Bidding sellBidding = Bidding.registerSellBidding(seller.getId(), product.getId(), 100000, 20L);
+        return biddingRepository.save(sellBidding);
+    }
 }
