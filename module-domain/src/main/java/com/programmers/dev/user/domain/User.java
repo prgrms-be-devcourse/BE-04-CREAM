@@ -44,7 +44,7 @@ public class User {
         this.userRole = userRole;
     }
 
-    public void deposit(Integer money) {
+    public void deposit(Long money) {
         this.account += money;
     }
 
@@ -55,7 +55,7 @@ public class User {
 
     private void validate(Long money) {
         if (this.account - money < 0) {
-            throw new IllegalStateException("계좌 잔고가 부족합니다.");
+            throw new CreamException(ErrorCode.INSUFFICIENT_ACCOUNT_MONEY);
         }
     }
 
