@@ -5,6 +5,7 @@ import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.Auction.dto.AuctionSaveResponse;
 import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
+import com.programmers.dev.Auction.dto.AuctionStatusChangeResponse;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.product.domain.Product;
@@ -38,9 +39,11 @@ public class AuctionService {
     }
 
     @Transactional
-    public void changeAuctionStatus(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+    public AuctionStatusChangeResponse changeAuctionStatus(AuctionStatusChangeRequest auctionStatusChangeRequest) {
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
+
+        return new AuctionStatusChangeResponse(auction.getId(), auction.getAuctionStatus());
     }
 
     private Auction findAuctionById(Long id) {
