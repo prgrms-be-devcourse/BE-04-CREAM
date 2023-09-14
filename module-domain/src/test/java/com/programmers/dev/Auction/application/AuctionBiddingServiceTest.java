@@ -75,10 +75,10 @@ class AuctionBiddingServiceTest {
             UserRole.ROLE_USER);
         userRepository.save(user);
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), auctionSaveResponse.auctionId(), 4000L);
+        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(auctionSaveResponse.auctionId(), 4000L);
 
         //when
-        AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(auctionBidRequest);
+        AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(user.getId(), auctionBidRequest);
 
         //then
         AuctionBidding auctionBidding = auctionBiddingRepository.findById(auctionBidResponse.auctionBiddingId())
@@ -116,10 +116,10 @@ class AuctionBiddingServiceTest {
             UserRole.ROLE_USER);
         userRepository.save(user);
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), auctionSaveResponse.auctionId(), 4000L);
+        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(auctionSaveResponse.auctionId(), 4000L);
 
         //when && then
-        Assertions.assertThatThrownBy(() -> auctionBiddingService.bidAuction(auctionBidRequest))
+        Assertions.assertThatThrownBy(() -> auctionBiddingService.bidAuction(user.getId(), auctionBidRequest))
             .isInstanceOf(CreamException.class);
     }
 }
