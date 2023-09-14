@@ -1,6 +1,8 @@
 package com.programmers.dev.bidding.domain;
 
 import com.programmers.dev.common.Status;
+import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -91,5 +93,15 @@ public class Bidding {
     public void transact(LocalDateTime transactionDate) {
         this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
+    }
+
+    public void expire() {
+        this.status = Status.EXPIRED;
+    }
+
+    public void checkAfterDueDate() {
+        if (this.dueDate.isBefore(LocalDateTime.now())) {
+            throw new CreamException(ErrorCode.AFTER_DUE_DATE);
+        }
     }
 }
