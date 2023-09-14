@@ -3,6 +3,7 @@ package com.programmers.dev.Auction.application;
 import com.programmers.dev.Auction.domain.Auction;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
+import com.programmers.dev.Auction.dto.AuctionSaveResponse;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.product.domain.Product;
@@ -22,7 +23,7 @@ public class AuctionService {
     private final ProductRepository productRepository;
 
     @Transactional
-    public Long save(AuctionSaveRequest auctionSaveRequest) {
+    public AuctionSaveResponse save(AuctionSaveRequest auctionSaveRequest) {
         Product product = findProductById(auctionSaveRequest.productId());
 
         Auction auction = new Auction(
@@ -31,7 +32,8 @@ public class AuctionService {
             auctionSaveRequest.startTime(),
             auctionSaveRequest.endTime());
 
-        return auctionRepository.save(auction).getId();
+        return new AuctionSaveResponse(auctionRepository.save(auction).getId());
+
     }
 
     @Transactional
