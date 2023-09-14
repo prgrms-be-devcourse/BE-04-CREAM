@@ -4,7 +4,7 @@ import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
-import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
+import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.user.domain.Address;
@@ -80,11 +80,11 @@ class BiddingServiceTest {
         Product product = saveProduct(nike);
 
         Bidding sellBidding = saveSellBidding(seller, product);
-        TransactSellBiddingRequest transactSellBiddingRequest = new TransactSellBiddingRequest(sellBidding.getId());
+        TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
 
 
         // when
-        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), transactSellBiddingRequest);
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), transactBiddingRequest);
 
         em.flush();
         em.clear();
@@ -128,6 +128,38 @@ class BiddingServiceTest {
 
     }
 
+    @Test
+    @DisplayName("판매자가 등록된 구매 입찰을 체결할 경우 체결이 정상적으로 체결 되어야 한다.")
+    void transactPurchaseBidding() {
+        // given
+        User buyer = saveUser("user1@naver.com", "USER1");
+        User seller = saveUser("user2@naver.com", "USER2");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product);
+
+        TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(purchaseBidding.getId());
+
+        // when
+        BiddingResponse biddingResponse = biddingService.transactPurchaseBidding(seller.getId(), transactBiddingRequest);
+
+        // then
+
+        Bidding savedSellBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(purchaseBidding.getId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
+                () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
+                () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
+        );
+    }
+
+
+
     private User saveUser(String email, String nickname) {
         User user = new User(email, "password", nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
         return userRepository.save(user);
@@ -147,5 +179,10 @@ class BiddingServiceTest {
     private Bidding saveSellBidding(User seller, Product product) {
         Bidding sellBidding = Bidding.registerSellBidding(seller.getId(), product.getId(), 100000, 20L);
         return biddingRepository.save(sellBidding);
+    }
+
+    private Bidding savePurchaseBidding(User buyer, Product product) {
+        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, 20L);
+        return biddingRepository.save(purchaseBidding);
     }
 }

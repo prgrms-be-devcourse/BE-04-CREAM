@@ -72,6 +72,12 @@ public class Bidding {
         return new Bidding(userId, sellBidding.getProductId(), sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, LocalDateTime.now(), transactionDate);
     }
 
+    public static Bidding transactPurchaseBidding(Long userId, Bidding purchaseBidding) {
+        LocalDateTime transactionDate = LocalDateTime.now();
+        purchaseBidding.transact(transactionDate);
+        return new Bidding(userId, purchaseBidding.getProductId(), purchaseBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.SELL, LocalDateTime.now(), transactionDate);
+    }
+
     public Bidding(Long userId, Long productId, int price, Status status, BiddingType biddingType, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
