@@ -3,8 +3,8 @@ package com.programmers.dev.bidding.application;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
-import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
+import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.ProductRepository;
@@ -22,7 +22,7 @@ public class BiddingService {
     private final BiddingRepository biddingRepository;
 
     @Transactional
-    public BiddingResponse registerPurchaseBidding(Long userId, RegisterPurchaseBiddingRequest request) {
+    public BiddingResponse registerPurchaseBidding(Long userId, RegisterBiddingrequest request) {
         validateUserId(userId);
         validateProductId(request);
         Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), request.dueDate());
@@ -31,16 +31,10 @@ public class BiddingService {
         return BiddingResponse.of(savedBidding.getId());
     }
 
-    private void validateProductId(RegisterPurchaseBiddingRequest request) {
-        productRepository.findById(request.productId()).orElseThrow(
-                () -> new CreamException(ErrorCode.INVALID_ID)
-        );
-    }
-
     @Transactional
-    public BiddingResponse transactSellBidding(Long userId, TransactSellBiddingRequest request) {
+    public BiddingResponse transactSellBidding(Long userId, TransactBiddingRequest request) {
         validateUserId(userId);
-        Bidding sellBidding = getSellBidding(request.biddingId());
+        Bidding sellBidding = getBidding(request.biddingId());
         validateBadRequest(userId, sellBidding);
         Bidding bidding = Bidding.transactSellBidding(userId, sellBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
@@ -48,10 +42,25 @@ public class BiddingService {
         return BiddingResponse.of(savedBidding.getId());
     }
 
-    private static void validateBadRequest(Long userId, Bidding sellBidding) {
-        if (sellBidding.getUserId().equals(userId)) {
-            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
-        }
+    @Transactional
+    public BiddingResponse registerSellBidding(Long userId, RegisterBiddingrequest request) {
+        validateUserId(userId);
+        validateProductId(request);
+        Bidding bidding = Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate());
+        Bidding savedBidding = biddingRepository.save(bidding);
+
+        return BiddingResponse.of(savedBidding.getId());
+    }
+
+    @Transactional
+    public BiddingResponse transactPurchaseBidding(Long userId, TransactBiddingRequest request) {
+        validateUserId(userId);
+        Bidding purchaseBidding = getBidding(request.biddingId());
+        validateBadRequest(userId, purchaseBidding);
+        Bidding bidding = Bidding.transactPurchaseBidding(userId, purchaseBidding);
+        Bidding savedBidding = biddingRepository.save(bidding);
+
+        return BiddingResponse.of(savedBidding.getId());
     }
 
     private void validateUserId(Long userId) {
@@ -60,10 +69,23 @@ public class BiddingService {
         );
     }
 
-    private Bidding getSellBidding(Long biddingId) {
+    private Bidding getBidding(Long biddingId) {
         return biddingRepository.findById(biddingId)
                 .orElseThrow(
                         () -> new CreamException(ErrorCode.INVALID_ID)
                 );
     }
+
+    private void validateProductId(RegisterBiddingrequest request) {
+        productRepository.findById(request.productId()).orElseThrow(
+                () -> new CreamException(ErrorCode.INVALID_ID)
+        );
+    }
+
+    private void validateBadRequest(Long userId, Bidding bidding) {
+        if (bidding.getUserId().equals(userId)) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+    }
+
 }

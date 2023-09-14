@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record RegisterPurchaseBiddingRequest(
+public record RegisterBiddingrequest(
         @NotNull
         Long productId,
         @NotNull @Positive
@@ -11,7 +11,7 @@ public record RegisterPurchaseBiddingRequest(
         @NotNull @Positive
         Long dueDate
 ) {
-    public static RegisterPurchaseBiddingRequest of( Long productId, Integer price, Long dueDate) {
-        return new RegisterPurchaseBiddingRequest(productId, price, dueDate);
+    public static RegisterBiddingrequest of(Long productId, Integer price, Long dueDate) {
+        return new RegisterBiddingrequest(productId, price, dueDate);
     }
 }
