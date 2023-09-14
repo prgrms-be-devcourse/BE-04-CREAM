@@ -3,6 +3,9 @@ package com.programmers.dev.Auction.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.Auction.application.AuctionService;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
+import com.programmers.dev.Auction.dto.AuctionSaveResponse;
+import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
+import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.product.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,8 +34,11 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
 @ExtendWith(RestDocumentationExtension.class)
@@ -101,6 +107,44 @@ class AuctionControllerTest {
             ));
     }
 
+    @Test
+    @DisplayName("경매 상태를 변경하면 경매ID와 변경된 상태를 반환받는다.")
+    void changeAuctionStatusTest() throws Exception {
+        //given
+        Product product = saveProduct();
+
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        AuctionStatusChangeRequest auctionStatusChangeRequest = new AuctionStatusChangeRequest(auctionSaveResponse.auctionId(), AuctionStatus.ONGOING);
+
+        //when & then
+        mockMvc.perform(patch("/api/auctions/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(auctionStatusChangeRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.auctionStatus").value("ONGOING"))
+            .andDo(print())
+            .andDo(document("auction-status-change",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                requestFields(
+                    fieldWithPath("id").description("id of auction").type(JsonFieldType.NUMBER),
+                    fieldWithPath("auctionStatus").description("status of auction").type(JsonFieldType.STRING)
+                ),
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                responseFields(
+                    fieldWithPath("auctionId").description("id of auction").type(JsonFieldType.NUMBER),
+                    fieldWithPath("auctionStatus").description("status of auction").type(JsonFieldType.STRING)
+                )
+            ));
+    }
+
     private static AuctionSaveRequest createAuctionSaveRequest(Product product) {
         return new AuctionSaveRequest(
             product.getId(),
@@ -118,5 +162,4 @@ class AuctionControllerTest {
 
         return productRepository.save(product);
     }
-
 }
