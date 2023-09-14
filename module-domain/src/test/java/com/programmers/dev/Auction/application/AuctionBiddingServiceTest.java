@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 @SpringBootTest
 @Transactional
@@ -46,19 +47,9 @@ class AuctionBiddingServiceTest {
     @DisplayName("ONGING상태의 경매에 입찰을 할 수 있다.")
     void bidAuctionTest() {
         //given
-        Brand nike = new Brand("NIKE");
-        brandRepository.save(nike);
+        Product savedProduct = getSavedProduct();
 
-        ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
-
-        Product product = new Product(nike, "airForce", productInfo, 250);
-        Product savedProduct = productRepository.save(product);
-
-        AuctionSaveRequest auctionSaveRequest = new AuctionSaveRequest(
-            savedProduct.getId(),
-            1000L,
-            LocalDateTime.of(2023, 9, 13, 13, 30),
-            LocalDateTime.of(2023, 9, 13, 15, 30));
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(savedProduct);
 
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
@@ -66,16 +57,9 @@ class AuctionBiddingServiceTest {
             auctionSaveResponse.auctionId(),
             AuctionStatus.ONGOING));
 
-        User user = new User(
-            "aaa@mail.com",
-            "123",
-            "kkk",
-            3000L,
-            new Address("aaa", "bbb", "ccc"),
-            UserRole.ROLE_USER);
-        userRepository.save(user);
+        User user = saveUser();
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(auctionSaveResponse.auctionId(), 4000L);
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 4000L);
 
         //when
         AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(user.getId(), auctionBidRequest);
@@ -91,22 +75,57 @@ class AuctionBiddingServiceTest {
     @DisplayName("ONGING상태가 아닌 경매에 입찰을 하면 예외가 발생한다.")
     void bidActionExceptionTest() {
         //given
-        Brand nike = new Brand("NIKE");
-        brandRepository.save(nike);
+        Product savedProduct = getSavedProduct();
 
-        ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
-
-        Product product = new Product(nike, "airForce", productInfo, 250);
-        Product savedProduct = productRepository.save(product);
-
-        AuctionSaveRequest auctionSaveRequest = new AuctionSaveRequest(
-            savedProduct.getId(),
-            1000L,
-            LocalDateTime.of(2023, 9, 13, 13, 30),
-            LocalDateTime.of(2023, 9, 13, 15, 30));
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(savedProduct);
 
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
+        User user = saveUser();
+
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 4000L);
+
+        //when && then
+        Assertions.assertThatThrownBy(() -> auctionBiddingService.bidAuction(user.getId(), auctionBidRequest))
+            .isInstanceOf(CreamException.class);
+    }
+
+
+    @Test
+    @DisplayName("경매 ID와 입찰한 가격을 통해서 입찰 취소를 할 수 있다.")
+    void cancelAuctionBidTest() {
+        //given
+        Product savedProduct = getSavedProduct();
+
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(savedProduct);
+
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        auctionService.changeAuctionStatus(new AuctionStatusChangeRequest(
+            auctionSaveResponse.auctionId(),
+            AuctionStatus.ONGOING));
+
+        User user = saveUser();
+
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 4000L);
+
+        AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(user.getId(), auctionBidRequest);
+
+        AuctionBiddingCancelRequest auctionBiddingCancelRequest = new AuctionBiddingCancelRequest(auctionSaveResponse.auctionId(), 4000L);
+
+        //when
+        auctionBiddingService.cancelAuctionBid(user.getId(), auctionBiddingCancelRequest);
+
+        //then
+        Assertions.assertThatThrownBy(() -> auctionBiddingRepository.findById(auctionBidResponse.auctionBiddingId()).get())
+            .isInstanceOf(NoSuchElementException.class);
+    }
+
+    private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
+        return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
+    }
+
+    private User saveUser() {
         User user = new User(
             "aaa@mail.com",
             "123",
@@ -115,11 +134,25 @@ class AuctionBiddingServiceTest {
             new Address("aaa", "bbb", "ccc"),
             UserRole.ROLE_USER);
         userRepository.save(user);
+        return user;
+    }
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(auctionSaveResponse.auctionId(), 4000L);
+    private static AuctionSaveRequest createAuctionSaveRequest(Product savedProduct) {
+        return new AuctionSaveRequest(
+            savedProduct.getId(),
+            1000L,
+            LocalDateTime.of(2023, 9, 13, 13, 30),
+            LocalDateTime.of(2023, 9, 13, 15, 30));
+    }
 
-        //when && then
-        Assertions.assertThatThrownBy(() -> auctionBiddingService.bidAuction(user.getId(), auctionBidRequest))
-            .isInstanceOf(CreamException.class);
+    private Product getSavedProduct() {
+        Brand nike = new Brand("NIKE");
+        brandRepository.save(nike);
+
+        ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
+
+        Product product = new Product(nike, "airForce", productInfo, 250);
+        Product savedProduct = productRepository.save(product);
+        return savedProduct;
     }
 }

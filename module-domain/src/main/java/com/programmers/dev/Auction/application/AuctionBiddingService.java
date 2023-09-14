@@ -6,6 +6,7 @@ import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.AuctionBidRequest;
 import com.programmers.dev.Auction.dto.AuctionBidResponse;
+import com.programmers.dev.Auction.dto.AuctionBiddingCancelRequest;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.user.domain.User;
@@ -40,6 +41,12 @@ public class AuctionBiddingService {
 
         return AuctionBidResponse.fromEntity(savedAuctionBidding);
     }
+
+    @Transactional
+    public void cancelAuctionBid(Long userId, AuctionBiddingCancelRequest request) {
+        auctionBiddingRepository.deleteLastAuctionBidding(userId, request.auctionId(), request.price());
+    }
+
 
     private static void validateAuctionBiddingTime(Auction auction) {
         if (auction.getAuctionStatus() != AuctionStatus.ONGOING) {

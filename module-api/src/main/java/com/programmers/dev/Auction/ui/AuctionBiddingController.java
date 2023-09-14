@@ -3,6 +3,7 @@ package com.programmers.dev.Auction.ui;
 import com.programmers.dev.Auction.application.AuctionBiddingService;
 import com.programmers.dev.Auction.dto.AuctionBidRequest;
 import com.programmers.dev.Auction.dto.AuctionBidResponse;
+import com.programmers.dev.Auction.dto.AuctionBiddingCancelRequest;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +29,19 @@ public class AuctionBiddingController {
         validateRequestBody(bindingResult);
 
         return ResponseEntity.ok(auctionBiddingService.bidAuction(userId, auctionBidRequest));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Object> cancelAuctionBidding(
+        @AuthenticationPrincipal Long userId,
+        @RequestBody @Validated AuctionBiddingCancelRequest request,
+        BindingResult bindingResult
+    ) {
+        validateRequestBody(bindingResult);
+
+        auctionBiddingService.cancelAuctionBid(userId, request);
+
+        return ResponseEntity.noContent().build();
     }
 
     private static void validateRequestBody(BindingResult bindingResult) {
