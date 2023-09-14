@@ -1,7 +1,7 @@
 package com.programmers.dev.inventory.dto;
 
 import com.programmers.dev.common.Status;
-import com.programmers.dev.common.TransactionType;
+import com.programmers.dev.inventory.domain.TransactionType;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.user.domain.Address;
 import jakarta.validation.constraints.Min;

@@ -1,4 +1,4 @@
-package com.programmers.dev.common;
+package com.programmers.dev.inventory.domain;
 
 public enum TransactionType {
 

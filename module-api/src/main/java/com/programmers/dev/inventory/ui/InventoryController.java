@@ -27,10 +27,4 @@ public class InventoryController {
 
         return ResponseEntity.ok(response);
     }
-
-    @PostMapping("/test")
-    public ResponseEntity<String> test(@AuthenticationPrincipal Long userId) {
-        System.out.println(userId);
-        return ResponseEntity.ok("AS");
-    }
 }

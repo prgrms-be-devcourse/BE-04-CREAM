@@ -1,4 +1,4 @@
-package com.programmers.dev.inventory.dto.state;
+package com.programmers.dev.inventory.statechange.dto;
 
 import java.util.List;
 
