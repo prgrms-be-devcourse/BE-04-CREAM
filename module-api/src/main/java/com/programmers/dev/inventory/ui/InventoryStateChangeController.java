@@ -2,14 +2,12 @@ package com.programmers.dev.inventory.ui;
 
 
 import com.programmers.dev.inventory.application.InventoryStateChangeService;
-import com.programmers.dev.inventory.dto.state.InventoryStoreRequest;
+import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
+import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
+import com.programmers.dev.inventory.dto.statechange.InventoryRegisterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -19,9 +17,23 @@ public class InventoryStateChangeController {
 
     private final InventoryStateChangeService inventoryStateChangeService;
 
-    @PostMapping("/arrive")
-    public ResponseEntity<String> store(@RequestBody @Validated InventoryStoreRequest request) {
-        inventoryStateChangeService.store(request);
+    @PostMapping("/arrived")
+    public ResponseEntity<String> warehouseArrived(@RequestBody InventoryRegisterRequest request) {
+        inventoryStateChangeService.warehouseArrived(request);
+
+        return ResponseEntity.ok("success");
+    }
+
+    @PostMapping("/authentication/{inventoryId}/pass")
+    public ResponseEntity<String> authenticatePass(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticatePassRequest request) {
+        inventoryStateChangeService.authenticatePass(inventoryId, request);
+
+        return ResponseEntity.ok("success");
+    }
+
+    @PostMapping("/authentication/{inventoryId}/fail")
+    public ResponseEntity<String> authenticateFail(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
+        inventoryStateChangeService.authenticateFail(inventoryId, request);
 
         return ResponseEntity.ok("success");
     }
