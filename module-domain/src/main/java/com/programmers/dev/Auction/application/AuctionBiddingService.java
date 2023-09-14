@@ -26,13 +26,14 @@ public class AuctionBiddingService {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
 
+    // TODO 현재 입찰 최고가보다 낮은 금액은 입찰 불가하게끔 고도화 필요.
     @Transactional
-    public AuctionBidResponse bidAuction(AuctionBidRequest auctionBidRequest) {
+    public AuctionBidResponse bidAuction(Long userId, AuctionBidRequest auctionBidRequest) {
         Auction auction = findAuctionById(auctionBidRequest.auctionId());
 
         validateAuctionBiddingTime(auction);
 
-        User user = findUserById(auctionBidRequest.userId());
+        User user = findUserById(userId);
 
         AuctionBidding auctionBidding = new AuctionBidding(user, auction, auctionBidRequest.price());
         AuctionBidding savedAuctionBidding = auctionBiddingRepository.save(auctionBidding);
