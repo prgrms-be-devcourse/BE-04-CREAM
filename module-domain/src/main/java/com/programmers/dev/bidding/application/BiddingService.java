@@ -36,6 +36,7 @@ public class BiddingService {
         validateUserId(userId);
         Bidding sellBidding = getBidding(request.biddingId());
         validateBadRequest(userId, sellBidding);
+        sellBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactSellBidding(userId, sellBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
 
@@ -57,6 +58,7 @@ public class BiddingService {
         validateUserId(userId);
         Bidding purchaseBidding = getBidding(request.biddingId());
         validateBadRequest(userId, purchaseBidding);
+        purchaseBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactPurchaseBidding(userId, purchaseBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
 

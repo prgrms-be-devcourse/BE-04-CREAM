@@ -6,6 +6,7 @@ import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
+import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 
@@ -79,7 +81,7 @@ class BiddingServiceTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        Bidding sellBidding = saveSellBidding(seller, product);
+        Bidding sellBidding = saveSellBidding(seller, product, 20L);
         TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
 
 
@@ -136,7 +138,7 @@ class BiddingServiceTest {
         User seller = saveUser("user2@naver.com", "USER2");
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
-        Bidding purchaseBidding = savePurchaseBidding(buyer, product);
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product, 20L);
 
         TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(purchaseBidding.getId());
 
@@ -158,6 +160,33 @@ class BiddingServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("거래 체결을 하려고 할 때 dueDate가 지났으면 체결이 되지 않아야 한다. ")
+    void dueDateTest() throws InterruptedException {
+        // given
+        User buyer = saveUser("user1@naver.com", "USER1");
+        User seller = saveUser("user2@naver.com", "USER2");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product, 0L);
+        Bidding sellBidding = saveSellBidding(seller, product, 0L);
+
+        TransactBiddingRequest purchaseBiddingRequest = new TransactBiddingRequest(purchaseBidding.getId());
+        TransactBiddingRequest sellBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
+
+        // when && then
+        Thread.sleep(10);
+
+        assertThatThrownBy(
+                () -> biddingService.transactPurchaseBidding(seller.getId(), purchaseBiddingRequest)
+        ).isInstanceOf(CreamException.class)
+        ;
+        assertThatThrownBy(
+                () -> biddingService.transactSellBidding(buyer.getId(), sellBiddingRequest)
+        ).isInstanceOf(CreamException.class);
+
+    }
+
 
 
     private User saveUser(String email, String nickname) {
@@ -176,13 +205,13 @@ class BiddingServiceTest {
         return productRepository.save(product);
     }
 
-    private Bidding saveSellBidding(User seller, Product product) {
-        Bidding sellBidding = Bidding.registerSellBidding(seller.getId(), product.getId(), 100000, 20L);
+    private Bidding saveSellBidding(User seller, Product product, long dueDate) {
+        Bidding sellBidding = Bidding.registerSellBidding(seller.getId(), product.getId(), 100000, dueDate);
         return biddingRepository.save(sellBidding);
     }
 
-    private Bidding savePurchaseBidding(User buyer, Product product) {
-        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, 20L);
+    private Bidding savePurchaseBidding(User buyer, Product product, long dueDate) {
+        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, dueDate);
         return biddingRepository.save(purchaseBidding);
     }
 }
