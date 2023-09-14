@@ -5,8 +5,8 @@ import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryStoreRequest;
-import com.programmers.dev.inventory.dto.InventoryStoreResponse;
+import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
+import com.programmers.dev.inventory.dto.InventoryRegisterResponse;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-class InventoryStoreServiceTest {
+class InventoryRegisterServiceTest {
 
     @Autowired
-    private InventoryStoreService inventoryStoreService;
+    private InventoryRegisterService inventoryRegisterService;
 
     @Autowired
     private InventoryRepository inventoryRepository;
@@ -48,10 +48,10 @@ class InventoryStoreServiceTest {
         //given
         User user = createUserHavingMoney(10_000L);
         Product product = getTargetProduct();
-        InventoryStoreRequest inventoryStoreRequest = crateStoreRequest(product.getId(), 3L, user.getAddress());
+        InventoryRegisterRequest inventoryRegisterRequest = crateStoreRequest(product.getId(), 3L, user.getAddress());
 
         //when
-        InventoryStoreResponse response = inventoryStoreService.store(user.getId(), inventoryStoreRequest);
+        InventoryRegisterResponse response = inventoryRegisterService.register(user.getId(), inventoryRegisterRequest);
 
         for (Inventory inventory : response.inventoryIds()
                 .stream()
@@ -71,11 +71,11 @@ class InventoryStoreServiceTest {
         //given
         User user = createUserHavingMoney(8_900L);
         Product product = getTargetProduct();
-        InventoryStoreRequest inventoryStoreRequest = crateStoreRequest(product.getId(), 3L, user.getAddress());
+        InventoryRegisterRequest inventoryRegisterRequest = crateStoreRequest(product.getId(), 3L, user.getAddress());
 
         //when && then
         assertThatThrownBy(() -> {
-            inventoryStoreService.store(user.getId(), inventoryStoreRequest);
+            inventoryRegisterService.register(user.getId(), inventoryRegisterRequest);
         })
                 .isInstanceOf(CreamException.class)
                 .hasMessage(ErrorCode.INSUFFICIENT_ACCOUNT_MONEY.getDescription());
@@ -96,7 +96,7 @@ class InventoryStoreServiceTest {
         return productRepository.save(product);
     }
 
-    private InventoryStoreRequest crateStoreRequest(Long productId, Long quantity, Address address) {
-        return new InventoryStoreRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
+    private InventoryRegisterRequest crateStoreRequest(Long productId, Long quantity, Address address) {
+        return new InventoryRegisterRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
     }
 }

@@ -1,15 +1,14 @@
 package com.programmers.dev.inventory.application;
 
 
-import com.programmers.dev.exception.CreamException;
-import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryStoreRequest;
-import com.programmers.dev.inventory.dto.InventoryStoreResponse;
+import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
+import com.programmers.dev.inventory.dto.InventoryRegisterResponse;
+import com.programmers.dev.payment.PaymentCalculator;
 import com.programmers.dev.payment.PaymentService;
+import com.programmers.dev.user.application.UserFindService;
 import com.programmers.dev.user.domain.User;
-import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,21 +16,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
-public class InventoryStoreService {
+public class InventoryRegisterService {
 
     private final InventoryRepository inventoryRepository;
 
-    private final UserRepository userRepository;
+    private final UserFindService userFindService;
 
     private final PaymentService paymentService;
 
-    @Transactional
-    public InventoryStoreResponse store(Long userId, InventoryStoreRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
+    private final PaymentCalculator paymentCalculator;
 
-        paymentService.payProtectionMoney(user, request.quantity());
+    public InventoryRegisterResponse register(Long userId, InventoryRegisterRequest request) {
+        User user = userFindService.findById(userId);
+
+        Long paymentAmount = paymentCalculator.calcualteProtectionCost(request.quantity());
+        paymentService.pay(user, paymentAmount);
 
         List<Long> inventoryIds = request.toEntities(userId)
                 .stream()
@@ -39,6 +40,6 @@ public class InventoryStoreService {
                 .map(Inventory::getId)
                 .toList();
 
-        return new InventoryStoreResponse(inventoryIds);
+        return new InventoryRegisterResponse(inventoryIds);
     }
 }

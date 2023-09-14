@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public record InventoryStoreRequest(
+public record InventoryRegisterRequest(
 
         @NotNull(message = "상품 아이디는 NULL 값을 가질 수 없습니다.")
         Long productId,

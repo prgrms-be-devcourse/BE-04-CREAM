@@ -2,7 +2,8 @@ package com.programmers.dev.inventory.domain;
 
 
 import com.programmers.dev.common.Status;
-import com.programmers.dev.common.TransactionType;
+import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.Address;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -68,7 +69,37 @@ public class Inventory {
     protected Inventory() {
     }
 
-    public void changeTransactionStatus(Status status) {
+    public void changeStatusInWarehouse() {
+        statusValidate(Status.OUT_WAREHOUSE);
+        changeStatus(Status.IN_WAREHOUSE);
+    }
+
+    public void changeStatusAuthenticatedWithProductQuality(ProductQuality productQuality) {
+        statusValidate(Status.IN_WAREHOUSE);
+        changeStatus(Status.AUTHENTICATED);
+        changeProductQuality(productQuality);
+    }
+
+    public void changeStatusReturnShipping() {
+        statusValidate(Status.IN_WAREHOUSE);
+        changeStatus(Status.RETURN_SHIPPING);
+    }
+
+    private void changeStatus(Status status) {
         this.status = status;
+    }
+
+    private void statusValidate(Status status) {
+        if (this.status != status) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+    }
+
+    private void changeProductQuality(ProductQuality productQuality) {
+        if (this.productQuality != null) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+
+        this.productQuality = productQuality;
     }
 }

@@ -2,7 +2,7 @@ package com.programmers.dev.inventory.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.programmers.dev.inventory.dto.InventoryStoreRequest;
+import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
 
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.*;
@@ -85,10 +85,10 @@ class InventoryControllerTest {
         String accessToken = getAccessToken(user.getId(), user.getUserRole());
         Product product = getTargetProduct();
 
-        InventoryStoreRequest request = crateStoreRequest(product.getId(), 3L, user.getAddress());
+        InventoryRegisterRequest request = crateStoreRequest(product.getId(), 3L, user.getAddress());
 
 
-        mockMvc.perform(post("/api/inventories/store")
+        mockMvc.perform(post("/api/inventories/register")
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
@@ -130,7 +130,7 @@ class InventoryControllerTest {
         return productRepository.save(product);
     }
 
-    private InventoryStoreRequest crateStoreRequest(Long productId, Long quantity, Address address) {
-        return new InventoryStoreRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
+    private InventoryRegisterRequest crateStoreRequest(Long productId, Long quantity, Address address) {
+        return new InventoryRegisterRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
     }
 }

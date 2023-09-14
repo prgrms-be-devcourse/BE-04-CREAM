@@ -1,9 +1,9 @@
 package com.programmers.dev.inventory.ui;
 
 
-import com.programmers.dev.inventory.application.InventoryStoreService;
-import com.programmers.dev.inventory.dto.InventoryStoreRequest;
-import com.programmers.dev.inventory.dto.InventoryStoreResponse;
+import com.programmers.dev.inventory.application.InventoryRegisterService;
+import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
+import com.programmers.dev.inventory.dto.InventoryRegisterResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class InventoryController {
 
-    private final InventoryStoreService inventoryStoreService;
+    private final InventoryRegisterService inventoryRegisterService;
 
-    @PostMapping("/store")
-    public ResponseEntity<InventoryStoreResponse> store(@AuthenticationPrincipal Long userId,
-                                                        @RequestBody @Validated InventoryStoreRequest request) {
-        InventoryStoreResponse response = inventoryStoreService.store(userId, request);
+    @PostMapping("/register")
+    public ResponseEntity<InventoryRegisterResponse> register(@AuthenticationPrincipal Long userId,
+                                                              @RequestBody @Validated InventoryRegisterRequest request) {
+        InventoryRegisterResponse response = inventoryRegisterService.register(userId, request);
 
         return ResponseEntity.ok(response);
     }

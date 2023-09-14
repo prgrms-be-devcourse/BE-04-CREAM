@@ -5,6 +5,4 @@ public enum ProductQuality {
     COMPLETE,
 
     INCOMPLETE,
-
-    FAIL
 }
