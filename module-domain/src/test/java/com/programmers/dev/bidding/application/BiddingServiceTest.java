@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.application;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.exception.CreamException;
@@ -56,7 +56,7 @@ class BiddingServiceTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
         // when
         BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(user.getId(), request);
 
@@ -114,7 +114,7 @@ class BiddingServiceTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
 
         // when
         BiddingResponse biddingResponse = biddingService.registerSellBidding(user.getId(), request);
@@ -183,6 +183,44 @@ class BiddingServiceTest {
         ;
         assertThatThrownBy(
                 () -> biddingService.transactSellBidding(buyer.getId(), sellBiddingRequest)
+        ).isInstanceOf(CreamException.class);
+
+    }
+
+    @Test
+    @DisplayName("구매자가 판매 입찰에 등록된 금액보다 높은 금액으로 구매하려고 한다면 입찰 등록에 실패해야 한다.")
+    void checkRequestPriceOverBiddingPrice_PURCHASE() {
+        // given
+        User buyer = saveUser("user1@naver.com", "USER1");
+        User seller = saveUser("user2@naver.com", "USER2");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        saveSellBidding(seller, product, 10L);
+        RegisterBiddingRequest registerBiddingRequest = RegisterBiddingRequest.of(product.getId(), 120000, 10L);
+
+        // when  && then
+        assertThatThrownBy(
+                () ->biddingService.registerPurchaseBidding(buyer.getId(), registerBiddingRequest)
+        ).isInstanceOf(CreamException.class);
+
+    }
+
+    @Test
+    @DisplayName("구매자가 판매 입찰에 등록된 금액보다 높은 금액으로 구매하려고 한다면 입찰 등록에 실패해야 한다.")
+    void checkRequestPriceOverBiddingPrice_SELL() {
+        // given
+        User buyer = saveUser("user1@naver.com", "USER1");
+        User seller = saveUser("user2@naver.com", "USER2");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        savePurchaseBidding(buyer, product, 10L);
+        RegisterBiddingRequest registerBiddingRequest = RegisterBiddingRequest.of(product.getId(), 120000, 10L);
+
+        // when  && then
+        assertThatThrownBy(
+                () ->biddingService.registerSellBidding(seller.getId(), registerBiddingRequest)
         ).isInstanceOf(CreamException.class);
 
     }

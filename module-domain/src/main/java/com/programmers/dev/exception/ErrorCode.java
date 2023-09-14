@@ -13,7 +13,8 @@ public enum ErrorCode {
     INVALID_LOGIN_INFO(BAD_REQUEST, -103, "invalid email or password."),
     INVALID_SESSION_FORMAT(BAD_REQUEST, -104, "invalid session format"),
     SESSION_EXPIRATION(BAD_REQUEST, -105, "session has expired."),
-    AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired.")
+    AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired."),
+    OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price")
     ;
 
     private final HttpStatus httpStatus;
