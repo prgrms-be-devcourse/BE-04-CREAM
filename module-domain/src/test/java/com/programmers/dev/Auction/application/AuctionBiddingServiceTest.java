@@ -2,9 +2,8 @@ package com.programmers.dev.Auction.application;
 
 import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
-import com.programmers.dev.Auction.dto.AuctionBidRequest;
-import com.programmers.dev.Auction.dto.AuctionBidResponse;
-import com.programmers.dev.Auction.dto.AuctionSaveRequest;
+import com.programmers.dev.Auction.dto.*;
+import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.*;
@@ -20,8 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -63,9 +60,11 @@ class AuctionBiddingServiceTest {
             LocalDateTime.of(2023, 9, 13, 13, 30),
             LocalDateTime.of(2023, 9, 13, 15, 30));
 
-        Long savedAuctionId = auctionService.save(auctionSaveRequest);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
-        auctionService.startAuction(savedAuctionId);
+        auctionService.changeAuctionStatus(new AuctionStatusChangeRequest(
+            auctionSaveResponse.auctionId(),
+            AuctionStatus.ONGOING));
 
         User user = new User(
             "aaa@mail.com",
@@ -76,7 +75,7 @@ class AuctionBiddingServiceTest {
             UserRole.ROLE_USER);
         userRepository.save(user);
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), savedAuctionId, 4000L);
+        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), auctionSaveResponse.auctionId(), 4000L);
 
         //when
         AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(auctionBidRequest);
@@ -106,7 +105,7 @@ class AuctionBiddingServiceTest {
             LocalDateTime.of(2023, 9, 13, 13, 30),
             LocalDateTime.of(2023, 9, 13, 15, 30));
 
-        Long savedAuctionId = auctionService.save(auctionSaveRequest);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
         User user = new User(
             "aaa@mail.com",
@@ -117,7 +116,7 @@ class AuctionBiddingServiceTest {
             UserRole.ROLE_USER);
         userRepository.save(user);
 
-        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), savedAuctionId, 4000L);
+        AuctionBidRequest auctionBidRequest = new AuctionBidRequest(user.getId(), auctionSaveResponse.auctionId(), 4000L);
 
         //when && then
         Assertions.assertThatThrownBy(() -> auctionBiddingService.bidAuction(auctionBidRequest))

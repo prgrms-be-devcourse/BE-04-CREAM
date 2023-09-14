@@ -4,6 +4,7 @@ import com.programmers.dev.Auction.domain.Auction;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.Auction.dto.AuctionSaveResponse;
+import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.product.domain.Product;
@@ -37,15 +38,9 @@ public class AuctionService {
     }
 
     @Transactional
-    public void startAuction(Long id) {
-        Auction auction = findAuctionById(id);
-        auction.changeStatus(AuctionStatus.ONGOING);
-    }
-
-    @Transactional
-    public void finishAuction(Long id) {
-        Auction auction = findAuctionById(id);
-        auction.changeStatus(AuctionStatus.FINISHED);
+    public void changeAuctionStatus(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        Auction auction = findAuctionById(auctionStatusChangeRequest.id());
+        auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
     }
 
     private Auction findAuctionById(Long id) {
