@@ -1,11 +1,9 @@
 package com.programmers.dev.Auction.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.programmers.dev.Auction.application.AuctionBiddingService;
 import com.programmers.dev.Auction.application.AuctionService;
-import com.programmers.dev.Auction.dto.AuctionBidRequest;
-import com.programmers.dev.Auction.dto.AuctionSaveRequest;
-import com.programmers.dev.Auction.dto.AuctionSaveResponse;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
+import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.JwtConfigure;
@@ -43,8 +41,10 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
 @ExtendWith(RestDocumentationExtension.class)
@@ -72,6 +72,9 @@ class AuctionBiddingControllerTest {
 
     @Autowired
     private AuctionService auctionService;
+
+    @Autowired
+    private AuctionBiddingService auctionBiddingService;
 
     @BeforeEach
     void setup(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentationContextProvider) {
@@ -127,8 +130,48 @@ class AuctionBiddingControllerTest {
                     fieldWithPath("price").description("price of auction bidding").type(JsonFieldType.NUMBER)
                 )
             ));
+    }
 
+    @Test
+    @DisplayName("경매 ID와 입찰한 가격을 통해 입찰을 취소할 수 있다.")
+    void cancelAuctionBiddingTest() throws Exception {
+        //given
+        User user = createUserHavingMoney(10_000L);
+        String accessToken = getAccessToken(user.getId(), user.getUserRole());
 
+        Product product = saveProduct();
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
+
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
+        auctionService.changeAuctionStatus(auctionStatusChangeRequest);
+
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse);
+
+        AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(user.getId(), auctionBidRequest);
+
+        AuctionBiddingCancelRequest auctionBiddingCancelRequest = createAuctionBiddingCancelRequest(auctionBidRequest, auctionBidResponse);
+
+        mockMvc.perform(delete("/api/auctions/bidding")
+                .header(HttpHeaders.AUTHORIZATION, accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(auctionBiddingCancelRequest)))
+            .andExpect(status().isNoContent())
+            .andDo(print())
+            .andDo(document("cancel-auction-bidding",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                requestFields(
+                    fieldWithPath("auctionId").description("id of auction"),
+                    fieldWithPath("price").description("price of auction bidding")
+                )
+            ));
+    }
+
+    private static AuctionBiddingCancelRequest createAuctionBiddingCancelRequest(AuctionBidRequest auctionBidRequest, AuctionBidResponse auctionBidResponse) {
+        return new AuctionBiddingCancelRequest(auctionBidRequest.auctionId(), auctionBidResponse.price());
     }
 
     private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse) {
