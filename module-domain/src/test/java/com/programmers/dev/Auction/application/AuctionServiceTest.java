@@ -3,10 +3,11 @@ package com.programmers.dev.Auction.application;
 import com.programmers.dev.Auction.domain.Auction;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
+import com.programmers.dev.Auction.dto.AuctionSaveResponse;
+import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.product.domain.*;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
@@ -56,13 +57,13 @@ class AuctionServiceTest {
             LocalDateTime.of(2023, 9, 13, 15, 30));
 
         //when
-        Long savedId = auctionService.save(auctionSaveRequest);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
         //then
-        Auction auction = auctionRepository.findById(savedId).get();
+        Auction auction = auctionRepository.findById(auctionSaveResponse.auctionId()).get();
 
         assertAll(
-            () -> assertThat(savedId).isEqualTo(1),
+            () -> assertThat(auction.getId()).isNotNull(),
             () -> assertThat(auction.getPrice()).isNull()
         );
     }
@@ -85,16 +86,20 @@ class AuctionServiceTest {
             LocalDateTime.of(2023, 9, 13, 13, 30),
             LocalDateTime.of(2023, 9, 13, 15, 30));
 
-        Long savedId = auctionService.save(auctionSaveRequest);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        AuctionStatusChangeRequest auctionStatusChangeRequest = new AuctionStatusChangeRequest(
+            auctionSaveResponse.auctionId(),
+            AuctionStatus.ONGOING);
 
         //when
-        auctionService.startAuction(savedId);
+        auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
         //then
         em.flush();
         em.clear();
 
-        Auction auction = auctionRepository.findById(savedId).get();
+        Auction auction = auctionRepository.findById(auctionSaveResponse.auctionId()).get();
 
         assertThat(auction.getAuctionStatus()).isEqualTo(AuctionStatus.ONGOING);
     }
@@ -117,16 +122,20 @@ class AuctionServiceTest {
             LocalDateTime.of(2023, 9, 13, 13, 30),
             LocalDateTime.of(2023, 9, 13, 15, 30));
 
-        Long savedId = auctionService.save(auctionSaveRequest);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        AuctionStatusChangeRequest auctionStatusChangeRequest = new AuctionStatusChangeRequest(
+            auctionSaveResponse.auctionId(),
+            AuctionStatus.FINISHED);
 
         //when
-        auctionService.finishAuction(savedId);
+        auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
         //then
         em.flush();
         em.clear();
 
-        Auction auction = auctionRepository.findById(savedId).get();
+        Auction auction = auctionRepository.findById(auctionSaveResponse.auctionId()).get();
 
         assertThat(auction.getAuctionStatus()).isEqualTo(AuctionStatus.FINISHED);
     }
