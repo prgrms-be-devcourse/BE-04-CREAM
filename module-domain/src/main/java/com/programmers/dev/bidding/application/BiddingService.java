@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.application;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
 import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
@@ -22,7 +22,7 @@ public class BiddingService {
     private final BiddingRepository biddingRepository;
 
     @Transactional
-    public BiddingResponse registerPurchaseBidding(Long userId, RegisterPurchaseBiddingRequest request) {
+    public BiddingResponse registerPurchaseBidding(Long userId, RegisterBiddingrequest request) {
         validateUserId(userId);
         validateProductId(request);
         Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), request.dueDate());
@@ -31,18 +31,22 @@ public class BiddingService {
         return BiddingResponse.of(savedBidding.getId());
     }
 
-    private void validateProductId(RegisterPurchaseBiddingRequest request) {
-        productRepository.findById(request.productId()).orElseThrow(
-                () -> new CreamException(ErrorCode.INVALID_ID)
-        );
-    }
-
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, TransactSellBiddingRequest request) {
         validateUserId(userId);
         Bidding sellBidding = getSellBidding(request.biddingId());
         validateBadRequest(userId, sellBidding);
         Bidding bidding = Bidding.transactSellBidding(userId, sellBidding);
+        Bidding savedBidding = biddingRepository.save(bidding);
+
+        return BiddingResponse.of(savedBidding.getId());
+    }
+
+    @Transactional
+    public BiddingResponse registerSellBidding(Long userId, RegisterBiddingrequest request) {
+        validateUserId(userId);
+        validateProductId(request);
+        Bidding bidding = Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate());
         Bidding savedBidding = biddingRepository.save(bidding);
 
         return BiddingResponse.of(savedBidding.getId());
@@ -65,5 +69,11 @@ public class BiddingService {
                 .orElseThrow(
                         () -> new CreamException(ErrorCode.INVALID_ID)
                 );
+    }
+
+    private void validateProductId(RegisterBiddingrequest request) {
+        productRepository.findById(request.productId()).orElseThrow(
+                () -> new CreamException(ErrorCode.INVALID_ID)
+        );
     }
 }

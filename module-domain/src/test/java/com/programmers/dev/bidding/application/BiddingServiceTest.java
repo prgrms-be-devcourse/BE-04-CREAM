@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.application;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
 import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
@@ -54,7 +54,7 @@ class BiddingServiceTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterPurchaseBiddingRequest request = RegisterPurchaseBiddingRequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
         // when
         BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(user.getId(), request);
 
@@ -100,6 +100,30 @@ class BiddingServiceTest {
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
                 () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
                 () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
+        );
+
+    }
+
+    @Test
+    @DisplayName("판매자가 입찰 등록 시 정상 등록 되어야 한다.")
+    void registerSellBidding() {
+        // given
+        User user = saveUser("user@naver.com", "USER");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+
+        // when
+        BiddingResponse biddingResponse = biddingService.registerSellBidding(user.getId(), request);
+
+        // then
+        Bidding savedBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
+                () -> assertThat(savedBidding.getStatus()).isEqualTo(Status.LIVE),
+                () -> assertThat(savedBidding.getPrice()).isEqualTo(request.price())
         );
 
     }

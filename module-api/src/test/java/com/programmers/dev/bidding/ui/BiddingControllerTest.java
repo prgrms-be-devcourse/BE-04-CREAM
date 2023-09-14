@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
-import com.programmers.dev.bidding.dto.RegisterPurchaseBiddingRequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
 import com.programmers.dev.bidding.dto.TransactSellBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
@@ -93,7 +93,7 @@ class BiddingControllerTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterPurchaseBiddingRequest request = RegisterPurchaseBiddingRequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
 
         // when
         ResultActions resultActions = this.mockMvc.perform(
@@ -172,6 +172,53 @@ class BiddingControllerTest {
 
         Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
         assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
+    }
+
+    @Test
+    @DisplayName("구매자가 입찰 등록 시 정상 등록 되어야 한다.")
+    void registerSellBidding() throws Exception{
+        // given
+        User user = saveUser("user@naver.com", "USER1");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                        post("/api/bidding/sell")
+                                .contentType("application/json")
+                                .content(objectMapper.writeValueAsString(request))
+                                .param("userId", user.getId().toString())
+                )
+                .andDo(document("bidding-register-sell",
+                        requestHeaders(
+                                headerWithName(CONTENT_TYPE).description("content type"),
+                                headerWithName(CONTENT_LENGTH).description("content length")
+                        ),
+                        requestFields(
+                                fieldWithPath("productId").description("id of product"),
+                                fieldWithPath("price").description("price of bidding"),
+                                fieldWithPath("dueDate").description("date of duration")
+                        ),
+                        responseHeaders(
+                                headerWithName(LOCATION).description("created url"),
+                                headerWithName(CONTENT_TYPE).description("content type")
+                        ),
+                        responseFields(
+                                fieldWithPath("biddingId").description("id of created bidding")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isCreated());
+
+        Bidding savedBidding = biddingRepository.findAll().get(0);
+        assertAll(
+                () -> assertThat(savedBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
+                () -> assertThat(savedBidding.getStatus()).isEqualTo(Status.LIVE)
+        );
+
     }
 
     private User saveUser(String email, String nickname) {
