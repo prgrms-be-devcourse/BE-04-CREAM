@@ -19,8 +19,6 @@ public enum Status {
 
     IN_WAREHOUSE,
 
-    AUTHENTICATING,
-
     AUTHENTICATED,
 
     DELIVERING,
