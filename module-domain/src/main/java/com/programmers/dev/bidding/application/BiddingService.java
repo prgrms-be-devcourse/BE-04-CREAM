@@ -3,8 +3,9 @@ package com.programmers.dev.bidding.application;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
 import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
+import com.programmers.dev.common.Status;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.ProductRepository;
@@ -12,6 +13,8 @@ import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
 
 @Service
 @Transactional(readOnly = true)
@@ -22,9 +25,11 @@ public class BiddingService {
     private final BiddingRepository biddingRepository;
 
     @Transactional
-    public BiddingResponse registerPurchaseBidding(Long userId, RegisterBiddingrequest request) {
+    public BiddingResponse registerPurchaseBidding(Long userId, RegisterBiddingRequest request) {
         validateUserId(userId);
         validateProductId(request);
+        checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.SELL);
+
         Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), request.dueDate());
         Bidding savedBidding = biddingRepository.save(bidding);
 
@@ -44,13 +49,26 @@ public class BiddingService {
     }
 
     @Transactional
-    public BiddingResponse registerSellBidding(Long userId, RegisterBiddingrequest request) {
+    public BiddingResponse registerSellBidding(Long userId, RegisterBiddingRequest request) {
         validateUserId(userId);
         validateProductId(request);
+        checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.PURCHASE);
         Bidding bidding = Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate());
         Bidding savedBidding = biddingRepository.save(bidding);
 
         return BiddingResponse.of(savedBidding.getId());
+    }
+
+    private void checkRequestPriceOverBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType)
+                .stream().sorted(Comparator.comparingInt(Bidding::getPrice))
+                .findFirst().ifPresent(
+                        bidding -> {
+                            if (bidding.getPrice() < request.price()) {
+                                throw new CreamException(ErrorCode.OVER_PRICE);
+                            }
+                        }
+                );
     }
 
     @Transactional
@@ -78,7 +96,7 @@ public class BiddingService {
                 );
     }
 
-    private void validateProductId(RegisterBiddingrequest request) {
+    private void validateProductId(RegisterBiddingRequest request) {
         productRepository.findById(request.productId()).orElseThrow(
                 () -> new CreamException(ErrorCode.INVALID_ID)
         );

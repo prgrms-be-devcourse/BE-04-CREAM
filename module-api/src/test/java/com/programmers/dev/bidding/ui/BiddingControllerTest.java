@@ -3,7 +3,7 @@ package com.programmers.dev.bidding.ui;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
-import com.programmers.dev.bidding.dto.RegisterBiddingrequest;
+import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
@@ -93,7 +93,7 @@ class BiddingControllerTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
 
         // when
         ResultActions resultActions = this.mockMvc.perform(
@@ -182,7 +182,7 @@ class BiddingControllerTest {
         Brand nike = saveBrand("nike");
         Product product = saveProduct(nike);
 
-        RegisterBiddingrequest request = RegisterBiddingrequest.of(product.getId(), 100000, 20L);
+        RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
 
         // when
         ResultActions resultActions = this.mockMvc.perform(
