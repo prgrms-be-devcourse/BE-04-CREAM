@@ -27,6 +27,7 @@ dependencies {
     api 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
     api 'org.springframework.boot:spring-boot-starter-validation'
     api 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     api 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.h2database:h2'
     api 'org.springframework.boot:spring-boot-starter-jdbc'
