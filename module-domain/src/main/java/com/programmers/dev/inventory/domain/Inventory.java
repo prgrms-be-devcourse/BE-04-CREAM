@@ -44,7 +44,7 @@ public class Inventory {
     private ProductQuality productQuality;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TRANSACTION_TYPE", nullable = false)
+    @Column(name = "INVENTORY_TYPE", nullable = false)
     private InventoryType inventoryType;
 
     @Enumerated(EnumType.STRING)
