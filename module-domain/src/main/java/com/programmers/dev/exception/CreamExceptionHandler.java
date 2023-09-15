@@ -22,7 +22,9 @@ public class CreamExceptionHandler {
                 .getAllErrors()
                 .get(0)
                 .getDefaultMessage();
-        return ResponseEntity.ok().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errorMessage));
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errorMessage));
     }
 
     @ExceptionHandler(Exception.class)
