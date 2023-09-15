@@ -1,6 +1,6 @@
 package com.programmers.dev.inventory.domain;
 
-public enum TransactionType {
+public enum InventoryType {
 
     PURCHASE,
 

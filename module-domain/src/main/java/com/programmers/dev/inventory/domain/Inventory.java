@@ -35,7 +35,7 @@ public class Inventory {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "TRANSACTION_TYPE", nullable = false)
-    private TransactionType transactionType;
+    private InventoryType inventoryType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "TRANSACTION_STATUS", nullable = false)
@@ -50,16 +50,16 @@ public class Inventory {
     @Column(name = "TRANSACTION_DATE", updatable = false)
     private LocalDateTime transactionDate;
 
-    public Inventory(Long userId, Long productId, TransactionType transactionType, Status status, Address address, LocalDateTime startDate) {
-        this(userId, productId, null, null, transactionType, status, address, startDate, null);
+    public Inventory(Long userId, Long productId, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate) {
+        this(userId, productId, null, null, inventoryType, status, address, startDate, null);
     }
 
-    public Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, TransactionType transactionType, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
+    public Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
         this.price = price;
         this.productQuality = productQuality;
-        this.transactionType = transactionType;
+        this.inventoryType = inventoryType;
         this.status = status;
         this.address = address;
         this.startDate = startDate;
