@@ -6,4 +6,52 @@
 :sectnums:
 :toclevels: 2
 
-// operation::find-all-brands[snippets = 'http-request,http-response']
+= Brand
+
+[[Find-all-brands]]
+== Find-all-brands
+operation::find-all-brands[snippets = 'http-request,http-response']
+
+[[find-brand-by-id]]
+== Find-brand-by-id
+operation::find-brand-by-id[snippets = 'http-request,http-response']
+
+[[save-brand]]
+== Save-brand
+operation::save-brand[snippets = 'http-request,http-response']
+
+= Product
+
+[[Find-all-products]]
+== Find-all-products
+operation::find-all-products[snippets = 'http-request,http-response']
+
+[[Save-product]]
+== Save-product
+operation::save-product[snippets = 'http-request,http-response']
+
+[[Update-product]]
+== Update-product
+operation::update-product[snippets = 'http-request,http-response']
+
+= Auction
+
+[[Auction-bid]]
+== Auction-bid
+operation::auction-bid[snippets = 'http-request,http-response']
+
+[[Auction-save]]
+== Auction-save
+operation::auction-save[snippets = 'http-request,http-response']
+
+[[Auction-status-change]]
+== Auction-status-change
+operation::auction-status-change[snippets = 'http-request,http-response']
+
+[[Cancel-auction-bidding]]
+== Cancel-auction-bidding
+operation::cancel-auction-bidding[snippets = 'http-request,http-response']
+
+[[Get-current-bidding-price]]
+== Get-current-bidding-price
+operation::get-current-bidding-price[snippets = 'http-request,http-response']
