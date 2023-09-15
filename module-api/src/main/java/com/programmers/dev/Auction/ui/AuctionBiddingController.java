@@ -1,9 +1,7 @@
 package com.programmers.dev.Auction.ui;
 
 import com.programmers.dev.Auction.application.AuctionBiddingService;
-import com.programmers.dev.Auction.dto.AuctionBidRequest;
-import com.programmers.dev.Auction.dto.AuctionBidResponse;
-import com.programmers.dev.Auction.dto.AuctionBiddingCancelRequest;
+import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +40,17 @@ public class AuctionBiddingController {
         auctionBiddingService.cancelAuctionBid(userId, request);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/current-price")
+    public ResponseEntity<BiddingPriceGetResponse> getCurrentBiddingPrice(
+        @AuthenticationPrincipal Long userId,
+        @RequestBody @Validated BiddingPriceGetRequest request,
+        BindingResult bindingResult
+    ) {
+        validateRequestBody(bindingResult);
+
+        return ResponseEntity.ok().body(auctionBiddingService.getCurrentBiddingPrice(request));
     }
 
     private static void validateRequestBody(BindingResult bindingResult) {

@@ -4,11 +4,10 @@ import com.programmers.dev.Auction.domain.Auction;
 import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
-import com.programmers.dev.Auction.dto.AuctionBidRequest;
-import com.programmers.dev.Auction.dto.AuctionBidResponse;
-import com.programmers.dev.Auction.dto.AuctionBiddingCancelRequest;
+import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +44,18 @@ public class AuctionBiddingService {
     @Transactional
     public void cancelAuctionBid(Long userId, AuctionBiddingCancelRequest request) {
         auctionBiddingRepository.deleteLastAuctionBidding(userId, request.auctionId(), request.price());
+    }
+
+    // TODO 인덱스 활용
+    public BiddingPriceGetResponse getCurrentBiddingPrice(BiddingPriceGetRequest request) {
+        AuctionBidding auctionBidding = getTopBiddingPrice(request);
+
+        return BiddingPriceGetResponse.of(request.auctionId(), auctionBidding.getPrice());
+    }
+
+    private AuctionBidding getTopBiddingPrice(BiddingPriceGetRequest request) {
+        return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(request.auctionId())
+            .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 
 
