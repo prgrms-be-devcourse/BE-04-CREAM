@@ -15,6 +15,18 @@ import java.time.LocalDateTime;
 @Getter
 public class Inventory {
 
+    public enum InventoryType {
+        PURCHASE,
+        SELL
+    }
+
+    public enum ProductQuality {
+
+        COMPLETE,
+
+        INCOMPLETE,
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
@@ -54,7 +66,7 @@ public class Inventory {
         this(userId, productId, null, null, inventoryType, status, address, startDate, null);
     }
 
-    public Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
+    private Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
         this.price = price;

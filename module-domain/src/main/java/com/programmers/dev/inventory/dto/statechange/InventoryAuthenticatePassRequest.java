@@ -1,9 +1,9 @@
 package com.programmers.dev.inventory.dto.statechange;
 
-import com.programmers.dev.inventory.domain.ProductQuality;
 
+import com.programmers.dev.inventory.domain.Inventory;
 
 public record InventoryAuthenticatePassRequest(
-        ProductQuality productQuality
+        Inventory.ProductQuality productQuality
 ) {
 }

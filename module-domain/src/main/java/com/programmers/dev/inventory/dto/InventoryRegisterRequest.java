@@ -1,7 +1,6 @@
 package com.programmers.dev.inventory.dto;
 
 import com.programmers.dev.common.Status;
-import com.programmers.dev.inventory.domain.InventoryType;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.user.domain.Address;
 import jakarta.validation.constraints.Min;
@@ -38,7 +37,7 @@ public record InventoryRegisterRequest(
         LocalDateTime currentTime = LocalDateTime.now();
 
         for (int i = 0; i < this.quantity; ++i) {
-            inventories.add(new Inventory(userId, this.productId, InventoryType.SELL, Status.OUT_WAREHOUSE, address, currentTime));
+            inventories.add(new Inventory(userId, this.productId, Inventory.InventoryType.SELL, Status.OUT_WAREHOUSE, address, currentTime));
         }
 
         return inventories;
