@@ -8,7 +8,6 @@ import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRe
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.transaction.application.TransactionService;
 import com.programmers.dev.transaction.domain.Transaction;
-import com.programmers.dev.transaction.domain.TransactionType;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -68,7 +67,7 @@ class InventoryAuthenticationTest {
         assertSoftly(soft -> {
             soft.assertThat(updatedInventory.getStatus()).isEqualTo(Status.AUTHENTICATED);
             soft.assertThat(updatedInventory.getProductQuality()).isEqualTo(Inventory.ProductQuality.COMPLETE);
-            soft.assertThat(transaction.getTransactionType()).isEqualTo(TransactionType.DEPOSIT);
+            soft.assertThat(transaction.getTransactionType()).isEqualTo(Transaction.TransactionType.DEPOSIT);
             soft.assertThat(transaction.getTransactionAmount()).isEqualTo(CostType.PROTECTION.getCost());
         });
     }

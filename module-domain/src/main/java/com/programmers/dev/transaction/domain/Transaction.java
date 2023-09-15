@@ -11,6 +11,11 @@ import java.time.LocalDateTime;
 @Getter
 public class Transaction {
 
+    public enum TransactionType {
+        WITHDRAW,
+        DEPOSIT
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")

@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.programmers.dev.common.CostType.*;
-import static com.programmers.dev.transaction.domain.TransactionType.*;
+import static com.programmers.dev.transaction.domain.Transaction.TransactionType.DEPOSIT;
+import static com.programmers.dev.transaction.domain.Transaction.TransactionType.WITHDRAW;
 
 
 @Service
