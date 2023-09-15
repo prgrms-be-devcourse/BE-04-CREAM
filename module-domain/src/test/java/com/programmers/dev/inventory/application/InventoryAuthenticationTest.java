@@ -1,10 +1,13 @@
 package com.programmers.dev.inventory.application;
 
 import com.programmers.dev.common.CostType;
+import com.programmers.dev.common.PenaltyType;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
+import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
+import com.programmers.dev.payment.application.PaymentCalculator;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.transaction.application.TransactionService;
 import com.programmers.dev.transaction.domain.Transaction;
@@ -34,6 +37,9 @@ class InventoryAuthenticationTest {
     private TransactionService transactionService;
 
     @Autowired
+    private PaymentCalculator paymentCalculator;
+
+    @Autowired
     private InventoryFindService inventoryFindService;
 
     @Autowired
@@ -49,8 +55,8 @@ class InventoryAuthenticationTest {
     private BrandRepository brandRepository;
 
     @Test
-    @DisplayName("상품이 검수에 성공")
-    void test() {
+    @DisplayName("상품이 100점으로 검수에 성공하면, AUTHENTICATED, COMPLETE 상태를 가지고TRANSACTIONS 테이블에 DEPOSIT 데이터가 생성된다.")
+    void 발송된_상품이_100점_검수_합격() {
         //given
         User user = createUser();
         Product product = createProduct();
@@ -73,15 +79,52 @@ class InventoryAuthenticationTest {
     }
 
     @Test
-    @DisplayName("")
-    void test2() {
+    @DisplayName("상품이 95점으로 검수에 성공하면, AUTHENTICATED, INCOMPLETE 상태를 가지고 TRANSACTIONS 테이블에 DEPOSIT 데이터가 생성된다.")
+    void 발송된_상품이_95점_검수_합격() {
         //given
+        User user = createUser();
+        Product product = createProduct();
+        Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
 
         //when
+        InventoryAuthenticatePassRequest request = new InventoryAuthenticatePassRequest(Inventory.ProductQuality.INCOMPLETE);
+        inventoryStateChangeService.authenticatePass(inventory.getId(), request);
 
         //then
+        Inventory updatedInventory = inventoryFindService.findById(inventory.getId());
+        Transaction transaction = transactionService.findByUserId(user.getId()).get(0);
+
+        assertSoftly(soft -> {
+            soft.assertThat(updatedInventory.getStatus()).isEqualTo(Status.AUTHENTICATED);
+            soft.assertThat(updatedInventory.getProductQuality()).isEqualTo(Inventory.ProductQuality.INCOMPLETE);
+            soft.assertThat(transaction.getTransactionType()).isEqualTo(Transaction.TransactionType.DEPOSIT);
+            soft.assertThat(transaction.getTransactionAmount()).isEqualTo(CostType.PROTECTION.getCost());
+        });
     }
 
+    @Test
+    @DisplayName("상품이 95점으로 검수에 성공하면, AUTHENTICATED, INCOMPLETE 상태를 가지고 TRANSACTIONS 테이블에 DEPOSIT 데이터가 생성된다.")
+    void 발송된_상품이_검수_실패() {
+        //given
+        User user = createUser();
+        Product product = createProduct();
+        Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
+
+        //when
+        InventoryAuthenticateFailRequest request = new InventoryAuthenticateFailRequest(PenaltyType.PRODUCT_DAMEGED);
+        inventoryStateChangeService.authenticateFail(inventory.getId(), request);
+
+        //then
+        Inventory updatedInventory = inventoryFindService.findById(inventory.getId());
+        Transaction transaction = transactionService.findByUserId(user.getId()).get(0);
+        Long penaltyCost = paymentCalculator.calculatePenaltyCost(product.getProductInfo().getReleasePrice(), PenaltyType.PRODUCT_DAMEGED);
+
+        assertSoftly(soft -> {
+            soft.assertThat(updatedInventory.getStatus()).isEqualTo(Status.RETURN_SHIPPING);
+            soft.assertThat(transaction.getTransactionType()).isEqualTo(Transaction.TransactionType.WITHDRAW);
+            soft.assertThat(transaction.getTransactionAmount()).isEqualTo(penaltyCost + CostType.RETURN_SHIPPING.getCost());
+        });
+    }
 
     private User createUser() {
         return userRepository.save(

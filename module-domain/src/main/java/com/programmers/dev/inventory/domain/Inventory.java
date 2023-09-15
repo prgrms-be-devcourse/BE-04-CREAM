@@ -21,9 +21,7 @@ public class Inventory {
     }
 
     public enum ProductQuality {
-
         COMPLETE,
-
         INCOMPLETE,
     }
 
