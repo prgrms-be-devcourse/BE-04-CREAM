@@ -2,11 +2,13 @@ package com.programmers.dev.transaction.domain;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TRANSACTIONS")
+@Getter
 public class Transaction {
 
     @Id

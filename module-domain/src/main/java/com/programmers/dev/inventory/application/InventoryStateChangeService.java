@@ -4,7 +4,7 @@ package com.programmers.dev.inventory.application;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryRegisterRequest;
+import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
 import com.programmers.dev.payment.application.PaymentCalculator;
 import com.programmers.dev.product.application.ProductService;
 import com.programmers.dev.product.dto.ProductResponse;
@@ -30,7 +30,7 @@ public class InventoryStateChangeService {
 
     private final TransactionService transactionService;
 
-    public void warehouseArrived(InventoryRegisterRequest request) {
+    public void warehouseArrived(InventoryArrivedRequest request) {
         for (Long inventoryId : request.inventoryIds()) {
             Inventory inventory = inventoryFindService.findById(inventoryId);
             inventory.changeStatusInWarehouse();
