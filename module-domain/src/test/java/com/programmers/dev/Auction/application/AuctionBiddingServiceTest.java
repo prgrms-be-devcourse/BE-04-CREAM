@@ -121,6 +121,42 @@ class AuctionBiddingServiceTest {
             .isInstanceOf(NoSuchElementException.class);
     }
 
+    @Test
+    @DisplayName("참여하는 경매의 현재 최고 입찰가를 조회할 수 있다.")
+    void getCurrentBiddingPriceTest() {
+        //given
+        Product savedProduct = getSavedProduct();
+
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(savedProduct);
+
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        auctionService.changeAuctionStatus(new AuctionStatusChangeRequest(
+            auctionSaveResponse.auctionId(),
+            AuctionStatus.ONGOING));
+
+        User user = saveUser();
+
+        AuctionBidRequest auctionBidRequest1 = createAuctionBidRequest(auctionSaveResponse, 4000L);
+        AuctionBidRequest auctionBidRequest2 = createAuctionBidRequest(auctionSaveResponse, 5000L);
+
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest1);
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest2);
+
+        BiddingPriceGetRequest biddingPriceGetRequest = createBiddingPriceGetRequest(auctionBidRequest1);
+
+        //when
+        BiddingPriceGetResponse currentBiddingPrice = auctionBiddingService.getCurrentBiddingPrice(biddingPriceGetRequest);
+
+        //then
+        Assertions.assertThat(currentBiddingPrice.price())
+            .isEqualTo(5000L);
+    }
+
+    private static BiddingPriceGetRequest createBiddingPriceGetRequest(AuctionBidRequest auctionBidRequest1) {
+        return new BiddingPriceGetRequest(auctionBidRequest1.auctionId());
+    }
+
     private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
         return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
     }

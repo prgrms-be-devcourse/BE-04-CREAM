@@ -41,9 +41,9 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
@@ -102,7 +102,7 @@ class AuctionBiddingControllerTest {
         AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
-        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse);
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 3000L);
 
         //when && then
         mockMvc.perform(post("/api/auctions/bidding")
@@ -146,7 +146,7 @@ class AuctionBiddingControllerTest {
         AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
-        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse);
+        AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 3000L);
 
         AuctionBidResponse auctionBidResponse = auctionBiddingService.bidAuction(user.getId(), auctionBidRequest);
 
@@ -170,12 +170,61 @@ class AuctionBiddingControllerTest {
             ));
     }
 
+    @Test
+    @DisplayName("경매 ID를 통해서 해당 경매의 현재 최고 입찰가를 조회할 수 있다.")
+    void getCurrentBiddingPriceTest() throws Exception {
+        //given
+        User user = createUserHavingMoney(10_000L);
+        String accessToken = getAccessToken(user.getId(), user.getUserRole());
+
+        Product product = saveProduct();
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
+
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
+        auctionService.changeAuctionStatus(auctionStatusChangeRequest);
+
+        AuctionBidRequest auctionBidRequest1 = createAuctionBidRequest(auctionSaveResponse, 3000L);
+        AuctionBidRequest auctionBidRequest2 = createAuctionBidRequest(auctionSaveResponse, 4000L);
+
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest1);
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest2);
+
+        BiddingPriceGetRequest biddingPriceGetRequest = new BiddingPriceGetRequest(auctionBidRequest1.auctionId());
+
+        //when && then
+        mockMvc.perform(get("/api/auctions/bidding/current-price")
+                .header(HttpHeaders.AUTHORIZATION, accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(biddingPriceGetRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.price").value(4000))
+            .andDo(print())
+            .andDo(document("get-current-bidding-price",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                requestFields(
+                    fieldWithPath("auctionId").description("id of auction")
+                ),
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                responseFields(
+                    fieldWithPath("auctionId").description("id of auction").type(JsonFieldType.NUMBER),
+                    fieldWithPath("price").description("current bidding price of auction bidding").type(JsonFieldType.NUMBER)
+                )
+            ));
+    }
+
     private static AuctionBiddingCancelRequest createAuctionBiddingCancelRequest(AuctionBidRequest auctionBidRequest, AuctionBidResponse auctionBidResponse) {
         return new AuctionBiddingCancelRequest(auctionBidRequest.auctionId(), auctionBidResponse.price());
     }
 
-    private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse) {
-        return new AuctionBidRequest(auctionSaveResponse.auctionId(), 3000L);
+    private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
+        return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
     }
 
     private static AuctionStatusChangeRequest createAuctionStatusChangeRequest(AuctionSaveResponse auctionSaveResponse) {
