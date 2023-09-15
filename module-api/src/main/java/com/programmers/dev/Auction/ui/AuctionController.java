@@ -5,11 +5,8 @@ import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.Auction.dto.AuctionSaveResponse;
 import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
 import com.programmers.dev.Auction.dto.AuctionStatusChangeResponse;
-import com.programmers.dev.exception.CreamException;
-import com.programmers.dev.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,26 +19,14 @@ public class AuctionController {
 
     @PostMapping
     public ResponseEntity<AuctionSaveResponse> saveAuction(
-        @RequestBody @Validated AuctionSaveRequest auctionSaveRequest,
-        BindingResult bindingResult) {
-        validateRequestBody(bindingResult);
-
+        @RequestBody @Validated AuctionSaveRequest auctionSaveRequest) {
         return ResponseEntity.ok(auctionService.save(auctionSaveRequest));
     }
 
     @PatchMapping("/status")
     public ResponseEntity<AuctionStatusChangeResponse> changeAuctionStatus(
-        @RequestBody @Validated AuctionStatusChangeRequest auctionStatusChangeRequest,
-        BindingResult bindingResult
+        @RequestBody @Validated AuctionStatusChangeRequest auctionStatusChangeRequest
     ) {
-        validateRequestBody(bindingResult);
-
         return ResponseEntity.ok(auctionService.changeAuctionStatus(auctionStatusChangeRequest));
-    }
-
-    private static void validateRequestBody(BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new CreamException(ErrorCode.INVALID_REQUEST_VALUE);
-        }
     }
 }

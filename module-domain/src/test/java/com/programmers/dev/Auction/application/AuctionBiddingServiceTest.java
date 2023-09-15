@@ -173,7 +173,7 @@ class AuctionBiddingServiceTest {
         return user;
     }
 
-    private static AuctionSaveRequest createAuctionSaveRequest(Product savedProduct) {
+    private AuctionSaveRequest createAuctionSaveRequest(Product savedProduct) {
         return new AuctionSaveRequest(
             savedProduct.getId(),
             1000L,
@@ -188,7 +188,6 @@ class AuctionBiddingServiceTest {
         ProductInfo productInfo = new ProductInfo("aaa", LocalDateTime.now(), "red", 1000L);
 
         Product product = new Product(nike, "airForce", productInfo, 250);
-        Product savedProduct = productRepository.save(product);
-        return savedProduct;
+        return productRepository.save(product);
     }
 }

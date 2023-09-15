@@ -5,16 +5,13 @@ import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
-import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
-import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.programmers.dev.exception.ErrorCode.INVALID_AUCTION_BIDDING;
 import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 
 @Service
@@ -31,11 +28,11 @@ public class AuctionBiddingService {
     public AuctionBidResponse bidAuction(Long userId, AuctionBidRequest auctionBidRequest) {
         Auction auction = findAuctionById(auctionBidRequest.auctionId());
 
-        validateAuctionBiddingTime(auction);
+        auction.validateAuctionBiddingTime();
 
         User user = findUserById(userId);
 
-        AuctionBidding auctionBidding = new AuctionBidding(user, auction, auctionBidRequest.price());
+        AuctionBidding auctionBidding = AuctionBidding.bidAuction(user, auction, auctionBidRequest.price());
         AuctionBidding savedAuctionBidding = auctionBiddingRepository.save(auctionBidding);
 
         return AuctionBidResponse.fromEntity(savedAuctionBidding);
@@ -56,13 +53,6 @@ public class AuctionBiddingService {
     private AuctionBidding getTopBiddingPrice(BiddingPriceGetRequest request) {
         return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(request.auctionId())
             .orElseThrow(() -> new CreamException(INVALID_ID));
-    }
-
-
-    private static void validateAuctionBiddingTime(Auction auction) {
-        if (auction.getAuctionStatus() != AuctionStatus.ONGOING) {
-            throw new CreamException(INVALID_AUCTION_BIDDING);
-        }
     }
 
     private Auction findAuctionById(Long auctionId) {

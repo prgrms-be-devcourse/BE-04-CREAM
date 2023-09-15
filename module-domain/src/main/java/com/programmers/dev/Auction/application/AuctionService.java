@@ -6,7 +6,6 @@ import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.Auction.dto.AuctionSaveResponse;
 import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
 import com.programmers.dev.Auction.dto.AuctionStatusChangeResponse;
-import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.product.domain.Product;
 import com.programmers.dev.product.domain.ProductRepository;
@@ -22,17 +21,14 @@ import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
+
     private final ProductRepository productRepository;
 
     @Transactional
     public AuctionSaveResponse save(AuctionSaveRequest auctionSaveRequest) {
         Product product = findProductById(auctionSaveRequest.productId());
 
-        Auction auction = new Auction(
-            product,
-            auctionSaveRequest.startPrice(),
-            auctionSaveRequest.startTime(),
-            auctionSaveRequest.endTime());
+        Auction auction = Auction.createAuctionFirst(product, auctionSaveRequest);
 
         return new AuctionSaveResponse(auctionRepository.save(auction).getId());
 

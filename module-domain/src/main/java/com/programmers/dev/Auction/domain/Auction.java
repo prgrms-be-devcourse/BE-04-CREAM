@@ -1,11 +1,16 @@
 package com.programmers.dev.Auction.domain;
 
+import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.common.AuctionStatus;
+import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+
+import static com.programmers.dev.exception.ErrorCode.*;
 
 @Entity
 @Table(name = "AUCTIONS")
@@ -44,7 +49,17 @@ public class Auction {
 
     }
 
-    public Auction(Product product, Long startPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus auctionStatus, Long bidderId, Long price) {
+    public static Auction createAuctionFirst(Product product, AuctionSaveRequest auctionSaveRequest) {
+        return new Auction(
+            product,
+            auctionSaveRequest.startPrice(),
+            auctionSaveRequest.startTime(),
+            auctionSaveRequest.endTime(),
+            AuctionStatus.BEFORE,
+            null, null);
+    }
+
+    private Auction(Product product, Long startPrice, LocalDateTime startTime, LocalDateTime endTime, AuctionStatus auctionStatus, Long bidderId, Long price) {
         this.product = product;
         this.startPrice = startPrice;
         this.startTime = startTime;
@@ -54,11 +69,13 @@ public class Auction {
         this.price = price;
     }
 
-    public Auction(Product product, Long startPrice, LocalDateTime startTime, LocalDateTime endTime) {
-        this(product, startPrice, startTime, endTime, AuctionStatus.BEFORE, null, null);
-    }
-
     public void changeStatus(AuctionStatus auctionStatus) {
         this.auctionStatus = auctionStatus;
+    }
+
+    public void validateAuctionBiddingTime() {
+        if (this.auctionStatus != AuctionStatus.ONGOING) {
+            throw new CreamException(INVALID_AUCTION_BIDDING);
+        }
     }
 }

@@ -5,11 +5,11 @@ import jakarta.validation.constraints.Positive;
 
 public record AuctionBiddingCancelRequest(
 
-    @NotNull
+    @NotNull(message = "취소할 경매 입찰 ID를 입력해주세요.")
     Long auctionId,
 
-    @NotNull
-    @Positive
+    @NotNull(message = "취소할 입찰의 가격을 입력해주세요.")
+    @Positive(message = "가격은 음수가 될 수 없습니다.")
     Long price
 ) {
 }

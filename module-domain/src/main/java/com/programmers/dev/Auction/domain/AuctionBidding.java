@@ -33,4 +33,8 @@ public class AuctionBidding {
         this.auction = auction;
         this.price = price;
     }
+
+    public static AuctionBidding bidAuction(User user, Auction auction, Long price) {
+        return new AuctionBidding(user, auction, price);
+    }
 }
