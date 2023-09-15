@@ -103,7 +103,7 @@ class InventoryAuthenticationTest {
     }
 
     @Test
-    @DisplayName("상품이 95점으로 검수에 성공하면, AUTHENTICATED, INCOMPLETE 상태를 가지고 TRANSACTIONS 테이블에 DEPOSIT 데이터가 생성된다.")
+    @DisplayName("상품이 검수에 실패하면, RETURN_SHIPPING 상태를 가지고 TRANSACTIONS 테이블에 WITHDRAW 데이터가 생성된다.")
     void 발송된_상품이_검수_실패() {
         //given
         User user = createUser();
