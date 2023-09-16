@@ -369,10 +369,10 @@ class BiddingControllerTest {
         User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
         Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
         Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
-
+        int point = savedSellBidding.getPoint();
         assertAll(
-                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L),
-                () -> assertThat(savedBuyer.getAccount()).isZero(),
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
+                () -> assertThat(savedBuyer.getAccount()).isEqualTo(point),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
                 () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED)
         );

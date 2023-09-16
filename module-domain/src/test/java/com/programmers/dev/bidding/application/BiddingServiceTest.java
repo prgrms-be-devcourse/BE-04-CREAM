@@ -337,9 +337,10 @@ class BiddingServiceTest {
         Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
         Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
 
+        int point = savedSellBidding.getPoint();
         assertAll(
-                () -> assertThat(savedBuyer.getAccount()).isZero(),
-                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L),
+                () -> assertThat(savedBuyer.getAccount()).isEqualTo((long) point),
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
                 () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED)
         );

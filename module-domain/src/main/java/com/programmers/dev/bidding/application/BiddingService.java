@@ -97,6 +97,9 @@ public class BiddingService {
         bidding.finish();
         Bidding sellBidding = bidding.getBidding();
         sellBidding.finish();
+        User buyer = validateUserId(userId);
+        buyer.deposit((long)bidding.getPoint());
+        seller.deposit((long)bidding.getPoint());
     }
 
     private void checkBalance(User user, Bidding bidding) {

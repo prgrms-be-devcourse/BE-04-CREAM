@@ -175,4 +175,9 @@ public class Bidding {
             throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
         }
     }
+
+    public int getPoint() {
+        return this.price / 100;
+    }
+
 }
