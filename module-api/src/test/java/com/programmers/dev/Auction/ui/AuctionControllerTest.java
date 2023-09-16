@@ -1,12 +1,15 @@
 package com.programmers.dev.Auction.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.programmers.dev.Auction.application.AuctionBiddingService;
 import com.programmers.dev.Auction.application.AuctionService;
-import com.programmers.dev.Auction.dto.AuctionSaveRequest;
-import com.programmers.dev.Auction.dto.AuctionSaveResponse;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
+import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.product.domain.*;
+import com.programmers.dev.user.domain.Address;
+import com.programmers.dev.user.domain.User;
+import com.programmers.dev.user.domain.UserRepository;
+import com.programmers.dev.user.domain.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,8 +37,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,6 +59,12 @@ class AuctionControllerTest {
 
     @Autowired
     AuctionService auctionService;
+
+    @Autowired
+    AuctionBiddingService auctionBiddingService;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -116,7 +124,7 @@ class AuctionControllerTest {
         AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
 
-        AuctionStatusChangeRequest auctionStatusChangeRequest = new AuctionStatusChangeRequest(auctionSaveResponse.auctionId(), AuctionStatus.ONGOING);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
 
         //when & then
         mockMvc.perform(patch("/api/auctions/status")
@@ -145,7 +153,79 @@ class AuctionControllerTest {
             ));
     }
 
-    private static AuctionSaveRequest createAuctionSaveRequest(Product product) {
+    @Test
+    @DisplayName("경매가 종료되었을 경우 해당 경매의 낙찰자와 낙찰 금액을 알 수 있다.")
+    void getSuccessfulBidderTest() throws Exception {
+        //given
+        Product product = saveProduct();
+
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+
+        AuctionStatusChangeRequest ongoingRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
+        auctionService.changeAuctionStatus(ongoingRequest);
+
+        User user = saveUser();
+
+        AuctionBidRequest auctionBidRequest1 = createAuctionBidRequest(auctionSaveResponse, 4000L);
+        AuctionBidRequest auctionBidRequest2 = createAuctionBidRequest(auctionSaveResponse, 5000L);
+
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest1);
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest2);
+
+        AuctionStatusChangeRequest finishedRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.FINISHED);
+        auctionService.changeAuctionStatus(finishedRequest);
+
+        SuccessfulBidderGetRequest successfulBidderGetRequest = new SuccessfulBidderGetRequest(finishedRequest.id());
+
+        //when && then
+        mockMvc.perform(get("/api/auctions/successful-bidder")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(successfulBidderGetRequest)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.price").value(5000L))
+            .andDo(print())
+            .andDo(document("get-successful-bidder",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                requestFields(
+                    fieldWithPath("auctionId").description("id of auction").type(JsonFieldType.NUMBER)
+                ),
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                responseFields(
+                    fieldWithPath("auctionId").description("id of auction").type(JsonFieldType.NUMBER),
+                    fieldWithPath("userId").description("id of successful bidder").type(JsonFieldType.NUMBER),
+                    fieldWithPath("price").description("price of winning bid").type(JsonFieldType.NUMBER)
+                )
+            ));
+    }
+
+    private AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
+        return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
+    }
+
+    private User saveUser() {
+        User user = new User(
+            "aaa@mail.com",
+            "123",
+            "kkk",
+            3000L,
+            new Address("aaa", "bbb", "ccc"),
+            UserRole.ROLE_USER);
+        userRepository.save(user);
+        return user;
+    }
+
+    private AuctionStatusChangeRequest createAuctionStatusChangeRequest(AuctionSaveResponse auctionSaveResponse, AuctionStatus auctionStatus) {
+        return new AuctionStatusChangeRequest(auctionSaveResponse.auctionId(), auctionStatus);
+    }
+
+    private AuctionSaveRequest createAuctionSaveRequest(Product product) {
         return new AuctionSaveRequest(
             product.getId(),
             2000L,
