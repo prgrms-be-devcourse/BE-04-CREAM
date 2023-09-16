@@ -35,6 +35,7 @@ jwt:
   access-token-expiry-time-ms: 60000000 # 100000분
   refresh-token-expiry-time-ms: 1800000
 
+url: localhost
 ---
 spring:
   config:
@@ -42,3 +43,5 @@ spring:
       on-profile: prod
   jpa:
     show-sql: false
+
+url: 13.125.254.94

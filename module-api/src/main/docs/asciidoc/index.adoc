@@ -7,3 +7,13 @@
 :toclevels: 2
 
 // operation::find-all-brands[snippets = 'http-request,http-response']
+
+[[Bidding]]
+== 입찰
+
+[[Bidding-register-purchase]]
+=== 구매 입찰 등록 API
+
+구매 입찰 등록의 API는 다음과 같습니다.
+
+operation::bidding-register-purchase[snippets ='http-request,http-response']
