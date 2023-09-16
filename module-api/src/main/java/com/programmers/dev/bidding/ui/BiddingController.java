@@ -84,7 +84,7 @@ public class BiddingController {
             @AuthenticationPrincipal Long userId,
             @PathVariable Long biddingId
     ) {
-        biddingService.deposit(userId, biddingId);
+        biddingService.sendMoneyForBidding(userId, biddingId);
 
         return ResponseEntity.ok(BiddingMessageResponse.of("successfully deposited"));
     }

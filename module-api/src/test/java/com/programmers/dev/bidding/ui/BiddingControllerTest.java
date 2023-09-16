@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -366,7 +365,7 @@ class BiddingControllerTest {
 
         BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId())); // 거래 체결
         biddingService.inspect(sellBidding.getId(), "ok");  // 검수 처리
-        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+        biddingService.sendMoneyForBidding(buyer.getId(), biddingResponse.biddingId());
 
         String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
         // when

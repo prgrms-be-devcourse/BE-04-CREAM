@@ -298,7 +298,7 @@ class BiddingServiceTest {
         em.flush();
         em.clear();
         // when
-        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+        biddingService.sendMoneyForBidding(buyer.getId(), biddingResponse.biddingId());
 
         // then
         User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
@@ -326,7 +326,7 @@ class BiddingServiceTest {
         TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
         BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", transactBiddingRequest);
         biddingService.inspect(sellBidding.getId(), "ok");
-        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+        biddingService.sendMoneyForBidding(buyer.getId(), biddingResponse.biddingId());
 
         // when
         biddingService.finish(buyer.getId(), biddingResponse.biddingId());

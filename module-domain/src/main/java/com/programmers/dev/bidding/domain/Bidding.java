@@ -57,6 +57,8 @@ public class Bidding {
     @Column(name = "TRANSACTION_DATE")
     private LocalDateTime transactionDate;
 
+
+    // == Constructor == //
     protected Bidding() {
 
     }
@@ -98,7 +100,7 @@ public class Bidding {
 
     public static Bidding transactPurchaseBidding(Long userId, Bidding purchaseBidding) {
         LocalDateTime transactionDate = LocalDateTime.now();
-        purchaseBidding.transactPurchaseBidding(purchaseBidding.getDeliveryType(), transactionDate);
+        purchaseBidding.transactPurchaseBidding(transactionDate);
         return new Bidding(userId, purchaseBidding.getProductId(), purchaseBidding, purchaseBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.SELL, null, LocalDateTime.now(), transactionDate);
     }
 
@@ -114,20 +116,14 @@ public class Bidding {
         this.transactionDate = transactionDate;
     }
 
-    public void transactSellBidding(LocalDateTime transactionDate) {
+    // == Business Logic == //
+    private void transactSellBidding(LocalDateTime transactionDate) {
         this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
     }
 
-    /*
-    임시 구현 => 현재는 거래가 체결 될 경우 바로 배송되거나 바로 보관 된다.
-     */
-    public void transactPurchaseBidding(DeliveryType deliveryType, LocalDateTime transactionDate) {
-        if (deliveryType.equals(DeliveryType.DELIVERY)) {
-            this.status = Status.IN_TRANSACTION;
-        } else {
-            this.status = Status.IN_TRANSACTION;
-        }
+    private void transactPurchaseBidding(LocalDateTime transactionDate) {
+        this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
     }
 
@@ -135,7 +131,7 @@ public class Bidding {
         this.status = Status.EXPIRED;
     }
 
-    public void checkAfterDueDate() {
+    public void checkDurationOfBidding() {
         if (this.dueDate.isBefore(LocalDateTime.now())) {
             throw new CreamException(ErrorCode.AFTER_DUE_DATE);
         }
@@ -164,26 +160,31 @@ public class Bidding {
         this.status = Status.FINISHED;
     }
 
-    public void validateUser(Long userId) throws CreamException{
+    public void checkAuthorityOfUser(Long userId) throws CreamException{
         if (!this.userId.equals(userId)) {
             throw new CreamException(ErrorCode.NO_AUTHORITY);
         }
     }
 
-    public void validateSellBidding() {
+    private void checkSellBiddingAuthenticated() {
         if (this.getBidding().getStatus() != Status.AUTHENTICATED) {
             throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
         }
-    }
-
-    public int getPoint() {
-        return this.price / 100;
     }
 
     public void checkAbusing(Long userId) {
         if (this.userId.equals(userId)) {
             throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
         }
+    }
+
+    public void checkBiddingBeforeDeposit(Long userId) {
+        checkAuthorityOfUser(userId);
+        checkSellBiddingAuthenticated();
+    }
+
+    public int getPoint() {
+        return this.price / 100;
     }
 
 }
