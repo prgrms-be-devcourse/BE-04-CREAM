@@ -5,6 +5,7 @@ import com.programmers.dev.inventory.application.InventoryStateChangeService;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
+import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,13 @@ public class InventoryStateChangeController {
     @PostMapping("/authentication/{inventoryId}/failed")
     public ResponseEntity<String> authenticateFailed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
         inventoryStateChangeService.authenticateFailed(inventoryId, request);
+
+        return ResponseEntity.ok("success");
+    }
+
+    @PostMapping("/{inventoryId}/set-price")
+    public ResponseEntity<String> setPrice(@PathVariable Long inventoryId, @RequestBody InventorySetPriceRequest request) {
+        inventoryStateChangeService.setPrice(inventoryId, request);
 
         return ResponseEntity.ok("success");
     }

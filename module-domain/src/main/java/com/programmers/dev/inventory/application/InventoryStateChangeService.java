@@ -6,6 +6,7 @@ import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
+import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import com.programmers.dev.product.application.ProductService;
 import com.programmers.dev.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,10 @@ public class InventoryStateChangeService {
         Long penaltyCost = costCalculator.calculatePenaltyCost(productResponse.productInfo().getReleasePrice(), request.penaltyType());
         inventory.changeStatusAuthenticationFailed(penaltyCost);
     }
+
+    public void setPrice(Long inventoryId, InventorySetPriceRequest request) {
+        Inventory inventory = inventoryFindService.findById(inventoryId);
+        inventory.setPrice(request.hopedPrice());
+        inventory.changeStatusLive();
+    }
 }
-
-
-
