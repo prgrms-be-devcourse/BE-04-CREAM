@@ -1,11 +1,14 @@
 package com.programmers.dev.inventory.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.programmers.dev.common.Status;
+import com.programmers.dev.inventory.domain.Inventory;
+import com.programmers.dev.inventory.domain.InventoryRepository;
 import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
-
+import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import com.programmers.dev.product.domain.*;
-import com.programmers.dev.security.jwt.*;
+import com.programmers.dev.security.jwt.JwtConfigure;
+import com.programmers.dev.security.jwt.JwtTokenUtils;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -46,13 +49,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class InventoryControllerTest {
+class InventoryStateChangeControllerSetPriceTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -79,35 +85,33 @@ class InventoryControllerTest {
     }
 
     @Test
-    @DisplayName("보관판매 신청을 하면 보관판매 ID를 반환받는다.")
-    void 보관판매에_성공하면_생성된_보관판매_ID를_반환받는다() throws Exception {
-        User user = createUserHavingMoney(10_000L);
+    @DisplayName("요청한 inventoryId 상품에 대한 판매희망가를 입력하면 inventoryId를 반환받는다.")
+    void 판매희망가_입력() throws Exception {
+        //given
+        User user = createUser();
         String accessToken = getAccessToken(user.getId(), user.getUserRole());
-        Product product = getTargetProduct();
+        Product product = createProduct();
+        Long hopedPrice = 100_000L;
+        Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
 
-        InventoryRegisterRequest request = crateStoreRequest(product.getId(), 3L, user.getAddress());
-
-
-        mockMvc.perform(post("/api/inventories/register")
+        //when && then
+        InventorySetPriceRequest request = new InventorySetPriceRequest(hopedPrice);
+        mockMvc.perform(post("/api/inventories/state-change/{inventoryId}/set-price", inventory.getId())
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventory-store",
+                .andDo(document("inventory-set-price",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
                         ),
                         requestFields(
-                                fieldWithPath("productId").description("id of product"),
-                                fieldWithPath("quantity").description("price of bidding"),
-                                fieldWithPath("returnZipcode").description("returnZipcode of inventory"),
-                                fieldWithPath("returnAddress").description("returnAddress of inventory"),
-                                fieldWithPath("returnAddressDetail").description("returnAddressDetail of inventory")
+                                fieldWithPath("hopedPrice").description("hopedPrice of inventory")
                         ),
                         responseFields(
-                                fieldWithPath("inventoryIds").description("created inventoryIds")
+                                fieldWithPath("inventoryId").description("id of inventory")
                         )
                 ));
     }
@@ -116,11 +120,11 @@ class InventoryControllerTest {
         return "Bearer " + JwtTokenUtils.generateAccessToken(String.valueOf(userId), userRole.toString(), jwtConfigure.getSecretKey(), jwtConfigure.getAccessTokenExpiryTimeMs());
     }
 
-    private User createUserHavingMoney(Long account) {
-        return userRepository.save(new User("test@email.com", "test", "sellUser", account, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
+    private User createUser() {
+        return userRepository.save(new User("test@email.com", "test", "sellUser", 10_000L, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
     }
 
-    private Product getTargetProduct() {
+    private Product createProduct() {
         Brand brand = new Brand("ADIDAS");
         brandRepository.save(brand);
 
@@ -130,7 +134,9 @@ class InventoryControllerTest {
         return productRepository.save(product);
     }
 
-    private InventoryRegisterRequest crateStoreRequest(Long productId, Long quantity, Address address) {
-        return new InventoryRegisterRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
+    private Inventory createInventory(Long userId, Long productId, Address address) {
+        Inventory inventory = new Inventory(userId, productId, Inventory.InventoryType.SELL, Status.AUTHENTICATED, address, LocalDateTime.now());
+
+        return inventoryRepository.save(inventory);
     }
 }
