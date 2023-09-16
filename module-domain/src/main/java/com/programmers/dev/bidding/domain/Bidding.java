@@ -160,6 +160,10 @@ public class Bidding {
         }
     }
 
+    public void finish() {
+        this.status = Status.FINISHED;
+    }
+
     public void validateUser(Long userId) throws CreamException{
         if (!this.userId.equals(userId)) {
             throw new CreamException(ErrorCode.NO_AUTHORITY);
@@ -171,4 +175,9 @@ public class Bidding {
             throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
         }
     }
+
+    public int getPoint() {
+        return this.price / 100;
+    }
+
 }

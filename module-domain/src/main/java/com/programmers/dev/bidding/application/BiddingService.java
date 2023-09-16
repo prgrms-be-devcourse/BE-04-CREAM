@@ -88,6 +88,20 @@ public class BiddingService {
         deposit(bidding, user);
     }
 
+    @Transactional
+    public void finish(Long userId, Long biddingId) {
+        Bidding bidding = getBidding(biddingId);
+        bidding.validateUser(userId);
+        User seller = validateUserId(bidding.getBidding().getUserId());
+        seller.deposit((long) bidding.getPrice());
+        bidding.finish();
+        Bidding sellBidding = bidding.getBidding();
+        sellBidding.finish();
+        User buyer = validateUserId(userId);
+        buyer.deposit((long)bidding.getPoint());
+        seller.deposit((long)bidding.getPoint());
+    }
+
     private void checkBalance(User user, Bidding bidding) {
         if (user.getAccount() < bidding.getPrice()) {
             throw new CreamException(ErrorCode.INSUFFICIENT_ACCOUNT_MONEY);

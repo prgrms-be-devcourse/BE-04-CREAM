@@ -43,6 +43,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.mo
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(RestDocumentationExtension.class)
@@ -333,6 +334,47 @@ class BiddingControllerTest {
         assertAll(
                 () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERING),
                 () -> assertThat(savedBuyer.getAccount()).isEqualTo(0L)
+        );
+
+    }
+
+    @Test
+    @DisplayName("거래중인 입찰에 대해 거래 종료 요청을 할 경우 구매, 판매 입찰의 상태가 종료되어야 한다.")
+    void finish() throws Exception{
+        // given
+        User seller = saveUser("user1@email.com", "user1");
+        User buyer = saveUser("user2@email.com", "user2");
+
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding sellBidding = saveSellBidding(seller, product);
+
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId())); // 거래 체결
+        biddingService.inspect(sellBidding.getId(), "ok");  // 검수 처리
+        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                        post("/api/bidding/finish/{biddingId}", biddingResponse.biddingId())
+                                .param("userId", buyer.getId().toString())
+                )
+                .andDo(document("bidding-finish",
+                        responseFields(
+                                fieldWithPath("message").description("message when process succeeded")
+                        ))
+                );
+        // then
+        resultActions.andExpect(status().isOk());
+
+        User savedSeller = userRepository.findById(seller.getId()).orElseThrow();
+        User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        int point = savedSellBidding.getPoint();
+        assertAll(
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
+                () -> assertThat(savedBuyer.getAccount()).isEqualTo(point),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED)
         );
 
     }
