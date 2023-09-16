@@ -59,13 +59,13 @@ public class BiddingController {
     }
 
     @PostMapping("/inspect/{biddingId}")
-    public ResponseEntity<InspectResponse> inspectBiddingProduct(
+    public ResponseEntity<BiddingMessageResponse> inspectBiddingProduct(
             @PathVariable Long biddingId,
             @RequestParam String result
     ) {
         biddingService.inspect(biddingId, result);
         return ResponseEntity.ok().
-                body(InspectResponse.of(makeResponse(result)));
+                body(BiddingMessageResponse.of(makeResponse(result)));
     }
 
     private String makeResponse(String result) {
@@ -79,13 +79,22 @@ public class BiddingController {
     }
 
     @PostMapping("/deposit/{biddingId}")
-    public ResponseEntity<DepositResponse> deposit(
+    public ResponseEntity<BiddingMessageResponse> deposit(
             @RequestParam Long userId,
             @PathVariable Long biddingId
     ) {
         biddingService.deposit(userId, biddingId);
 
-        return ResponseEntity.ok(DepositResponse.of("successfully deposited"));
+        return ResponseEntity.ok(BiddingMessageResponse.of("successfully deposited"));
+    }
+
+    @PostMapping("/finish/{biddingId}")
+    public ResponseEntity<BiddingMessageResponse> finish(
+            @RequestParam Long userId,
+            @PathVariable Long biddingId
+    ) {
+        biddingService.finish(userId, biddingId);
+        return ResponseEntity.ok(BiddingMessageResponse.of("successfully finished"));
     }
 
 }

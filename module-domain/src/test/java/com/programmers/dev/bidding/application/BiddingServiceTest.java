@@ -312,6 +312,40 @@ class BiddingServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("구매자가 거래 종료를 할 경우 모든 입찰은 거래 종료 상태로 바뀌며, 판매자의 계좌에 돈이 송금된다.")
+    void finish() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product, 10L);
+
+        TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", transactBiddingRequest);
+        biddingService.inspect(sellBidding.getId(), "ok");
+        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+
+        // when
+        biddingService.finish(buyer.getId(), biddingResponse.biddingId());
+
+        // then
+        User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
+        User savedSeller = userRepository.findById(seller.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedBuyer.getAccount()).isZero(),
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED)
+        );
+
+    }
+
 
     private User saveUser(String email, String nickname) {
         User user = new User(email, "password", nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
