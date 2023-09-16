@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -39,7 +37,7 @@ public class BiddingService {
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
         Bidding sellBidding = getBiddingByBiddingId(request.biddingId());
-        validateBadRequest(userId, sellBidding);
+        sellBidding.checkAbusing(userId);
         sellBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactSellBidding(userId, storage, sellBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
@@ -60,7 +58,7 @@ public class BiddingService {
     @Transactional
     public BiddingResponse transactPurchaseBidding(Long userId, TransactBiddingRequest request) {
         Bidding purchaseBidding = getBiddingByBiddingId(request.biddingId());
-        validateBadRequest(userId, purchaseBidding);
+        purchaseBidding.checkAbusing(userId);
         purchaseBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactPurchaseBidding(userId, purchaseBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
@@ -128,21 +126,13 @@ public class BiddingService {
         );
     }
 
-    private void validateBadRequest(Long userId, Bidding bidding) {
-        if (bidding.getUserId().equals(userId)) {
-            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
-        }
-    }
-
     private void checkRequestPriceOverBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
-        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType)
-                .stream().sorted(Comparator.comparingInt(Bidding::getPrice))
-                .findFirst().ifPresent(
-                        bidding -> {
-                            if (bidding.getPrice() < request.price()) {
-                                throw new CreamException(ErrorCode.OVER_PRICE);
-                            }
-                        }
-                );
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
+                bidding -> {
+                    if (bidding.getPrice() < request.price()) {
+                        throw new CreamException(ErrorCode.OVER_PRICE);
+                    }
+                }
+        );
     }
 }

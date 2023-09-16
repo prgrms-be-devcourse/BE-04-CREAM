@@ -180,4 +180,10 @@ public class Bidding {
         return this.price / 100;
     }
 
+    public void checkAbusing(Long userId) {
+        if (this.userId.equals(userId)) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+    }
+
 }
