@@ -11,4 +11,9 @@ public class CreamException extends RuntimeException {
     public ErrorCode getErrorCode() {
         return errorCode;
     }
+
+    @Override
+    public String getMessage() {
+        return errorCode.getDescription();
+    }
 }
