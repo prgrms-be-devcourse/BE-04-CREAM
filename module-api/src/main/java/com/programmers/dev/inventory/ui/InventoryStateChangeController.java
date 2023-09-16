@@ -24,16 +24,16 @@ public class InventoryStateChangeController {
         return ResponseEntity.ok("success");
     }
 
-    @PostMapping("/authentication/{inventoryId}/pass")
-    public ResponseEntity<String> authenticatePass(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticatePassRequest request) {
-        inventoryStateChangeService.authenticatePass(inventoryId, request);
+    @PostMapping("/authentication/{inventoryId}/passed")
+    public ResponseEntity<String> authenticatePassed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticatePassRequest request) {
+        inventoryStateChangeService.authenticatePassed(inventoryId, request);
 
         return ResponseEntity.ok("success");
     }
 
-    @PostMapping("/authentication/{inventoryId}/fail")
-    public ResponseEntity<String> authenticateFail(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
-        inventoryStateChangeService.authenticateFail(inventoryId, request);
+    @PostMapping("/authentication/{inventoryId}/failed")
+    public ResponseEntity<String> authenticateFailed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
+        inventoryStateChangeService.authenticateFailed(inventoryId, request);
 
         return ResponseEntity.ok("success");
     }
