@@ -2,10 +2,7 @@ package com.programmers.dev.inventory.ui;
 
 
 import com.programmers.dev.inventory.application.InventoryStateChangeService;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
-import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
+import com.programmers.dev.inventory.dto.statechange.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,30 +16,30 @@ public class InventoryStateChangeController {
     private final InventoryStateChangeService inventoryStateChangeService;
 
     @PostMapping("/arrived")
-    public ResponseEntity<String> warehouseArrived(@RequestBody InventoryArrivedRequest request) {
+    public ResponseEntity<InventoryMultipleStateChangeResponse> warehouseArrived(@RequestBody InventoryArrivedRequest request) {
         inventoryStateChangeService.warehouseArrived(request);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(new InventoryMultipleStateChangeResponse(request.inventoryIds()));
     }
 
     @PostMapping("/authentication/{inventoryId}/passed")
-    public ResponseEntity<String> authenticatePassed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticatePassRequest request) {
+    public ResponseEntity<InventorySingleStateChangeResponse> authenticatePassed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticatePassRequest request) {
         inventoryStateChangeService.authenticatePassed(inventoryId, request);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(new InventorySingleStateChangeResponse(inventoryId));
     }
 
     @PostMapping("/authentication/{inventoryId}/failed")
-    public ResponseEntity<String> authenticateFailed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
+    public ResponseEntity<InventorySingleStateChangeResponse> authenticateFailed(@PathVariable Long inventoryId, @RequestBody InventoryAuthenticateFailRequest request) {
         inventoryStateChangeService.authenticateFailed(inventoryId, request);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(new InventorySingleStateChangeResponse(inventoryId));
     }
 
     @PostMapping("/{inventoryId}/set-price")
-    public ResponseEntity<String> setPrice(@PathVariable Long inventoryId, @RequestBody InventorySetPriceRequest request) {
+    public ResponseEntity<InventorySingleStateChangeResponse> setPrice(@PathVariable Long inventoryId, @RequestBody InventorySetPriceRequest request) {
         inventoryStateChangeService.setPrice(inventoryId, request);
 
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok(new InventorySingleStateChangeResponse(inventoryId));
     }
 }
