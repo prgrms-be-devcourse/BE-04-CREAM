@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -22,7 +23,7 @@ public class BiddingController {
 
     @PostMapping("/purchase")
     public ResponseEntity<BiddingResponse> registerPurchaseBidding(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(required = false, defaultValue = "delivery") String storage,
             @RequestBody @Valid RegisterBiddingRequest request
     ) {
@@ -32,7 +33,7 @@ public class BiddingController {
 
     @PostMapping("/purchase-now")
     public ResponseEntity<BiddingResponse> transactSellBidding(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(required = false, defaultValue = "delivery") String storage,
             @RequestBody @Valid TransactBiddingRequest request
     ) {
@@ -42,7 +43,7 @@ public class BiddingController {
 
     @PostMapping("/sell")
     public ResponseEntity<BiddingResponse> registerSellBidding(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody @Valid RegisterBiddingRequest request
     ) {
         BiddingResponse biddingResponse = biddingService.registerSellBidding(userId, request);
@@ -51,7 +52,7 @@ public class BiddingController {
 
     @PostMapping("/sell-now")
     public ResponseEntity<BiddingResponse> transactPurchaseBidding(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody @Valid TransactBiddingRequest request
     ) {
         BiddingResponse biddingResponse = biddingService.transactPurchaseBidding(userId, request);
@@ -80,17 +81,17 @@ public class BiddingController {
 
     @PostMapping("/deposit/{biddingId}")
     public ResponseEntity<BiddingMessageResponse> deposit(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long biddingId
     ) {
-        biddingService.deposit(userId, biddingId);
+        biddingService.sendMoneyForBidding(userId, biddingId);
 
         return ResponseEntity.ok(BiddingMessageResponse.of("successfully deposited"));
     }
 
     @PostMapping("/finish/{biddingId}")
     public ResponseEntity<BiddingMessageResponse> finish(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long biddingId
     ) {
         biddingService.finish(userId, biddingId);

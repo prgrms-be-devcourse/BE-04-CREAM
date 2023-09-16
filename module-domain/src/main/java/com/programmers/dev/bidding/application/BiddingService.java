@@ -15,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -27,79 +25,65 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse registerPurchaseBidding(Long userId, String storage, RegisterBiddingRequest request) {
-        validateUserId(userId);
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.SELL);
 
-        Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), storage, request.dueDate());
-        Bidding savedBidding = biddingRepository.save(bidding);
+        Bidding savedBidding = biddingRepository.save(
+                Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), storage, request.dueDate())
+        );
 
         return BiddingResponse.of(savedBidding.getId());
     }
 
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
-        validateUserId(userId);
-        Bidding sellBidding = getBidding(request.biddingId());
-        validateBadRequest(userId, sellBidding);
-        sellBidding.checkAfterDueDate();
-        Bidding bidding = Bidding.transactSellBidding(userId, storage, sellBidding);
-        Bidding savedBidding = biddingRepository.save(bidding);
+        validateBidding(userId,
+                getBiddingByBiddingId(request.biddingId())
+        );
+
+        Bidding savedBidding = biddingRepository.save(
+                Bidding.transactSellBidding(userId, storage, getBiddingByBiddingId(request.biddingId()))
+        );
 
         return BiddingResponse.of(savedBidding.getId());
     }
 
     @Transactional
     public BiddingResponse registerSellBidding(Long userId, RegisterBiddingRequest request) {
-        validateUserId(userId);
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.PURCHASE);
-        Bidding bidding = Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate());
-        Bidding savedBidding = biddingRepository.save(bidding);
+
+        Bidding savedBidding = biddingRepository.save(
+                Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate())
+        );
 
         return BiddingResponse.of(savedBidding.getId());
     }
 
     @Transactional
     public BiddingResponse transactPurchaseBidding(Long userId, TransactBiddingRequest request) {
-        validateUserId(userId);
-        Bidding purchaseBidding = getBidding(request.biddingId());
-        validateBadRequest(userId, purchaseBidding);
-        purchaseBidding.checkAfterDueDate();
-        Bidding bidding = Bidding.transactPurchaseBidding(userId, purchaseBidding);
-        Bidding savedBidding = biddingRepository.save(bidding);
+        Bidding purchaseBidding = getBiddingByBiddingId(request.biddingId());
+        validateBidding(userId, purchaseBidding);
+
+        Bidding savedBidding = biddingRepository.save(
+                Bidding.transactPurchaseBidding(userId, purchaseBidding)
+        );
 
         return BiddingResponse.of(savedBidding.getId());
     }
 
     @Transactional
     public void inspect(Long biddingId, String result) {
-        Bidding bidding = getBidding(biddingId);
-        bidding.inspect(result);
+        getBiddingByBiddingId(biddingId).inspect(result);
     }
 
     @Transactional
-    public void deposit(Long userId, Long biddingId) {
-        User user = validateUserId(userId);
-        Bidding bidding = getBidding(biddingId);
-        bidding.validateUser(userId);
-        bidding.validateSellBidding();
+    public void sendMoneyForBidding(Long userId, Long biddingId) {
+        User user = getUserByUserId(userId);
+        Bidding bidding = getBiddingByBiddingId(biddingId);
+        bidding.checkBiddingBeforeDeposit(userId);
         checkBalance(user, bidding);
-        deposit(bidding, user);
-    }
-
-    @Transactional
-    public void finish(Long userId, Long biddingId) {
-        Bidding bidding = getBidding(biddingId);
-        bidding.validateUser(userId);
-        User seller = validateUserId(bidding.getBidding().getUserId());
-        seller.deposit((long) bidding.getPrice());
-        bidding.finish();
-        Bidding sellBidding = bidding.getBidding();
-        sellBidding.finish();
-        User buyer = validateUserId(userId);
-        buyer.deposit((long)bidding.getPoint());
-        seller.deposit((long)bidding.getPoint());
+        sendMoneyForBidding(bidding, user);
     }
 
     private void checkBalance(User user, Bidding bidding) {
@@ -108,18 +92,45 @@ public class BiddingService {
         }
     }
 
-    private void deposit(Bidding bidding, User user) {
+    private void sendMoneyForBidding(Bidding bidding, User user) {
         bidding.deposit();
         user.withdraw((long) bidding.getPrice());
     }
 
-    private User validateUserId(Long userId) {
+    @Transactional
+    public void finish(Long userId, Long biddingId) {
+        Bidding purchaseBidding = getBiddingByBiddingId(biddingId);
+        finishPurchaseAndSellBidding(userId, purchaseBidding);
+        depositMoneyAndPoint(userId, purchaseBidding);
+    }
+
+    private void finishPurchaseAndSellBidding(Long userId, Bidding bidding) {
+        bidding.checkAuthorityOfUser(userId);
+        bidding.finish();
+        Bidding sellBidding = bidding.getBidding();
+        sellBidding.finish();
+    }
+
+    private void depositMoneyAndPoint(Long userId, Bidding purchaseBidding) {
+        User seller = getUserByUserId(purchaseBidding.getBidding().getUserId());
+        seller.deposit((long) purchaseBidding.getPrice());
+        seller.deposit((long) purchaseBidding.getPoint());
+        User buyer = getUserByUserId(userId);
+        buyer.deposit((long) purchaseBidding.getPoint());
+    }
+
+    private static void validateBidding(Long userId, Bidding sellBidding) {
+        sellBidding.checkAbusing(userId);
+        sellBidding.checkDurationOfBidding();
+    }
+
+    private User getUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new CreamException(ErrorCode.NO_AUTHENTICATION)
         );
     }
 
-    private Bidding getBidding(Long biddingId) {
+    private Bidding getBiddingByBiddingId(Long biddingId) {
         return biddingRepository.findById(biddingId)
                 .orElseThrow(
                         () -> new CreamException(ErrorCode.INVALID_ID)
@@ -132,21 +143,13 @@ public class BiddingService {
         );
     }
 
-    private void validateBadRequest(Long userId, Bidding bidding) {
-        if (bidding.getUserId().equals(userId)) {
-            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
-        }
-    }
-
     private void checkRequestPriceOverBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
-        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType)
-                .stream().sorted(Comparator.comparingInt(Bidding::getPrice))
-                .findFirst().ifPresent(
-                        bidding -> {
-                            if (bidding.getPrice() < request.price()) {
-                                throw new CreamException(ErrorCode.OVER_PRICE);
-                            }
-                        }
-                );
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
+                bidding -> {
+                    if (bidding.getPrice() < request.price()) {
+                        throw new CreamException(ErrorCode.OVER_PRICE);
+                    }
+                }
+        );
     }
 }

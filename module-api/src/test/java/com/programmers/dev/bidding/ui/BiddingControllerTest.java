@@ -9,6 +9,8 @@ import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.product.domain.*;
+import com.programmers.dev.security.jwt.JwtConfigure;
+import com.programmers.dev.security.jwt.JwtTokenUtils;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -21,9 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -74,7 +77,7 @@ class BiddingControllerTest {
     BiddingService biddingService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private JwtConfigure jwtConfigure;
 
     @Value("${jwt.secret-key}")
     String key;
@@ -84,6 +87,7 @@ class BiddingControllerTest {
                RestDocumentationContextProvider restDocumentationContextProvider) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
                 .addFilter(new CharacterEncodingFilter("UTF-8", true))
+                .apply(SecurityMockMvcConfigurers.springSecurity())
                 .apply(documentationConfiguration(restDocumentationContextProvider)
                         .operationPreprocessors()
                         .withRequestDefaults(modifyUris().host("13.125.254.94"), prettyPrint())
@@ -101,12 +105,13 @@ class BiddingControllerTest {
 
         RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
 
+        String accessToken = getAccessToken(user.getId(), user.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/purchase")
                                 .contentType("application/json")
                                 .content(objectMapper.writeValueAsString(request))
-                                .param("userId", user.getId().toString())
+                                .header(HttpHeaders.AUTHORIZATION, accessToken)
                 )
                 .andDo(
                         document("bidding-register-purchase",
@@ -148,12 +153,13 @@ class BiddingControllerTest {
 
         TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
 
+        String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/purchase-now")
                                 .contentType("application/json")
                                 .content(objectMapper.writeValueAsString(transactBiddingRequest))
-                                .param("userId", buyer.getId().toString())
+                                .header(HttpHeaders.AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-transact-purchase",
                                 requestHeaders(
@@ -190,12 +196,13 @@ class BiddingControllerTest {
 
         RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
 
+        String accessToken = getAccessToken(user.getId(), user.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/sell")
                                 .contentType("application/json")
                                 .content(objectMapper.writeValueAsString(request))
-                                .param("userId", user.getId().toString())
+                                .header(AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-register-sell",
                         requestHeaders(
@@ -241,12 +248,13 @@ class BiddingControllerTest {
 
         TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(purchaseBidding.getId());
 
+        String accessToken = getAccessToken(seller.getId(), seller.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/sell-now")
                                 .contentType("application/json")
                                 .content(objectMapper.writeValueAsString(transactBiddingRequest))
-                                .param("userId", seller.getId().toString())
+                                .header(AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-transact-purchase",
                         requestHeaders(
@@ -271,6 +279,9 @@ class BiddingControllerTest {
         assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
     }
 
+    /*
+    todo : Security 변경 후 테스트 코드 재 작성 (임시 구현)
+     */
     @Test
     @DisplayName("판매자의 물품에 대해 검수를 통과할 경우 판매 입찰의 상태가 변경 되어야 한다.")
     void inspectBiddingProduct() throws Exception{
@@ -284,11 +295,12 @@ class BiddingControllerTest {
 
         BiddingResponse biddingResponse =
                 biddingService.transactPurchaseBidding(seller.getId(), new TransactBiddingRequest(purchaseBidding.getId()));
-
+        String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/inspect/{biddingId}", biddingResponse.biddingId())
                                 .param("result", "ok")
+                                .header(AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-inspect",
                         responseFields(
@@ -315,10 +327,12 @@ class BiddingControllerTest {
 
         BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId())); // 거래 체결
         biddingService.inspect(sellBidding.getId(), "ok");  // 검수 처리
+
+        String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/deposit/{biddingId}", biddingResponse.biddingId())
-                                .param("userId", buyer.getId().toString())
+                                .header(AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-deposit",
                         responseFields(
@@ -351,11 +365,13 @@ class BiddingControllerTest {
 
         BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId())); // 거래 체결
         biddingService.inspect(sellBidding.getId(), "ok");  // 검수 처리
-        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+        biddingService.sendMoneyForBidding(buyer.getId(), biddingResponse.biddingId());
+
+        String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
         // when
         ResultActions resultActions = this.mockMvc.perform(
                         post("/api/bidding/finish/{biddingId}", biddingResponse.biddingId())
-                                .param("userId", buyer.getId().toString())
+                                .header(AUTHORIZATION, accessToken)
                 )
                 .andDo(document("bidding-finish",
                         responseFields(
@@ -380,7 +396,7 @@ class BiddingControllerTest {
     }
 
     private User saveUser(String email, String nickname) {
-        User user = new User(email, passwordEncoder.encode("password"), nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
+        User user = new User(email, "password", nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
         return userRepository.saveAndFlush(user);
     }
 
@@ -403,5 +419,9 @@ class BiddingControllerTest {
     private Bidding savePurchaseBidding(User buyer, Product product) {
         Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, "delivery", 20L);
         return biddingRepository.save(purchaseBidding);
+    }
+
+    private String getAccessToken(Long userId, UserRole userRole) {
+        return "Bearer " + JwtTokenUtils.generateAccessToken(String.valueOf(userId), userRole.toString(), jwtConfigure.getSecretKey(), jwtConfigure.getAccessTokenExpiryTimeMs());
     }
 }
