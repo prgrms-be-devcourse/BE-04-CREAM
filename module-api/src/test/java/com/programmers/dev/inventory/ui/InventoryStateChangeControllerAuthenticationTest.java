@@ -105,7 +105,7 @@ class InventoryStateChangeControllerAuthenticationTest {
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventoriy-authentication-passed",
+                .andDo(document("inventory-authentication-passed",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
@@ -135,7 +135,7 @@ class InventoryStateChangeControllerAuthenticationTest {
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventoriy-authentication-failed",
+                .andDo(document("inventory-authentication-failed",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
