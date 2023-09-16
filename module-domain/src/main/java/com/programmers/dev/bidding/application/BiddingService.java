@@ -27,7 +27,6 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse registerPurchaseBidding(Long userId, String storage, RegisterBiddingRequest request) {
-        validateUserId(userId);
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.SELL);
 
@@ -39,8 +38,7 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
-        validateUserId(userId);
-        Bidding sellBidding = getBidding(request.biddingId());
+        Bidding sellBidding = getBiddingByBiddingId(request.biddingId());
         validateBadRequest(userId, sellBidding);
         sellBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactSellBidding(userId, storage, sellBidding);
@@ -51,7 +49,6 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse registerSellBidding(Long userId, RegisterBiddingRequest request) {
-        validateUserId(userId);
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.PURCHASE);
         Bidding bidding = Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate());
@@ -62,8 +59,7 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse transactPurchaseBidding(Long userId, TransactBiddingRequest request) {
-        validateUserId(userId);
-        Bidding purchaseBidding = getBidding(request.biddingId());
+        Bidding purchaseBidding = getBiddingByBiddingId(request.biddingId());
         validateBadRequest(userId, purchaseBidding);
         purchaseBidding.checkAfterDueDate();
         Bidding bidding = Bidding.transactPurchaseBidding(userId, purchaseBidding);
@@ -74,14 +70,14 @@ public class BiddingService {
 
     @Transactional
     public void inspect(Long biddingId, String result) {
-        Bidding bidding = getBidding(biddingId);
+        Bidding bidding = getBiddingByBiddingId(biddingId);
         bidding.inspect(result);
     }
 
     @Transactional
     public void deposit(Long userId, Long biddingId) {
-        User user = validateUserId(userId);
-        Bidding bidding = getBidding(biddingId);
+        User user = getUserByUserId(userId);
+        Bidding bidding = getBiddingByBiddingId(biddingId);
         bidding.validateUser(userId);
         bidding.validateSellBidding();
         checkBalance(user, bidding);
@@ -90,14 +86,14 @@ public class BiddingService {
 
     @Transactional
     public void finish(Long userId, Long biddingId) {
-        Bidding bidding = getBidding(biddingId);
+        Bidding bidding = getBiddingByBiddingId(biddingId);
         bidding.validateUser(userId);
-        User seller = validateUserId(bidding.getBidding().getUserId());
-        seller.deposit((long) bidding.getPrice());
         bidding.finish();
         Bidding sellBidding = bidding.getBidding();
         sellBidding.finish();
-        User buyer = validateUserId(userId);
+        User seller = getUserByUserId(bidding.getBidding().getUserId());
+        User buyer = getUserByUserId(userId);
+        seller.deposit((long) bidding.getPrice());
         buyer.deposit((long)bidding.getPoint());
         seller.deposit((long)bidding.getPoint());
     }
@@ -113,13 +109,13 @@ public class BiddingService {
         user.withdraw((long) bidding.getPrice());
     }
 
-    private User validateUserId(Long userId) {
+    private User getUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(
                 () -> new CreamException(ErrorCode.NO_AUTHENTICATION)
         );
     }
 
-    private Bidding getBidding(Long biddingId) {
+    private Bidding getBiddingByBiddingId(Long biddingId) {
         return biddingRepository.findById(biddingId)
                 .orElseThrow(
                         () -> new CreamException(ErrorCode.INVALID_ID)
