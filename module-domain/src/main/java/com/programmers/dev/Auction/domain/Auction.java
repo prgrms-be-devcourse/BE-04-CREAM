@@ -83,4 +83,10 @@ public class Auction {
         this.bidderId = bidderId;
         this.price = price;
     }
+
+    public void checkFinishedAuction() {
+        if (this.auctionStatus != AuctionStatus.FINISHED) {
+            throw new CreamException(BAD_BUSINESS_LOGIC);
+        }
+    }
 }

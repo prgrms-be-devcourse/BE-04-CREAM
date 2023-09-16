@@ -49,6 +49,15 @@ public class AuctionService {
         return new AuctionStatusChangeResponse(auction.getId(), auction.getAuctionStatus());
     }
 
+    @Transactional
+    public SuccessfulBidderGetResponse findSuccessfulBidder(SuccessfulBidderGetRequest request) {
+        Auction auction = findAuctionById(request.auctionId());
+
+        auction.checkFinishedAuction();
+
+        return SuccessfulBidderGetResponse.of(request.auctionId(), auction.getBidderId(), auction.getPrice());
+    }
+
     private void registerSuccessfulBidder(AuctionStatusChangeRequest auctionStatusChangeRequest) {
         AuctionBidding auctionBidding = findHighestBidPrice(auctionStatusChangeRequest.id());
 
