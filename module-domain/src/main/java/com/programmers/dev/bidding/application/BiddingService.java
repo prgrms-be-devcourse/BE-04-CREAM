@@ -9,6 +9,7 @@ import com.programmers.dev.common.Status;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.ProductRepository;
+import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -77,8 +78,29 @@ public class BiddingService {
         bidding.inspect(result);
     }
 
-    private void validateUserId(Long userId) {
-        userRepository.findById(userId).orElseThrow(
+    @Transactional
+    public void deposit(Long userId, Long biddingId) {
+        User user = validateUserId(userId);
+        Bidding bidding = getBidding(biddingId);
+        bidding.validateUser(userId);
+        bidding.validateSellBidding();
+        checkBalance(user, bidding);
+        deposit(bidding, user);
+    }
+
+    private void checkBalance(User user, Bidding bidding) {
+        if (user.getAccount() < bidding.getPrice()) {
+            throw new CreamException(ErrorCode.INSUFFICIENT_ACCOUNT_MONEY);
+        }
+    }
+
+    private void deposit(Bidding bidding, User user) {
+        bidding.deposit();
+        user.withdraw((long) bidding.getPrice());
+    }
+
+    private User validateUserId(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
                 () -> new CreamException(ErrorCode.NO_AUTHENTICATION)
         );
     }

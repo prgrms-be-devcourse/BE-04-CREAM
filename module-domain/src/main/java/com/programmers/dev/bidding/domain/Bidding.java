@@ -151,4 +151,24 @@ public class Bidding {
             throw new CreamException(ErrorCode.BAD_ARGUMENT);
         }
     }
+
+    public void deposit() {
+        if (this.deliveryType == DeliveryType.DELIVERY) {
+            this.status = Status.DELIVERING;
+        } else {
+            this.status = Status.IN_WAREHOUSE;
+        }
+    }
+
+    public void validateUser(Long userId) throws CreamException{
+        if (!this.userId.equals(userId)) {
+            throw new CreamException(ErrorCode.NO_AUTHORITY);
+        }
+    }
+
+    public void validateSellBidding() {
+        if (this.getBidding().getStatus() != Status.AUTHENTICATED) {
+            throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
+        }
+    }
 }

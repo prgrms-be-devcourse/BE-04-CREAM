@@ -280,6 +280,37 @@ class BiddingServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("구매자가 입금을 할 경우 판매 입찰의 상태는 배송중, 구매입찰의 상태는 입금완료 이어야 한다.")
+    void deposit() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product, 10L);
+
+        TransactBiddingRequest transactBiddingRequest = new TransactBiddingRequest(sellBidding.getId());
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", transactBiddingRequest);
+        biddingService.inspect(sellBidding.getId(), "ok");
+
+        em.flush();
+        em.clear();
+        // when
+        biddingService.deposit(buyer.getId(), biddingResponse.biddingId());
+
+        // then
+        User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedBuyer.getAccount()).isZero(),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.AUTHENTICATED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERING)
+        );
+    }
 
 
     private User saveUser(String email, String nickname) {

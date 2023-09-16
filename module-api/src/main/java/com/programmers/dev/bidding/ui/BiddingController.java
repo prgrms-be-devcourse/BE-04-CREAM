@@ -1,10 +1,7 @@
 package com.programmers.dev.bidding.ui;
 
 import com.programmers.dev.bidding.application.BiddingService;
-import com.programmers.dev.bidding.dto.BiddingResponse;
-import com.programmers.dev.bidding.dto.InspectResponse;
-import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
-import com.programmers.dev.bidding.dto.TransactBiddingRequest;
+import com.programmers.dev.bidding.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,4 +77,15 @@ public class BiddingController {
         }
         return message;
     }
+
+    @PostMapping("/deposit/{biddingId}")
+    public ResponseEntity<DepositResponse> deposit(
+            @RequestParam Long userId,
+            @PathVariable Long biddingId
+    ) {
+        biddingService.deposit(userId, biddingId);
+
+        return ResponseEntity.ok(DepositResponse.of("successfully deposited"));
+    }
+
 }

@@ -1,8 +1,10 @@
 package com.programmers.dev.bidding.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.programmers.dev.bidding.application.BiddingService;
 import com.programmers.dev.bidding.domain.Bidding;
 import com.programmers.dev.bidding.domain.BiddingRepository;
+import com.programmers.dev.bidding.dto.BiddingResponse;
 import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import com.programmers.dev.common.Status;
@@ -66,6 +68,9 @@ class BiddingControllerTest {
 
     @Autowired
     BiddingRepository biddingRepository;
+
+    @Autowired
+    BiddingService biddingService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -171,7 +176,7 @@ class BiddingControllerTest {
         resultActions.andExpect(status().isCreated());
 
         Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
-        assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED);
+        assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
     }
 
     @Test
@@ -262,7 +267,74 @@ class BiddingControllerTest {
         // then
         resultActions.andExpect(status().isCreated());
         Bidding savedPurchaseBidding = biddingRepository.findById(purchaseBidding.getId()).orElseThrow();
-        assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED);
+        assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
+    }
+
+    @Test
+    @DisplayName("판매자의 물품에 대해 검수를 통과할 경우 판매 입찰의 상태가 변경 되어야 한다.")
+    void inspectBiddingProduct() throws Exception{
+        // given
+        User seller = saveUser("user1@email.com", "user1");
+        User buyer = saveUser("user2@email.com", "user2");
+
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product);
+
+        BiddingResponse biddingResponse =
+                biddingService.transactPurchaseBidding(seller.getId(), new TransactBiddingRequest(purchaseBidding.getId()));
+
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                        post("/api/bidding/inspect/{biddingId}", biddingResponse.biddingId())
+                                .param("result", "ok")
+                )
+                .andDo(document("bidding-inspect",
+                        responseFields(
+                                fieldWithPath("message").description("message when process succeeded")
+                        )));
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.AUTHENTICATED);
+    }
+
+    @Test
+    @DisplayName("거래중인 입찰에 대해 입금을 할 경우 구매 입찰의 상태가 변경 되어야 한다.")
+    void deposit() throws Exception{
+        // given
+        User seller = saveUser("user1@email.com", "user1");
+        User buyer = saveUser("user2@email.com", "user2");
+
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding sellBidding = saveSellBidding(seller, product);
+
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId())); // 거래 체결
+        biddingService.inspect(sellBidding.getId(), "ok");  // 검수 처리
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                        post("/api/bidding/deposit/{biddingId}", biddingResponse.biddingId())
+                                .param("userId", buyer.getId().toString())
+                )
+                .andDo(document("bidding-deposit",
+                        responseFields(
+                                fieldWithPath("message").description("message when process succeeded")
+                        )));
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+        User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERING),
+                () -> assertThat(savedBuyer.getAccount()).isEqualTo(0L)
+        );
+
     }
 
     private User saveUser(String email, String nickname) {
