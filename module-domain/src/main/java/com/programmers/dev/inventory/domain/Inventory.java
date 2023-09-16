@@ -117,7 +117,7 @@ public class Inventory {
     }
 
     private void validate(Long price) {
-        if (price < 0) {
+        if (price <= 0) {
             throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
         }
     }
