@@ -64,6 +64,9 @@ public class Inventory {
     @Column(name = "TRANSACTION_DATE", updatable = false)
     private LocalDateTime transactionDate;
 
+    protected Inventory() {
+    }
+
     public Inventory(Long userId, Long productId, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate) {
         this(userId, productId, null, null, inventoryType, status, address, startDate, null);
     }
@@ -79,17 +82,13 @@ public class Inventory {
         this.startDate = startDate;
         this.transactionDate = transactionDate;
     }
-
-    protected Inventory() {
-    }
-
     public void changeStatusInWarehouse() {
-        statusValidate(Status.OUT_WAREHOUSE);
+        validate(Status.OUT_WAREHOUSE);
         changeStatus(Status.IN_WAREHOUSE);
     }
 
     public void changeStatusAuthenticatedWithProductQuality(ProductQuality productQuality) {
-        statusValidate(Status.IN_WAREHOUSE);
+        validate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATED);
         changeProductQuality(productQuality);
 
@@ -97,17 +96,33 @@ public class Inventory {
     }
 
     public void changeStatusAuthenticationFailed(Long penaltyCost) {
-        statusValidate(Status.IN_WAREHOUSE);
+        validate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATION_FAILED);
 
         EventManager.publish(new InventoryAuthenticationFailedEvent(this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
+    }
+
+    public void changeStatusLive() {
+        validate(Status.AUTHENTICATED);
+        changeStatus(Status.LIVE);
+    }
+
+    public void setPrice(Long price) {
+        validate(price);
+        this.price = price;
     }
 
     private void changeStatus(Status status) {
         this.status = status;
     }
 
-    private void statusValidate(Status status) {
+    private void validate(Long price) {
+        if (price <= 0) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
+    }
+
+    private void validate(Status status) {
         if (this.status != status) {
             throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
         }
