@@ -25,18 +25,20 @@ public class BiddingController {
     @PostMapping("/purchase")
     public ResponseEntity<BiddingResponse> registerPurchaseBidding(
             @RequestParam Long userId,
+            @RequestParam(required = false, defaultValue = "delivery") String storage,
             @RequestBody @Valid RegisterBiddingRequest request
     ) {
-        BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(userId, request);
+        BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(userId, storage, request);
         return ResponseEntity.created(URI.create(url + "/purchase")).body(biddingResponse);
     }
 
     @PostMapping("/purchase-now")
     public ResponseEntity<BiddingResponse> transactSellBidding(
             @RequestParam Long userId,
+            @RequestParam(required = false, defaultValue = "delivery") String storage,
             @RequestBody @Valid TransactBiddingRequest request
     ) {
-        BiddingResponse biddingResponse = biddingService.transactSellBidding(userId, request);
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(userId, storage, request);
         return ResponseEntity.created(URI.create(url + "/purchase-now")).body(biddingResponse);
     }
 

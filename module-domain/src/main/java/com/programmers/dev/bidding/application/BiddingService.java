@@ -25,24 +25,24 @@ public class BiddingService {
     private final BiddingRepository biddingRepository;
 
     @Transactional
-    public BiddingResponse registerPurchaseBidding(Long userId, RegisterBiddingRequest request) {
+    public BiddingResponse registerPurchaseBidding(Long userId, String storage, RegisterBiddingRequest request) {
         validateUserId(userId);
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.SELL);
 
-        Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), request.dueDate());
+        Bidding bidding = Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), storage, request.dueDate());
         Bidding savedBidding = biddingRepository.save(bidding);
 
         return BiddingResponse.of(savedBidding.getId());
     }
 
     @Transactional
-    public BiddingResponse transactSellBidding(Long userId, TransactBiddingRequest request) {
+    public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
         validateUserId(userId);
         Bidding sellBidding = getBidding(request.biddingId());
         validateBadRequest(userId, sellBidding);
         sellBidding.checkAfterDueDate();
-        Bidding bidding = Bidding.transactSellBidding(userId, sellBidding);
+        Bidding bidding = Bidding.transactSellBidding(userId, storage, sellBidding);
         Bidding savedBidding = biddingRepository.save(bidding);
 
         return BiddingResponse.of(savedBidding.getId());
@@ -57,18 +57,6 @@ public class BiddingService {
         Bidding savedBidding = biddingRepository.save(bidding);
 
         return BiddingResponse.of(savedBidding.getId());
-    }
-
-    private void checkRequestPriceOverBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
-        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType)
-                .stream().sorted(Comparator.comparingInt(Bidding::getPrice))
-                .findFirst().ifPresent(
-                        bidding -> {
-                            if (bidding.getPrice() < request.price()) {
-                                throw new CreamException(ErrorCode.OVER_PRICE);
-                            }
-                        }
-                );
     }
 
     @Transactional
@@ -108,4 +96,15 @@ public class BiddingService {
         }
     }
 
+    private void checkRequestPriceOverBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType)
+                .stream().sorted(Comparator.comparingInt(Bidding::getPrice))
+                .findFirst().ifPresent(
+                        bidding -> {
+                            if (bidding.getPrice() < request.price()) {
+                                throw new CreamException(ErrorCode.OVER_PRICE);
+                            }
+                        }
+                );
+    }
 }

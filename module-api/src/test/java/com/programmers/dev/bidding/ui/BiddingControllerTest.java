@@ -109,7 +109,7 @@ class BiddingControllerTest {
                                         headerWithName(CONTENT_LENGTH).description("content length")
                                 ),
                                 requestFields(
-                                        fieldWithPath("biddingId").description("id of product"),
+                                        fieldWithPath("productId").description("id of product"),
                                         fieldWithPath("price").description("price of bidding"),
                                         fieldWithPath("dueDate").description("duration of bidding")
                                 ),
@@ -171,7 +171,7 @@ class BiddingControllerTest {
         resultActions.andExpect(status().isCreated());
 
         Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
-        assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
+        assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED);
     }
 
     @Test
@@ -262,7 +262,7 @@ class BiddingControllerTest {
         // then
         resultActions.andExpect(status().isCreated());
         Bidding savedPurchaseBidding = biddingRepository.findById(purchaseBidding.getId()).orElseThrow();
-        assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION);
+        assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED);
     }
 
     private User saveUser(String email, String nickname) {
@@ -287,7 +287,7 @@ class BiddingControllerTest {
     }
 
     private Bidding savePurchaseBidding(User buyer, Product product) {
-        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, 20L);
+        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, "delivery", 20L);
         return biddingRepository.save(purchaseBidding);
     }
 }
