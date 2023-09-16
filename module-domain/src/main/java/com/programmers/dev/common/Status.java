@@ -22,7 +22,7 @@ public enum Status {
 
     AUTHENTICATED,
 
-    AUTHENTICATED_FAILED,
+    AUTHENTICATION_FAILED,
 
     DELIVERING,
 

@@ -2,6 +2,7 @@ package com.programmers.dev.inventory.domain;
 
 
 import com.programmers.dev.common.Status;
+import com.programmers.dev.event.EventManager;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.Address;
@@ -9,6 +10,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+
+import static com.programmers.dev.common.CostType.PROTECTION;
+import static com.programmers.dev.common.CostType.RETURN_SHIPPING;
 
 @Entity
 @Table(name = "INVENTORIES")
@@ -88,11 +92,15 @@ public class Inventory {
         statusValidate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATED);
         changeProductQuality(productQuality);
+
+        EventManager.publish(new InventoryAuthenticationPassedEvent(this.userId, PROTECTION.getCost()));
     }
 
-    public void changeStatusReturnShipping() {
+    public void changeStatusAuthenticationFailed(Long penaltyCost) {
         statusValidate(Status.IN_WAREHOUSE);
-        changeStatus(Status.RETURN_SHIPPING);
+        changeStatus(Status.AUTHENTICATION_FAILED);
+
+        EventManager.publish(new InventoryAuthenticationFailedEvent(this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
     }
 
     private void changeStatus(Status status) {
