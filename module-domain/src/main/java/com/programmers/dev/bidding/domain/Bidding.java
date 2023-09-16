@@ -32,6 +32,10 @@ public class Bidding {
     @Column(name = "PRODUCT_ID", nullable = false)
     private Long productId;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BIDDING_ID")
+    private Bidding bidding;
+
     @Column(name = "PRICE", nullable = false)
     private int price;
 
@@ -86,31 +90,32 @@ public class Bidding {
         LocalDateTime transactionDate = LocalDateTime.now();
         sellBidding.transactSellBidding(transactionDate);
         if ("delivery".equalsIgnoreCase(storage)) {
-            return new Bidding(userId, sellBidding.getProductId(), sellBidding.getPrice(), Status.SHIPPED, BiddingType.PURCHASE, DeliveryType.DELIVERY, LocalDateTime.now(), transactionDate);
+            return new Bidding(userId, sellBidding.getProductId(), sellBidding, sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.DELIVERY, LocalDateTime.now(), transactionDate);
         } else {
-            return new Bidding(userId, sellBidding.getProductId(), sellBidding.getPrice(), Status.IN_WAREHOUSE, BiddingType.PURCHASE, DeliveryType.IN_STOCK, LocalDateTime.now(), transactionDate);
+            return new Bidding(userId, sellBidding.getProductId(), sellBidding, sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.IN_STOCK, LocalDateTime.now(), transactionDate);
         }
     }
 
     public static Bidding transactPurchaseBidding(Long userId, Bidding purchaseBidding) {
         LocalDateTime transactionDate = LocalDateTime.now();
         purchaseBidding.transactPurchaseBidding(purchaseBidding.getDeliveryType(), transactionDate);
-        return new Bidding(userId, purchaseBidding.getProductId(), purchaseBidding.getPrice(), Status.FINISHED, BiddingType.SELL, null, LocalDateTime.now(), transactionDate);
+        return new Bidding(userId, purchaseBidding.getProductId(), purchaseBidding, purchaseBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.SELL, null, LocalDateTime.now(), transactionDate);
     }
 
-    private Bidding(Long userId, Long productId, int price, Status status, BiddingType biddingType, DeliveryType deliveryType, LocalDateTime startDate, LocalDateTime transactionDate) {
+    private Bidding(Long userId, Long productId,Bidding bidding, int price, Status status, BiddingType biddingType, DeliveryType deliveryType, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
+        this.bidding = bidding;
         this.price = price;
         this.status = status;
         this.biddingType = biddingType;
-        this.deliveryType = DeliveryType.IN_STOCK;
+        this.deliveryType = deliveryType;
         this.startDate = startDate;
         this.transactionDate = transactionDate;
     }
 
     public void transactSellBidding(LocalDateTime transactionDate) {
-        this.status = Status.FINISHED;
+        this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
     }
 
@@ -119,9 +124,9 @@ public class Bidding {
      */
     public void transactPurchaseBidding(DeliveryType deliveryType, LocalDateTime transactionDate) {
         if (deliveryType.equals(DeliveryType.DELIVERY)) {
-            this.status = Status.SHIPPED;
+            this.status = Status.IN_TRANSACTION;
         } else {
-            this.status = Status.IN_WAREHOUSE;
+            this.status = Status.IN_TRANSACTION;
         }
         this.transactionDate = transactionDate;
     }
@@ -133,6 +138,17 @@ public class Bidding {
     public void checkAfterDueDate() {
         if (this.dueDate.isBefore(LocalDateTime.now())) {
             throw new CreamException(ErrorCode.AFTER_DUE_DATE);
+        }
+    }
+
+    public void inspect(String result) throws CreamException{
+        if ("ok".equalsIgnoreCase(result)) {
+            this.status = Status.AUTHENTICATED;
+        } else if ("fail".equalsIgnoreCase(result)) {
+            this.status = Status.AUTHENTICATED_FAILED;
+            this.bidding.status = Status.CANCELLED; // 관련 구매 상품은 거래 취소
+        } else {
+            throw new CreamException(ErrorCode.BAD_ARGUMENT);
         }
     }
 }

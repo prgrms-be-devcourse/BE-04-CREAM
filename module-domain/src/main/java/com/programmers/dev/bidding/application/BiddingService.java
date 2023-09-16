@@ -71,6 +71,12 @@ public class BiddingService {
         return BiddingResponse.of(savedBidding.getId());
     }
 
+    @Transactional
+    public void inspect(Long biddingId, String result) {
+        Bidding bidding = getBidding(biddingId);
+        bidding.inspect(result);
+    }
+
     private void validateUserId(Long userId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new CreamException(ErrorCode.NO_AUTHENTICATION)

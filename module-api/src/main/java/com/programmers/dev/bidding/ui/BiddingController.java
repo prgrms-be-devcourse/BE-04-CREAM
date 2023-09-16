@@ -2,6 +2,7 @@ package com.programmers.dev.bidding.ui;
 
 import com.programmers.dev.bidding.application.BiddingService;
 import com.programmers.dev.bidding.dto.BiddingResponse;
+import com.programmers.dev.bidding.dto.InspectResponse;
 import com.programmers.dev.bidding.dto.RegisterBiddingRequest;
 import com.programmers.dev.bidding.dto.TransactBiddingRequest;
 import jakarta.validation.Valid;
@@ -60,5 +61,23 @@ public class BiddingController {
         return ResponseEntity.created(URI.create(url + "/sell-now")).body(biddingResponse);
     }
 
+    @PostMapping("/inspect/{biddingId}")
+    public ResponseEntity<InspectResponse> inspectBiddingProduct(
+            @PathVariable Long biddingId,
+            @RequestParam String result
+    ) {
+        biddingService.inspect(biddingId, result);
+        return ResponseEntity.ok().
+                body(InspectResponse.of(makeResponse(result)));
+    }
 
+    private String makeResponse(String result) {
+        String message;
+        if ("ok".equalsIgnoreCase(result)) {
+            message = "biddingProduct is authenticated";
+        } else {
+            message = "biddingProduct is rejected";
+        }
+        return message;
+    }
 }

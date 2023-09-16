@@ -99,8 +99,8 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
                 () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
-                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
                 () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
                 () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
         );
@@ -154,8 +154,8 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
                 () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
-                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
                 () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
                 () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
         );
@@ -224,6 +224,60 @@ class BiddingServiceTest {
                 () ->biddingService.registerSellBidding(seller.getId(), registerBiddingRequest)
         ).isInstanceOf(CreamException.class);
 
+    }
+
+    @Test
+    @DisplayName("판매 상품에 대해 검수 실패시 판매 입찰은 검수 실패, 구매 입찰은 취소 되어야 한다.")
+    void inspect_fail() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product, 10L);
+
+        BiddingResponse biddingResponse =
+                biddingService.transactPurchaseBidding(seller.getId(), new TransactBiddingRequest(purchaseBidding.getId()));
+
+        // when
+        biddingService.inspect(biddingResponse.biddingId(), "fail");
+
+        // then
+        Bidding savedPurchaseBidding = biddingRepository.findById(purchaseBidding.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.CANCELLED),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.AUTHENTICATED_FAILED)
+        );
+    }
+
+    @Test
+    @DisplayName("판매 상품에 대해 검수 성공시 판매 입찰은 검수 완료, 구매 입찰은 거래중 이어야 한다.")
+    void inspect_ok() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding purchaseBidding = savePurchaseBidding(buyer, product, 10L);
+
+        BiddingResponse biddingResponse =
+                biddingService.transactPurchaseBidding(seller.getId(), new TransactBiddingRequest(purchaseBidding.getId()));
+
+        // when
+        biddingService.inspect(biddingResponse.biddingId(), "ok");
+
+        // then
+        Bidding savedPurchaseBidding = biddingRepository.findById(purchaseBidding.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.AUTHENTICATED)
+        );
     }
 
 
