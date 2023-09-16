@@ -78,4 +78,9 @@ public class Auction {
             throw new CreamException(INVALID_AUCTION_BIDDING);
         }
     }
+
+    public void registerSuccessfulBidder(Long bidderId, Long price) {
+        this.bidderId = bidderId;
+        this.price = price;
+    }
 }
