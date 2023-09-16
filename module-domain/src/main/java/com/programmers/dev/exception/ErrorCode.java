@@ -13,6 +13,8 @@ public enum ErrorCode {
     INVALID_LOGIN_INFO(BAD_REQUEST, -103, "invalid email or password."),
     INVALID_SESSION_FORMAT(BAD_REQUEST, -104, "invalid session format"),
     SESSION_EXPIRATION(BAD_REQUEST, -105, "session has expired."),
+    INVALID_AUCTION_BIDDING(BAD_REQUEST, BAD_REQUEST.value(),"this is not the time to bid for an auction"),
+    INVALID_REQUEST_VALUE(BAD_REQUEST, BAD_REQUEST.value(),"please check request value again")
     AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired."),
     OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price")
     INSUFFICIENT_ACCOUNT_MONEY(BAD_REQUEST, -201, "not enough account money")

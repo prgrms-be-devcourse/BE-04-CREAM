@@ -6,7 +6,91 @@
 :sectnums:
 :toclevels: 2
 
-// operation::find-all-brands[snippets = 'http-request,http-response']
+[[Brand]]
+== 브랜드
+
+[[Find-all-brands]]
+=== 브랜드 전체 조회 API
+
+브랜드 전체 조회의 API는 다음과 같습니다.
+
+operation::find-all-brands[snippets = 'http-request,http-response']
+
+[[find-brand-by-id]]
+=== Id로 브랜드 조회
+
+Id로 브랜드를 조회하는 API는 다음과 같습니다.
+
+operation::find-brand-by-id[snippets = 'http-request,http-response']
+
+[[save-brand]]
+=== 브랜드 등록
+
+브랜드를 등록하는 API는 다음과 같습니다.
+
+operation::save-brand[snippets = 'http-request,http-response']
+
+[[Product]]
+== 상품
+
+[[Find-all-products]]
+=== 상품 전체 조회
+
+상품을 전체 조회하는 API는 다음과 같습니다.
+
+operation::find-all-products[snippets = 'http-request,http-response']
+
+[[Save-product]]
+=== 상품 등록
+
+상품을 등록하는 API는 다음과 같습니다. 
+
+operation::save-product[snippets = 'http-request,http-response']
+
+[[Update-product]]
+=== 상품 수정
+
+상품을 수정하는 API는 다음과 같습니다.
+
+operation::update-product[snippets = 'http-request,http-response']
+
+[[Auction]]
+== 경매
+
+[[Auction-bid]]
+=== 경매 입찰
+
+경매에 입찰하는 API는 다음과 같습니다.
+
+operation::auction-bid[snippets = 'http-request,http-response']
+
+[[Auction-save]]
+=== 경매 등록
+
+경매에 등록하는 API는 다음과 같습니다.
+
+operation::auction-save[snippets = 'http-request,http-response']
+
+[[Auction-status-change]]
+=== 경매 상태 변경
+
+경매 상태를 변경하는 API는 다음과 같습니다.
+
+operation::auction-status-change[snippets = 'http-request,http-response']
+
+[[Cancel-auction-bidding]]
+=== 경매 입찰 취소
+
+경매 입찰을 취소하는 API는 다음과 같습니다.
+
+operation::cancel-auction-bidding[snippets = 'http-request,http-response']
+
+[[Get-current-bidding-price]]
+=== 현재 최고 입찰가 조회
+
+현재 최고 입찰가를 조회하는 API는 다음과 같습니다.
+
+operation::get-current-bidding-price[snippets = 'http-request,http-response']
 
 [[Bidding]]
 == 입찰
