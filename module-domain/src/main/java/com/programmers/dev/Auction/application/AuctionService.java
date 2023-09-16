@@ -1,12 +1,13 @@
 package com.programmers.dev.Auction.application;
 
 import com.programmers.dev.Auction.domain.Auction;
+import com.programmers.dev.Auction.domain.AuctionBidding;
+import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
-import com.programmers.dev.Auction.dto.AuctionSaveRequest;
-import com.programmers.dev.Auction.dto.AuctionSaveResponse;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeResponse;
+import com.programmers.dev.Auction.dto.*;
+import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.Product;
 import com.programmers.dev.product.domain.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,8 @@ public class AuctionService {
 
     private final ProductRepository productRepository;
 
+    private final AuctionBiddingRepository auctionBiddingRepository;
+
     @Transactional
     public AuctionSaveResponse save(AuctionSaveRequest auctionSaveRequest) {
         Product product = findProductById(auctionSaveRequest.productId());
@@ -39,7 +42,35 @@ public class AuctionService {
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
 
+        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.FINISHED) {
+            registerSuccessfulBidder(auctionStatusChangeRequest);
+        }
+
         return new AuctionStatusChangeResponse(auction.getId(), auction.getAuctionStatus());
+    }
+
+    @Transactional
+    public SuccessfulBidderGetResponse findSuccessfulBidder(SuccessfulBidderGetRequest request) {
+        Auction auction = findAuctionById(request.auctionId());
+
+        auction.checkFinishedAuction();
+
+        return SuccessfulBidderGetResponse.of(request.auctionId(), auction.getBidderId(), auction.getPrice());
+    }
+
+    private void registerSuccessfulBidder(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        AuctionBidding auctionBidding = findHighestBidPrice(auctionStatusChangeRequest.id());
+
+        Long successfulBidderId = auctionBidding.getUser().getId();
+        Long successfulBidPrice = auctionBidding.getPrice();
+
+        auctionBidding.getAuction()
+            .registerSuccessfulBidder(successfulBidderId, successfulBidPrice);
+    }
+
+    private AuctionBidding findHighestBidPrice(Long auctionId) {
+        return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(auctionId)
+            .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 
     private Auction findAuctionById(Long id) {

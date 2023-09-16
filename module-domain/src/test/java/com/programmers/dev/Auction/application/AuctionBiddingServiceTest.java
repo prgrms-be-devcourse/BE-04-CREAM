@@ -153,11 +153,11 @@ class AuctionBiddingServiceTest {
             .isEqualTo(5000L);
     }
 
-    private static BiddingPriceGetRequest createBiddingPriceGetRequest(AuctionBidRequest auctionBidRequest1) {
+    private BiddingPriceGetRequest createBiddingPriceGetRequest(AuctionBidRequest auctionBidRequest1) {
         return new BiddingPriceGetRequest(auctionBidRequest1.auctionId());
     }
 
-    private static AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
+    private AuctionBidRequest createAuctionBidRequest(AuctionSaveResponse auctionSaveResponse, long price) {
         return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
     }
 

@@ -1,10 +1,7 @@
 package com.programmers.dev.Auction.ui;
 
 import com.programmers.dev.Auction.application.AuctionService;
-import com.programmers.dev.Auction.dto.AuctionSaveRequest;
-import com.programmers.dev.Auction.dto.AuctionSaveResponse;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeRequest;
-import com.programmers.dev.Auction.dto.AuctionStatusChangeResponse;
+import com.programmers.dev.Auction.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,5 +25,12 @@ public class AuctionController {
         @RequestBody @Validated AuctionStatusChangeRequest auctionStatusChangeRequest
     ) {
         return ResponseEntity.ok(auctionService.changeAuctionStatus(auctionStatusChangeRequest));
+    }
+
+    @GetMapping("/successful-bidder")
+    public ResponseEntity<SuccessfulBidderGetResponse> getSuccessfulBidder(
+        @RequestBody @Validated SuccessfulBidderGetRequest request
+    ) {
+        return ResponseEntity.ok().body(auctionService.findSuccessfulBidder(request));
     }
 }
