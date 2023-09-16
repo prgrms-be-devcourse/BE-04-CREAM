@@ -58,7 +58,7 @@ class BiddingServiceTest {
 
         RegisterBiddingRequest request = RegisterBiddingRequest.of(product.getId(), 100000, 20L);
         // when
-        BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(user.getId(), request);
+        BiddingResponse biddingResponse = biddingService.registerPurchaseBidding(user.getId(), "delivery", request);
 
         // then
         Bidding savedBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
@@ -66,6 +66,7 @@ class BiddingServiceTest {
                 () -> assertThat(savedBidding.getUserId()).isEqualTo(user.getId()),
                 () -> assertThat(savedBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
                 () -> assertThat(savedBidding.getStatus()).isEqualTo(Status.LIVE),
+                () -> assertThat(savedBidding.getDeliveryType()).isEqualTo(Bidding.DeliveryType.DELIVERY),
                 () -> assertThat(savedBidding.getPrice()).isEqualTo(request.price()),
                 () -> assertThat(savedBidding.getDueDate()).isEqualTo(savedBidding.getStartDate().plusDays(request.dueDate())),
                 () -> assertThat(savedBidding.getTransactionDate()).isNull()
@@ -86,7 +87,7 @@ class BiddingServiceTest {
 
 
         // when
-        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), transactBiddingRequest);
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", transactBiddingRequest);
 
         em.flush();
         em.clear();
@@ -98,8 +99,8 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
                 () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
-                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
                 () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
                 () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
         );
@@ -153,8 +154,8 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedPurchaseBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.PURCHASE),
                 () -> assertThat(savedSellBidding.getBiddingType()).isEqualTo(Bidding.BiddingType.SELL),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
-                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.SHIPPED),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
                 () -> assertThat(savedPurchaseBidding.getTransactionDate()).isEqualTo(savedSellBidding.getTransactionDate()),
                 () -> assertThat(savedPurchaseBidding.getPrice()).isEqualTo(savedSellBidding.getPrice())
         );
@@ -182,7 +183,7 @@ class BiddingServiceTest {
         ).isInstanceOf(CreamException.class)
         ;
         assertThatThrownBy(
-                () -> biddingService.transactSellBidding(buyer.getId(), sellBiddingRequest)
+                () -> biddingService.transactSellBidding(buyer.getId(), "delivery", sellBiddingRequest)
         ).isInstanceOf(CreamException.class);
 
     }
@@ -201,7 +202,7 @@ class BiddingServiceTest {
 
         // when  && then
         assertThatThrownBy(
-                () ->biddingService.registerPurchaseBidding(buyer.getId(), registerBiddingRequest)
+                () ->biddingService.registerPurchaseBidding(buyer.getId(), "delivery", registerBiddingRequest)
         ).isInstanceOf(CreamException.class);
 
     }
@@ -249,7 +250,7 @@ class BiddingServiceTest {
     }
 
     private Bidding savePurchaseBidding(User buyer, Product product, long dueDate) {
-        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, dueDate);
+        Bidding purchaseBidding = Bidding.registerPurchaseBidding(buyer.getId(), product.getId(), 100000, "delivery", dueDate);
         return biddingRepository.save(purchaseBidding);
     }
 }
