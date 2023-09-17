@@ -51,7 +51,6 @@ public class AuctionService {
         return AuctionStatusChangeResponse.of(auction.getId(), auction.getAuctionStatus());
     }
 
-    @Transactional
     public SuccessfulBidderGetResponse findSuccessfulBidder(SuccessfulBidderGetRequest request) {
         Auction auction = findAuctionById(request.auctionId());
 
