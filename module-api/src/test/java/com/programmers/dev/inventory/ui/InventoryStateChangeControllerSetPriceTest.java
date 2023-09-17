@@ -135,7 +135,7 @@ class InventoryStateChangeControllerSetPriceTest {
     }
 
     private Inventory createInventory(Long userId, Long productId, Address address) {
-        Inventory inventory = new Inventory(userId, productId, Inventory.InventoryType.SELL, Status.AUTHENTICATED, address, LocalDateTime.now());
+        Inventory inventory = new Inventory(userId, productId, Status.AUTHENTICATED, address, LocalDateTime.now());
 
         return inventoryRepository.save(inventory);
     }

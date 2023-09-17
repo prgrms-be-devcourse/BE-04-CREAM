@@ -19,11 +19,6 @@ import static com.programmers.dev.common.CostType.RETURN_SHIPPING;
 @Getter
 public class Inventory {
 
-    public enum InventoryType {
-        PURCHASE,
-        SELL
-    }
-
     public enum ProductQuality {
         COMPLETE,
         INCOMPLETE,
@@ -48,11 +43,7 @@ public class Inventory {
     private ProductQuality productQuality;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "INVENTORY_TYPE", nullable = false)
-    private InventoryType inventoryType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TRANSACTION_STATUS", nullable = false)
+    @Column(name = "STATUS", nullable = false)
     private Status status;
 
     @Embedded
@@ -61,27 +52,26 @@ public class Inventory {
     @Column(name = "START_DATE", nullable = false, updatable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "TRANSACTION_DATE", updatable = false)
+    @Column(name = "TRANSACTION_DATE")
     private LocalDateTime transactionDate;
 
     protected Inventory() {
     }
 
-    public Inventory(Long userId, Long productId, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate) {
-        this(userId, productId, null, null, inventoryType, status, address, startDate, null);
+    public Inventory(Long userId, Long productId, Status status, Address address, LocalDateTime startDate) {
+        this(userId, productId, null, null, status, address, startDate, null);
     }
 
-    private Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, InventoryType inventoryType, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
+    private Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
         this.price = price;
         this.productQuality = productQuality;
-        this.inventoryType = inventoryType;
         this.status = status;
         this.address = address;
         this.startDate = startDate;
-        this.transactionDate = transactionDate;
     }
+
     public void changeStatusInWarehouse() {
         validate(Status.OUT_WAREHOUSE);
         changeStatus(Status.IN_WAREHOUSE);
@@ -105,6 +95,14 @@ public class Inventory {
     public void changeStatusLive() {
         validate(Status.AUTHENTICATED);
         changeStatus(Status.LIVE);
+    }
+
+    public void ordered(LocalDateTime transactionDate) {
+        validate(Status.LIVE);
+        changeStatus(Status.DELIVERING);
+        setTransactionDate(transactionDate);
+
+        EventManager.publish(new InventoryOrderedEvent(this.userId, this.price));
     }
 
     public void setPrice(Long price) {
@@ -134,5 +132,9 @@ public class Inventory {
         }
 
         this.productQuality = productQuality;
+    }
+
+    private void setTransactionDate(LocalDateTime transactionDate) {
+        this.transactionDate = transactionDate;
     }
 }

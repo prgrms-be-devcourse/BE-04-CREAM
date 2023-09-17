@@ -3,6 +3,7 @@ package com.programmers.dev.inventory.application;
 
 import com.programmers.dev.inventory.domain.InventoryAuthenticationFailedEvent;
 import com.programmers.dev.inventory.domain.InventoryAuthenticationPassedEvent;
+import com.programmers.dev.inventory.domain.InventoryOrderedEvent;
 import com.programmers.dev.settlement.application.SettlementService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -46,5 +47,17 @@ public class InventorySettlementEventHandler {
         settlementService.save(event.getUserId(), event.getSettlementType(), -event.getReturnShippingMoney());
 
         logger.info("[정산등록 : 보관판매 검수 실패] 사용자ID={}, 패널티 비용={}, 반송비={}", event.getUserId(), event.getPenaltyMoney(), event.getReturnShippingMoney());
+    }
+
+    @Async
+    @EventListener(InventoryOrderedEvent.class)
+    @TransactionalEventListener(
+            classes = InventoryOrderedEvent.class,
+            phase = TransactionPhase.AFTER_COMMIT
+    )
+    public void handle(InventoryOrderedEvent event) {
+        settlementService.save(event.getUserId(), event.getSettlementType(), event.getOrderedPrice());
+
+        logger.info("[정산등록 : 보관판매 등록 상품 구매됨] 사용자ID={}, 환급 금액={}", event.getUserId(), event.getOrderedPrice());
     }
 }
