@@ -1,5 +1,7 @@
 package com.programmers.dev.Auction.domain;
 
+import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,7 +36,15 @@ public class AuctionBidding {
         this.price = price;
     }
 
-    public static AuctionBidding bidAuction(User user, Auction auction, Long price) {
+    public static AuctionBidding bidAuction(User user, Auction auction, Long price, Long topBiddingPrice) {
+        validateTopBiddingPrice(price, topBiddingPrice);
+
         return new AuctionBidding(user, auction, price);
+    }
+
+    private static void validateTopBiddingPrice(Long price, Long topBiddingPrice) {
+        if (price <= topBiddingPrice) {
+            throw new CreamException(ErrorCode.INVALID_BIDDING_PRICE);
+        }
     }
 }

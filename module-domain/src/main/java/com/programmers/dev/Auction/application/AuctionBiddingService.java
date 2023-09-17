@@ -6,6 +6,7 @@ import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,6 @@ public class AuctionBiddingService {
     private final UserRepository userRepository;
     private final AuctionRepository auctionRepository;
 
-    // TODO 현재 입찰 최고가보다 낮은 금액은 입찰 불가하게끔 고도화 필요.
     @Transactional
     public AuctionBidResponse bidAuction(Long userId, AuctionBidRequest auctionBidRequest) {
         Auction auction = findAuctionById(auctionBidRequest.auctionId());
@@ -32,7 +32,9 @@ public class AuctionBiddingService {
 
         User user = findUserById(userId);
 
-        AuctionBidding auctionBidding = AuctionBidding.bidAuction(user, auction, auctionBidRequest.price());
+        Long topBiddingPrice = getTopBiddingPrice(BiddingPriceGetRequest.of(auctionBidRequest.auctionId()));
+
+        AuctionBidding auctionBidding = AuctionBidding.bidAuction(user, auction, auctionBidRequest.price(), topBiddingPrice);
         AuctionBidding savedAuctionBidding = auctionBiddingRepository.save(auctionBidding);
 
         return AuctionBidResponse.fromEntity(savedAuctionBidding);
@@ -45,13 +47,20 @@ public class AuctionBiddingService {
 
     // TODO 인덱스 활용
     public BiddingPriceGetResponse getCurrentBiddingPrice(BiddingPriceGetRequest request) {
-        AuctionBidding auctionBidding = getTopBiddingPrice(request);
+        Long topBiddingPrice = getTopBiddingPrice(request);
 
-        return BiddingPriceGetResponse.of(request.auctionId(), auctionBidding.getPrice());
+        return BiddingPriceGetResponse.of(request.auctionId(), topBiddingPrice);
     }
 
-    private AuctionBidding getTopBiddingPrice(BiddingPriceGetRequest request) {
+    private Long getTopBiddingPrice(BiddingPriceGetRequest request) {
         return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(request.auctionId())
+            .map(AuctionBidding::getPrice)
+            .orElse(getStartPrice(request));
+    }
+
+    private Long getStartPrice(BiddingPriceGetRequest request) {
+        return auctionRepository.findById(request.auctionId())
+            .map(Auction::getStartPrice)
             .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 

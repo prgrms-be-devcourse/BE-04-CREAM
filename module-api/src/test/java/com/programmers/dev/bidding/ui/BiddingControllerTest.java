@@ -109,7 +109,7 @@ class BiddingControllerTest {
                                         headerWithName(CONTENT_LENGTH).description("content length")
                                 ),
                                 requestFields(
-                                        fieldWithPath("biddingId").description("id of product"),
+                                        fieldWithPath("productId").description("id of product"),
                                         fieldWithPath("price").description("price of bidding"),
                                         fieldWithPath("dueDate").description("duration of bidding")
                                 ),

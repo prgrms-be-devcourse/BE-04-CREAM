@@ -7,4 +7,7 @@ public record AuctionStatusChangeResponse(
 
     AuctionStatus auctionStatus
 ) {
+    public static AuctionStatusChangeResponse of(Long auctionId, AuctionStatus auctionStatus) {
+        return new AuctionStatusChangeResponse(auctionId, auctionStatus);
+    }
 }
