@@ -77,7 +77,7 @@ public class AuctionService {
     }
 
     private AuctionBidding findHighestBidPrice(Long auctionId) {
-        return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(auctionId)
+        return auctionBiddingRepository.findTopBiddingPrice(auctionId)
             .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 

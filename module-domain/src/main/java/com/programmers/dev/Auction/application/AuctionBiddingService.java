@@ -53,7 +53,7 @@ public class AuctionBiddingService {
     }
 
     private Long getTopBiddingPrice(BiddingPriceGetRequest request) {
-        return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(request.auctionId())
+        return auctionBiddingRepository.findTopBiddingPrice(request.auctionId())
             .map(AuctionBidding::getPrice)
             .orElse(getStartPrice(request));
     }

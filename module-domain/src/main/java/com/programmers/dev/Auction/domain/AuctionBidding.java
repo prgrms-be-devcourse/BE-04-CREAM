@@ -7,7 +7,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 @Entity
-@Table(name = "AUCTION_BIDDINGS")
+@Table(name = "AUCTION_BIDDINGS",
+indexes = @Index(name = "IDX_AUCTION_ID_PRICE", columnList = "AUCTION_ID ASC, PRICE DESC"))
 @Getter
 public class AuctionBidding {
 
