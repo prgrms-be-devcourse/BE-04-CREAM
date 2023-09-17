@@ -43,7 +43,7 @@ public class Inventory {
     private ProductQuality productQuality;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TRANSACTION_STATUS", nullable = false)
+    @Column(name = "STATUS", nullable = false)
     private Status status;
 
     @Embedded
@@ -52,7 +52,7 @@ public class Inventory {
     @Column(name = "START_DATE", nullable = false, updatable = false)
     private LocalDateTime startDate;
 
-    @Column(name = "TRANSACTION_DATE", updatable = false)
+    @Column(name = "TRANSACTION_DATE")
     private LocalDateTime transactionDate;
 
     protected Inventory() {
@@ -62,7 +62,7 @@ public class Inventory {
         this(userId, productId, null, null, status, address, startDate, null);
     }
 
-    public Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
+    private Inventory(Long userId, Long productId, Long price, ProductQuality productQuality, Status status, Address address, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
         this.productId = productId;
         this.price = price;
@@ -70,7 +70,6 @@ public class Inventory {
         this.status = status;
         this.address = address;
         this.startDate = startDate;
-        this.transactionDate = transactionDate;
     }
 
     public void changeStatusInWarehouse() {
@@ -98,11 +97,12 @@ public class Inventory {
         changeStatus(Status.LIVE);
     }
 
-    public void payed(LocalDateTime transactionDate) {
+    public void ordered(LocalDateTime transactionDate) {
         validate(Status.LIVE);
-        changeStatus(Status.PAYED);
+        changeStatus(Status.DELIVERING);
         setTransactionDate(transactionDate);
-        //배송 이벤트 발행
+
+        EventManager.publish(new InventoryOrderedEvent(this.userId, this.price));
     }
 
     public void setPrice(Long price) {

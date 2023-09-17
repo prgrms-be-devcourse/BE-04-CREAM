@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 public class InventoryOrder {
 
     enum InventoryOrderStatus {
-        DELIVERY_WAITING,
-
         DELIVERING,
 
         SHIPPED,
@@ -49,7 +47,7 @@ public class InventoryOrder {
         this.userId = userId;
         this.inventoryId = inventoryId;
         this.orderdPrice = orderdPrice;
-        this.inventoryOrderStatus = InventoryOrderStatus.DELIVERY_WAITING;
+        this.inventoryOrderStatus = InventoryOrderStatus.DELIVERING;
         this.transactionDate = transactionDate;
     }
 }
