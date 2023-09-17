@@ -39,6 +39,8 @@ public class AuctionService {
 
     @Transactional
     public AuctionStatusChangeResponse changeAuctionStatus(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        validateStatusBefore(auctionStatusChangeRequest);
+
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
 
@@ -58,6 +60,12 @@ public class AuctionService {
         return SuccessfulBidderGetResponse.of(request.auctionId(), auction.getBidderId(), auction.getPrice());
     }
 
+    private void validateStatusBefore(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.BEFORE) {
+            throw new CreamException(ErrorCode.INVALID_CHANGE_STATUS);
+        }
+    }
+
     private void registerSuccessfulBidder(AuctionStatusChangeRequest auctionStatusChangeRequest) {
         AuctionBidding auctionBidding = findHighestBidPrice(auctionStatusChangeRequest.id());
 
@@ -69,7 +77,7 @@ public class AuctionService {
     }
 
     private AuctionBidding findHighestBidPrice(Long auctionId) {
-        return auctionBiddingRepository.findTopByAuctionIdOrderByPriceDesc(auctionId)
+        return auctionBiddingRepository.findTopBiddingPrice(auctionId)
             .orElseThrow(() -> new CreamException(INVALID_ID));
     }
 
