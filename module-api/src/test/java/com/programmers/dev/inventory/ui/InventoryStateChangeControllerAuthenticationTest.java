@@ -168,7 +168,7 @@ class InventoryStateChangeControllerAuthenticationTest {
     }
 
     private Inventory createInventory(Long userId, Long productId, Address address) {
-        Inventory inventory = new Inventory(userId, productId, Inventory.InventoryType.SELL, Status.IN_WAREHOUSE, address, LocalDateTime.now());
+        Inventory inventory = new Inventory(userId, productId, Status.IN_WAREHOUSE, address, LocalDateTime.now());
 
         return inventoryRepository.save(inventory);
     }

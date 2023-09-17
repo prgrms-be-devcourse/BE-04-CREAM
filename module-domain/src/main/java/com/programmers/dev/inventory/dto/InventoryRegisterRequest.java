@@ -37,7 +37,7 @@ public record InventoryRegisterRequest(
         LocalDateTime currentTime = LocalDateTime.now();
 
         for (int i = 0; i < this.quantity; ++i) {
-            inventories.add(new Inventory(userId, this.productId, Inventory.InventoryType.SELL, Status.OUT_WAREHOUSE, address, currentTime));
+            inventories.add(new Inventory(userId, this.productId, Status.OUT_WAREHOUSE, address, currentTime));
         }
 
         return inventories;
