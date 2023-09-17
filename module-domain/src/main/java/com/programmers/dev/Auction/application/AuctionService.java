@@ -39,6 +39,8 @@ public class AuctionService {
 
     @Transactional
     public AuctionStatusChangeResponse changeAuctionStatus(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        validateStatusBefore(auctionStatusChangeRequest);
+
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
 
@@ -56,6 +58,12 @@ public class AuctionService {
         auction.checkFinishedAuction();
 
         return SuccessfulBidderGetResponse.of(request.auctionId(), auction.getBidderId(), auction.getPrice());
+    }
+
+    private void validateStatusBefore(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.BEFORE) {
+            throw new CreamException(ErrorCode.INVALID_CHANGE_STATUS);
+        }
     }
 
     private void registerSuccessfulBidder(AuctionStatusChangeRequest auctionStatusChangeRequest) {
