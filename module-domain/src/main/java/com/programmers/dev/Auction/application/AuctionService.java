@@ -33,7 +33,7 @@ public class AuctionService {
 
         Auction auction = Auction.createAuctionFirst(product, auctionSaveRequest);
 
-        return new AuctionSaveResponse(auctionRepository.save(auction).getId());
+        return AuctionSaveResponse.of(auctionRepository.save(auction).getId());
 
     }
 
@@ -46,7 +46,7 @@ public class AuctionService {
             registerSuccessfulBidder(auctionStatusChangeRequest);
         }
 
-        return new AuctionStatusChangeResponse(auction.getId(), auction.getAuctionStatus());
+        return AuctionStatusChangeResponse.of(auction.getId(), auction.getAuctionStatus());
     }
 
     @Transactional
