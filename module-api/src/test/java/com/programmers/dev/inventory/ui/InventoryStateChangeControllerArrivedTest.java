@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.JwtConfigure;

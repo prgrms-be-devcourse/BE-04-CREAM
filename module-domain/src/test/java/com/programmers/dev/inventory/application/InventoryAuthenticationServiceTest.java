@@ -29,7 +29,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @SpringBootTest
 @Transactional
-class InventoryAuthenticationTest {
+class InventoryAuthenticationServiceTest {
 
     @Autowired
     private InventoryStateChangeService inventoryStateChangeService;

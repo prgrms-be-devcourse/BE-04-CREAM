@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
 import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.JwtConfigure;
@@ -91,10 +90,10 @@ class InventoryStateChangeControllerSetPriceTest {
         User user = createUser();
         String accessToken = getAccessToken(user.getId(), user.getUserRole());
         Product product = createProduct();
-        Long hopedPrice = 100_000L;
         Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
 
         //when && then
+        Long hopedPrice = 100_000L;
         InventorySetPriceRequest request = new InventorySetPriceRequest(hopedPrice);
         mockMvc.perform(post("/api/inventories/state-change/{inventoryId}/set-price", inventory.getId())
                         .header(HttpHeaders.AUTHORIZATION, accessToken)

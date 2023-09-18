@@ -129,3 +129,8 @@ operation::inventory-authentication-failed[snippets = 'http-request,http-respons
 === 보관판매 판매희망가 설정 API
 
 operation::inventory-set-price[snippets = 'http-request,http-response']
+
+[[inventory-order]]
+=== 보관판매 상품 구입 API
+
+operation::inventory-order[snippets = 'http-request,http-response']

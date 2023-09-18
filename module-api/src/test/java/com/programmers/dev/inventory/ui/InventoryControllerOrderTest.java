@@ -1,11 +1,13 @@
 package com.programmers.dev.inventory.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
-
+import com.programmers.dev.common.Status;
+import com.programmers.dev.inventory.domain.Inventory;
+import com.programmers.dev.inventory.domain.InventoryRepository;
+import com.programmers.dev.inventory.dto.InventoryOrderRequest;
 import com.programmers.dev.product.domain.*;
-import com.programmers.dev.security.jwt.*;
+import com.programmers.dev.security.jwt.JwtConfigure;
+import com.programmers.dev.security.jwt.JwtTokenUtils;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -46,13 +48,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class InventoryRegisterControllerTest {
+class InventoryControllerOrderTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -79,35 +84,36 @@ class InventoryRegisterControllerTest {
     }
 
     @Test
-    @DisplayName("보관판매 신청을 하면 보관판매 ID를 반환받는다.")
-    void 보관판매에_성공하면_생성된_보관판매_ID를_반환받는다() throws Exception {
+    @DisplayName("보관판매 주문에 성공하면 보관판매주문 ID를 반환받는다.")
+    void 보관판매에_주문에_성공하면_생성된_보관판매주문ID를_반환받는다() throws Exception {
         //given
-        User user = createUserHavingMoney(10_000L);
+        Long havingAccountMoney = 200_000L;
+        User user = createUserHavingMoney(havingAccountMoney);
         String accessToken = getAccessToken(user.getId(), user.getUserRole());
-        Product product = getTargetProduct();
+        Product product = createProduct();
+        Long hopedPrice = 100_000L;
+        Inventory livedStatusInventory = createLivedStatusInventory(user.getId(), product.getId(), hopedPrice, Inventory.ProductQuality.COMPLETE, user.getAddress());
 
         //when && then
-        InventoryRegisterRequest request = crateRegisterRequest(product.getId(), 3L, user.getAddress());
-        mockMvc.perform(post("/api/inventories/register")
+        InventoryOrderRequest request = new InventoryOrderRequest(hopedPrice, product.getId());
+        mockMvc.perform(post("/api/inventories/order")
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
+                        .param("productQuality", Inventory.ProductQuality.COMPLETE.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventory-register",
+                .andDo(document("inventory-order",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
                         ),
                         requestFields(
-                                fieldWithPath("productId").description("id of product"),
-                                fieldWithPath("quantity").description("price of bidding"),
-                                fieldWithPath("returnZipcode").description("returnZipcode of inventory"),
-                                fieldWithPath("returnAddress").description("returnAddress of inventory"),
-                                fieldWithPath("returnAddressDetail").description("returnAddressDetail of inventory")
+                                fieldWithPath("price").description("price of inventory"),
+                                fieldWithPath("productId").description("productId of inventory")
                         ),
                         responseFields(
-                                fieldWithPath("inventoryIds").description("created inventoryIds")
+                                fieldWithPath("inventoryOrder").description("created inventoryOrderId")
                         )
                 ));
     }
@@ -117,10 +123,11 @@ class InventoryRegisterControllerTest {
     }
 
     private User createUserHavingMoney(Long account) {
-        return userRepository.save(new User("test@email.com", "test", "sellUser", account, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
+        return userRepository.save(
+                new User("aaa@email.com", "aaa", "sellUser", account, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
     }
 
-    private Product getTargetProduct() {
+    private Product createProduct() {
         Brand brand = new Brand("ADIDAS");
         brandRepository.save(brand);
 
@@ -130,7 +137,11 @@ class InventoryRegisterControllerTest {
         return productRepository.save(product);
     }
 
-    private InventoryRegisterRequest crateRegisterRequest(Long productId, Long quantity, Address address) {
-        return new InventoryRegisterRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
+    private Inventory createLivedStatusInventory(Long userId, Long productId, Long price, Inventory.ProductQuality productQuality, Address address) {
+        Inventory inventory = new Inventory(userId, productId, Status.IN_WAREHOUSE, address, LocalDateTime.now());
+        inventory.authenticationPassedWithProductQuality(productQuality);
+        inventory.lived(price);
+
+        return inventoryRepository.save(inventory);
     }
 }

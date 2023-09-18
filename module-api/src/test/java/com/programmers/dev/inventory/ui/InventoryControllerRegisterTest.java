@@ -1,15 +1,14 @@
 package com.programmers.dev.inventory.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.programmers.dev.common.PenaltyType;
+
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
+
+import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import com.programmers.dev.product.domain.*;
-import com.programmers.dev.security.jwt.JwtConfigure;
-import com.programmers.dev.security.jwt.JwtTokenUtils;
+import com.programmers.dev.security.jwt.*;
 import com.programmers.dev.user.domain.Address;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -50,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class InventoryStateChangeControllerAuthenticationTest {
+class InventoryControllerRegisterTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -86,59 +85,32 @@ class InventoryStateChangeControllerAuthenticationTest {
     }
 
     @Test
-    @DisplayName("요청한 inventoryId 상품이 검수에 합격하면 inventoryId를 반환받는다.")
-    void 검수_합격() throws Exception {
+    @DisplayName("요청한 inventoryId 상품에 대한 판매희망가를 입력하면 inventoryId를 반환받는다.")
+    void 판매희망가_입력() throws Exception {
         //given
         User user = createUser();
         String accessToken = getAccessToken(user.getId(), user.getUserRole());
         Product product = createProduct();
+        Long hopedPrice = 100_000L;
         Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
 
         //when && then
-        InventoryAuthenticatePassRequest request = new InventoryAuthenticatePassRequest(Inventory.ProductQuality.COMPLETE);
-        mockMvc.perform(post("/api/inventories/state-change/authentication/{inventoryId}/passed", inventory.getId())
+
+
+        InventorySetPriceRequest request = new InventorySetPriceRequest(hopedPrice);
+        mockMvc.perform(post("/api/inventories/state-change/{inventoryId}/set-price", inventory.getId())
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventory-authentication-passed",
+                .andDo(document("inventory-set-price",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
                         ),
                         requestFields(
-                                fieldWithPath("productQuality").description("productQuality of authentication")
-                        ),
-                        responseFields(
-                                fieldWithPath("inventoryId").description("id of inventory")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("요청한 inventoryId 상품이 검수에 실패하면 inventoryId를 반환받는다.")
-    void 검수_실패() throws Exception {
-        User user = createUser();
-        String accessToken = getAccessToken(user.getId(), user.getUserRole());
-        Product product = createProduct();
-
-        Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
-        InventoryAuthenticateFailRequest request = new InventoryAuthenticateFailRequest(PenaltyType.PRODUCT_DAMEGED);
-
-        mockMvc.perform(post("/api/inventories/state-change/authentication/{inventoryId}/failed", inventory.getId())
-                        .header(HttpHeaders.AUTHORIZATION, accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-                )
-                .andDo(print())
-                .andDo(document("inventory-authentication-failed",
-                        requestHeaders(
-                                headerWithName(CONTENT_TYPE).description("content type"),
-                                headerWithName(CONTENT_LENGTH).description("content length")
-                        ),
-                        requestFields(
-                                fieldWithPath("penaltyType").description("penaltyType of authentication")
+                                fieldWithPath("hopedPrice").description("hopedPrice of inventory")
                         ),
                         responseFields(
                                 fieldWithPath("inventoryId").description("id of inventory")
@@ -165,7 +137,7 @@ class InventoryStateChangeControllerAuthenticationTest {
     }
 
     private Inventory createInventory(Long userId, Long productId, Address address) {
-        Inventory inventory = new Inventory(userId, productId, Status.IN_WAREHOUSE, address, LocalDateTime.now());
+        Inventory inventory = new Inventory(userId, productId, Status.AUTHENTICATED, address, LocalDateTime.now());
 
         return inventoryRepository.save(inventory);
     }
