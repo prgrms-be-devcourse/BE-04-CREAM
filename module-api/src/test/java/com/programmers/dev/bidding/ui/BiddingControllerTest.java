@@ -46,7 +46,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.mo
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(RestDocumentationExtension.class)
@@ -393,6 +392,43 @@ class BiddingControllerTest {
                 () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED)
         );
 
+    }
+
+    @Test
+    @DisplayName("입찰 건에 대해서 입찰 취소를 할 수 있다. ")
+    void cancel() throws Exception {
+        // given
+        User seller = saveUser("user1@email.com", "user1");
+        User buyer = saveUser("user2@email.com", "user2");
+
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+        Bidding sellBidding = saveSellBidding(seller, product);
+
+        BiddingResponse biddingResponse = biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId()));
+
+        String accessToken = getAccessToken(buyer.getId(), buyer.getUserRole());
+        // when
+        ResultActions resultActions = this.mockMvc.perform(
+                        post("/api/bidding/cancel/{biddingId}", biddingResponse.biddingId())
+                                .header(AUTHORIZATION, accessToken)
+                )
+                .andDo(document("bidding-cancel",
+                        responseFields(
+                                fieldWithPath("message").description("message when process succeeded")
+                        ))
+                );
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.CANCELLED),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.CANCELLED)
+        );
     }
 
     private User saveUser(String email, String nickname) {
