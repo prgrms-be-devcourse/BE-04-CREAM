@@ -33,7 +33,7 @@ public class InventorySettlementEventHandler {
     public void handle(InventoryAuthenticationPassedEvent event) {
         settlementService.save(event.getUserId(), event.getSettlementType(), event.getProtectionMoney());
 
-        logger.info("[정산등록 : 보관판매 검수 합격]  (사용자ID={}, 환급 보증금={}", event.getUserId(), event.getProtectionMoney());
+        logger.info("[정산등록][입금][보관판매][검수합격] userId={}, inventoryId={} protectionMoney={}", event.getUserId(), event.getInventoryId(), event.getProtectionMoney());
     }
 
     @Async
@@ -46,7 +46,7 @@ public class InventorySettlementEventHandler {
         settlementService.save(event.getUserId(), event.getSettlementType(), -event.getPenaltyMoney());
         settlementService.save(event.getUserId(), event.getSettlementType(), -event.getReturnShippingMoney());
 
-        logger.info("[정산등록 : 보관판매 검수 실패] 사용자ID={}, 패널티 비용={}, 반송비={}", event.getUserId(), event.getPenaltyMoney(), event.getReturnShippingMoney());
+        logger.info("[정산등록][인출][보관판매][검수실패] userId={}, inventoryId={}, penaltyMoney={}, returnShippingMoney={}", event.getUserId(), event.getInventoryId(), event.getPenaltyMoney(), event.getReturnShippingMoney());
     }
 
     @Async
@@ -56,8 +56,8 @@ public class InventorySettlementEventHandler {
             phase = TransactionPhase.AFTER_COMMIT
     )
     public void handle(InventoryOrderedEvent event) {
-        settlementService.save(event.getUserId(), event.getSettlementType(), event.getOrderedPrice());
+        settlementService.save(event.getUserId(), event.getSettlementType(), event.getOrderedMoney());
 
-        logger.info("[정산등록 : 보관판매 등록 상품 구매됨] 사용자ID={}, 환급 금액={}", event.getUserId(), event.getOrderedPrice());
+        logger.info("[정산등록][입금][보관판매][판매완료] userId={}, inventoryId={} orderedMoney={}", event.getUserId(), event.getInventoryId(), event.getOrderedMoney());
     }
 }

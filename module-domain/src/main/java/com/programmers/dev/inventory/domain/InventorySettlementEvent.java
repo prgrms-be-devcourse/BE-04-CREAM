@@ -6,9 +6,12 @@ import lombok.Getter;
 @Getter
 public abstract class InventorySettlementEvent {
 
+    protected Long inventoryId;
+
     protected Long userId;
 
-    protected InventorySettlementEvent(Long userId) {
+    protected InventorySettlementEvent( Long inventoryId, Long userId) {
+        this.inventoryId = inventoryId;
         this.userId = userId;
     }
 

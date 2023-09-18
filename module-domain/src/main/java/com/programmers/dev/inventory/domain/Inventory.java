@@ -82,14 +82,14 @@ public class Inventory {
         changeStatus(Status.AUTHENTICATED);
         changeProductQuality(productQuality);
 
-        EventManager.publish(new InventoryAuthenticationPassedEvent(this.userId, PROTECTION.getCost()));
+        EventManager.publish(new InventoryAuthenticationPassedEvent(this.id, this.userId, PROTECTION.getCost()));
     }
 
     public void authenticationFailed(Long penaltyCost) {
         validate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATION_FAILED);
 
-        EventManager.publish(new InventoryAuthenticationFailedEvent(this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
+        EventManager.publish(new InventoryAuthenticationFailedEvent(this.id, this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
     }
 
     public void lived(Long price) {
@@ -103,7 +103,7 @@ public class Inventory {
         changeStatus(Status.DELIVERING);
         setTransactionDate(transactionDate);
 
-        EventManager.publish(new InventoryOrderedEvent(this.userId, this.price));
+        EventManager.publish(new InventoryOrderedEvent(this.id, this.userId, this.price));
     }
 
     private void setPrice(Long price) {
