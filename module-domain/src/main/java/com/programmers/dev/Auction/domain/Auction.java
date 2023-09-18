@@ -3,18 +3,20 @@ package com.programmers.dev.Auction.domain;
 import com.programmers.dev.Auction.dto.AuctionSaveRequest;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
-import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.product.domain.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
-import static com.programmers.dev.exception.ErrorCode.*;
+import static com.programmers.dev.exception.ErrorCode.BAD_BUSINESS_LOGIC;
+import static com.programmers.dev.exception.ErrorCode.INVALID_AUCTION_BIDDING;
 
 @Entity
 @Table(name = "AUCTIONS")
 @Getter
+@Slf4j
 public class Auction {
 
     @Id
@@ -75,6 +77,7 @@ public class Auction {
 
     public void validateAuctionBiddingTime() {
         if (this.auctionStatus != AuctionStatus.ONGOING) {
+            log.info("[validateAuctionBiddingTime] 해당 경매는 진행중이지 않습니다.");
             throw new CreamException(INVALID_AUCTION_BIDDING);
         }
     }
@@ -86,6 +89,7 @@ public class Auction {
 
     public void checkFinishedAuction() {
         if (this.auctionStatus != AuctionStatus.FINISHED) {
+            log.info("[checkFinishedAuction] 해당 경매는 종료된 상태가 아닙니다.");
             throw new CreamException(BAD_BUSINESS_LOGIC);
         }
     }

@@ -9,6 +9,7 @@ import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class AuctionBiddingService {
 
     private final AuctionBiddingRepository auctionBiddingRepository;
@@ -51,7 +53,10 @@ public class AuctionBiddingService {
 
     private AuctionBidding getCancelAuctionBidding(Long userId, AuctionBiddingCancelRequest request) {
         return auctionBiddingRepository.findCancelBidding(userId, request.auctionId(), request.price())
-            .orElseThrow(() -> new CreamException(INVALID_CANCEL_BIDDING));
+            .orElseThrow(() -> {
+                log.info("[getCancelAuctionBidding] 취소할 경매 입찰을 조회하는 과정에서 예외가 발생하였습니다.");
+                return new CreamException(INVALID_CANCEL_BIDDING);
+            });
     }
 
     public BiddingPriceGetResponse getCurrentBiddingPrice(BiddingPriceGetRequest request) {
@@ -69,16 +74,25 @@ public class AuctionBiddingService {
     private Long getStartPrice(BiddingPriceGetRequest request) {
         return auctionRepository.findById(request.auctionId())
             .map(Auction::getStartPrice)
-            .orElseThrow(() -> new CreamException(INVALID_ID));
+            .orElseThrow(() -> {
+                log.info("[getStartPrice] 해당 auctionId({})에 대한 경매는 존재하지 않습니다.", request.auctionId());
+                return new CreamException(INVALID_ID);
+            });
     }
 
     private Auction findAuctionById(Long auctionId) {
         return auctionRepository.findById(auctionId)
-            .orElseThrow(() -> new CreamException(INVALID_ID));
+            .orElseThrow(() -> {
+                log.info("[findAuctionById] 해당 auctionId({})에 대한 경매는 존재하지 않습니다.", auctionId);
+                return new CreamException(INVALID_ID);
+            });
     }
 
     private User findUserById(Long userId) {
         return userRepository.findById(userId)
-            .orElseThrow(() -> new CreamException(INVALID_ID));
+            .orElseThrow(() -> {
+                log.info("[findUserById] 해당 userId({})에 대한 사용자는 존재하지 않습니다.", userId);
+                return new CreamException(INVALID_ID);
+            });
     }
 }
