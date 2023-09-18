@@ -27,7 +27,7 @@ public class InventoryOrderService {
 
     private final BankingService bankingService;
 
-    public InventoryOrderResponse order(Long userId, InventoryOrderRequest request, Inventory.ProductQuality productQuality) {
+    public synchronized InventoryOrderResponse order(Long userId, InventoryOrderRequest request, Inventory.ProductQuality productQuality) {
         Inventory inventory = inventoryFindService.findOrderableInventory(request.productId(), request.price(), productQuality);
 
         User user = userFindService.findById(userId);
@@ -35,6 +35,7 @@ public class InventoryOrderService {
 
         LocalDateTime transactionDate = getCurrrentTime();
         inventory.ordered(transactionDate);
+
         InventoryOrder inventoryOrder = inventoryOrderRepository.save(
                 new InventoryOrder(userId, inventory.getId(), request.price(), transactionDate)
         );
