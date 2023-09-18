@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 
 @Service
@@ -44,13 +47,24 @@ public class AuctionService {
         validateStatusBefore(auctionStatusChangeRequest);
 
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
-        auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
 
         if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.FINISHED) {
-            registerSuccessfulBidder(auctionStatusChangeRequest);
+            validateNowIsAfterEndTime(auction);
+
+            processFinishedAuction(auctionStatusChangeRequest);
         }
 
+        auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
+
         return AuctionStatusChangeResponse.of(auction.getId(), auction.getAuctionStatus());
+    }
+
+    private void validateNowIsAfterEndTime(Auction auction) {
+        if (auction.getEndTime().isAfter(LocalDateTime.now())) {
+            log.info("[validateNowIsAfterEndTime] 아직 경매 종료 시간이 되지 않았습니다. 현재시간 = {}, 경매 종료 예정 시간 = {}",
+                LocalDateTime.now(), auction.getEndTime());
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
     }
 
     public SuccessfulBidderGetResponse findSuccessfulBidder(SuccessfulBidderGetRequest request) {
@@ -68,25 +82,20 @@ public class AuctionService {
         }
     }
 
-    //TODO 경매에 대한 입찰자가 없을 경우
+    private void processFinishedAuction(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        auctionBiddingRepository.findTopBiddingPrice(auctionStatusChangeRequest.id())
+            .ifPresentOrElse(
+                AuctionService::registerSuccessfulBidder,
+                () -> log.info("[processFinishedAuction] 해당 경매에 대한 입찰 내역이 존재하지 않으므로 낙찰자와 낙찰가는 null이 저장됩니다.")
+            );
+    }
 
-    private void registerSuccessfulBidder(AuctionStatusChangeRequest auctionStatusChangeRequest) {
-        AuctionBidding auctionBidding = findHighestBidPrice(auctionStatusChangeRequest.id());
-
+    private static void registerSuccessfulBidder(AuctionBidding auctionBidding) {
         Long successfulBidderId = auctionBidding.getUser().getId();
         Long successfulBidPrice = auctionBidding.getPrice();
 
         auctionBidding.getAuction()
             .registerSuccessfulBidder(successfulBidderId, successfulBidPrice);
-    }
-
-    private AuctionBidding findHighestBidPrice(Long auctionId) {
-        return auctionBiddingRepository.findTopBiddingPrice(auctionId)
-            .orElseThrow(() -> {
-                log.info("[findHighestBidPrice] 해당 auctionId({})에 대한 입찰 내역은 존재하지 않습니다.", auctionId);
-                return new CreamException(INVALID_ID);
-            });
-
     }
 
     private Auction findAuctionById(Long id) {
