@@ -12,9 +12,11 @@ import com.programmers.dev.product.domain.ProductRepository;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -88,6 +90,7 @@ public class BiddingService {
 
     private void checkBalance(User user, Bidding bidding) {
         if (user.getAccount() < bidding.getPrice()) {
+            log.info("not enough money for pay. user account : {}", user.getAccount());
             throw new CreamException(ErrorCode.INSUFFICIENT_ACCOUNT_MONEY);
         }
     }
@@ -126,20 +129,29 @@ public class BiddingService {
 
     private User getUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(
-                () -> new CreamException(ErrorCode.NO_AUTHENTICATION)
+                () -> {
+                    log.info("userId not exist in database, userId : {}", userId);
+                    return new CreamException(ErrorCode.NO_AUTHENTICATION);
+                }
         );
     }
 
     private Bidding getBiddingByBiddingId(Long biddingId) {
         return biddingRepository.findById(biddingId)
                 .orElseThrow(
-                        () -> new CreamException(ErrorCode.INVALID_ID)
+                        () -> {
+                            log.info("biddingId not exist in database, biddingId : {}", biddingId);
+                            return new CreamException(ErrorCode.INVALID_ID);
+                        }
                 );
     }
 
     private void validateProductId(RegisterBiddingRequest request) {
         productRepository.findById(request.productId()).orElseThrow(
-                () -> new CreamException(ErrorCode.INVALID_ID)
+                () -> {
+                    log.info("invalid product Id : {}", request.productId());
+                    return new CreamException(ErrorCode.INVALID_ID);
+                }
         );
     }
 
@@ -147,6 +159,7 @@ public class BiddingService {
         biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
                 bidding -> {
                     if (bidding.getPrice() < request.price()) {
+                        log.info("bidding price : {}, request price : {}", bidding.getPrice(), request.price());
                         throw new CreamException(ErrorCode.OVER_PRICE);
                     }
                 }

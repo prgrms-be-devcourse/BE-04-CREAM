@@ -5,9 +5,11 @@ import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Entity
 @Getter
 @Table(name = "BIDDINGS")
@@ -133,6 +135,7 @@ public class Bidding {
 
     public void checkDurationOfBidding() {
         if (this.dueDate.isBefore(LocalDateTime.now())) {
+            log.info("due date is over. biddingId : {}, dueDate : {}, now : {}", this.id, this.dueDate, LocalDateTime.now());
             throw new CreamException(ErrorCode.AFTER_DUE_DATE);
         }
     }
@@ -144,6 +147,7 @@ public class Bidding {
             this.status = Status.AUTHENTICATED_FAILED;
             this.bidding.status = Status.CANCELLED; // 관련 구매 상품은 거래 취소
         } else {
+            log.info("cannot handle status. status : {}", result);
             throw new CreamException(ErrorCode.BAD_ARGUMENT);
         }
     }
@@ -162,18 +166,21 @@ public class Bidding {
 
     public void checkAuthorityOfUser(Long userId) throws CreamException{
         if (!this.userId.equals(userId)) {
+            log.info("bidding's user id does not match. userId : {}, bidding.userId : {}", userId, this.userId);
             throw new CreamException(ErrorCode.NO_AUTHORITY);
         }
     }
 
     private void checkSellBiddingAuthenticated() {
         if (this.getBidding().getStatus() != Status.AUTHENTICATED) {
+            log.info("Sell Bidding Product is not authenticated yet, bidding Id : {}, status : {}", this.getBidding().getId(), this.getBidding().getStatus());
             throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
         }
     }
 
     public void checkAbusing(Long userId) {
         if (this.userId.equals(userId)) {
+            log.info("same seller and buyer. userId : {}", userId);
             throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
         }
     }
