@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "SETTLEMENTS")
 @Getter
-@SQLDelete(sql = "UPDATE SETTLEMENTS SET DELETE_DATE = NOW() where ID = ?")
-@Where(clause = "DELETE_DATE is NULL")
+@SQLDelete(sql = "UPDATE SETTLEMENTS SET SETTLEMENTED_DATE = NOW() where ID = ?")
+@Where(clause = "SETTLEMENTED_DATE is NULL")
 public class Settlement {
 
     public enum SettlementType {
@@ -38,7 +38,7 @@ public class Settlement {
     @Column(name = "REGISTER_DATE", nullable = false, updatable = false)
     private LocalDateTime registerDate;
 
-    @Column(name = "DELETE_DATE")
+    @Column(name = "SETTLEMENTED_DATE")
     private LocalDateTime deleteDate;
 
     protected Settlement() {
