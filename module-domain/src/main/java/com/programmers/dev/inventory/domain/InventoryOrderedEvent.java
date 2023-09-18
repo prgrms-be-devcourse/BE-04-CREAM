@@ -5,11 +5,11 @@ import lombok.Getter;
 
 @Getter
 public class InventoryOrderedEvent extends InventorySettlementEvent{
-    private final Long orderedPrice;
+    private final Long orderedMoney;
 
-    public InventoryOrderedEvent(Long userId, Long orderedPrice) {
-        super(userId);
-        this.orderedPrice = orderedPrice;
+    public InventoryOrderedEvent(Long inventoryId, Long userId, Long orderedMoney) {
+        super(inventoryId, userId);
+        this.orderedMoney = orderedMoney;
     }
 
     @Override

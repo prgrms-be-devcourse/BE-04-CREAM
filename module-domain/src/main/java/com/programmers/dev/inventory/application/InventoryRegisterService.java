@@ -34,10 +34,8 @@ public class InventoryRegisterService {
         Long protectionCost = costCalculator.calcualteProtectionCost(request.quantity());
         bankingService.withdraw(user, protectionCost);
 
-        //TODO: bulk insert
-        List<Long> inventoryIds = request.toEntities(userId)
+        List<Long> inventoryIds = inventoryRepository.saveAll(request.toEntities(userId))
                 .stream()
-                .map(inventoryRepository::save)
                 .map(Inventory::getId)
                 .toList();
 

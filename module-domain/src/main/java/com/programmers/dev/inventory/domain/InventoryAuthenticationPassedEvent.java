@@ -9,8 +9,8 @@ public class InventoryAuthenticationPassedEvent extends InventorySettlementEvent
 
     private final Long protectionMoney;
 
-    public InventoryAuthenticationPassedEvent(Long userId, Long protectionMoney) {
-        super(userId);
+    public InventoryAuthenticationPassedEvent(Long inventoryId, Long userId, Long protectionMoney) {
+        super(inventoryId, userId);
         this.protectionMoney = protectionMoney;
     }
 
