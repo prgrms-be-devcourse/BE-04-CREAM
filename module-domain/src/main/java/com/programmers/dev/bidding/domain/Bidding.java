@@ -119,6 +119,10 @@ public class Bidding {
     }
 
     // == Business Logic == //
+
+    public void transactBidding(Bidding bidding) {
+        this.bidding = bidding;
+    }
     private void transactSellBidding(LocalDateTime transactionDate) {
         this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
@@ -192,6 +196,60 @@ public class Bidding {
 
     public int getPoint() {
         return this.price / 100;
+    }
+
+    /*
+    (판매자의 경우)
+    입찰 중 => No Penalty.
+    거래 증 => Penalty.
+    입금 완료 => Cannot Cancel.
+    (구매자의 경우)
+    입찰 중 => No Penalty.
+    거래 중 => Penalty.
+    검수 완료 => Cannot Cancel.
+     */
+    public int cancel() {
+        if (this.biddingType == BiddingType.SELL) {
+            Bidding purchaseBidding = this.getBidding();
+            if (this.status == Status.LIVE) {
+                this.status = Status.CANCELLED;
+                return 0;
+            } else if (this.status == Status.FINISHED) {
+                log.info("bidding is finished. sellBidding : {}, purchaseBidding : {}", this.status, purchaseBidding.status);
+                throw new CreamException(ErrorCode.CANNOT_CANCEL);
+            } else if (this.status == Status.AUTHENTICATED_FAILED) {
+                log.info("bidding is not authenticated. bidding id : {}", this.id);
+                throw new CreamException(ErrorCode.CANNOT_CANCEL);
+            } else if (this.status == Status.IN_TRANSACTION) {
+                if (purchaseBidding.status == Status.IN_TRANSACTION) {
+                    this.status = Status.CANCELLED;
+                    purchaseBidding.status = Status.CANCELLED;
+                    return (this.price / 100);
+                } else {
+                    log.info("purchase bidding is already DELIVERED OR IN STOCK. sellBidding : {}, purchaseBidding : {}", this.status, purchaseBidding.status);
+                    throw new CreamException(ErrorCode.CANNOT_CANCEL);
+                }
+            }
+        } else {
+            Bidding sellBidding = this.getBidding();
+            if (this.status == Status.LIVE) {
+                this.status = Status.CANCELLED;
+                return 0;
+            } else if (this.status == Status.FINISHED) {
+                log.info("bidding is finished. sellBidding : {}, purchaseBidding : {}", sellBidding.status, this.status);
+                throw new CreamException(ErrorCode.CANNOT_CANCEL);
+            } else if (this.status == Status.IN_TRANSACTION) {
+                if (sellBidding.status == Status.IN_TRANSACTION) {
+                    this.status = Status.CANCELLED;
+                    sellBidding.status = Status.CANCELLED;
+                    return (this.price / 100);
+                } else {
+                    log.info("sell bidding is already BEING DELIVERED. sellBidding : {}, purchaseBidding : {}", sellBidding.status, this.status);
+                    throw new CreamException(ErrorCode.CANNOT_CANCEL);
+                }
+            }
+        }
+        throw new CreamException(ErrorCode.SERVER_ERROR);
     }
 
 }

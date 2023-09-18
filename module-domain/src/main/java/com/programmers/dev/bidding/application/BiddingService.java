@@ -39,14 +39,15 @@ public class BiddingService {
 
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
+        Bidding sellBidding = getBiddingByBiddingId(request.biddingId());
         validateBidding(userId,
-                getBiddingByBiddingId(request.biddingId())
-        );
+                sellBidding);
 
         Bidding savedBidding = biddingRepository.save(
-                Bidding.transactSellBidding(userId, storage, getBiddingByBiddingId(request.biddingId()))
+                Bidding.transactSellBidding(userId, storage, sellBidding)
         );
 
+        sellBidding.transactBidding(savedBidding);
         return BiddingResponse.of(savedBidding.getId());
     }
 
@@ -71,6 +72,7 @@ public class BiddingService {
                 Bidding.transactPurchaseBidding(userId, purchaseBidding)
         );
 
+        purchaseBidding.transactBidding(savedBidding);
         return BiddingResponse.of(savedBidding.getId());
     }
 
@@ -83,6 +85,7 @@ public class BiddingService {
     public void sendMoneyForBidding(Long userId, Long biddingId) {
         User user = getUserByUserId(userId);
         Bidding bidding = getBiddingByBiddingId(biddingId);
+        bidding.checkAuthorityOfUser(userId);
         bidding.checkBiddingBeforeDeposit(userId);
         checkBalance(user, bidding);
         sendMoneyForBidding(bidding, user);
@@ -120,6 +123,24 @@ public class BiddingService {
         seller.deposit((long) purchaseBidding.getPoint());
         User buyer = getUserByUserId(userId);
         buyer.deposit((long) purchaseBidding.getPoint());
+    }
+
+    @Transactional
+    public void cancel(Long userId, Long biddingId) {
+        Bidding bidding = getBiddingByBiddingId(biddingId);
+        bidding.checkAuthorityOfUser(userId);
+        int penalty = bidding.cancel();
+        User user = getUserByUserId(userId);
+        try {
+            user.withdraw((long) penalty);
+        } catch (CreamException e) {
+            log.warn("bidding cancel error", e);
+            user.withdrawInsufficientMoney((long) penalty);
+        }
+        if (bidding.getBidding() != null) {
+            User biddingOpponent = getUserByUserId(bidding.getBidding().getUserId());
+            biddingOpponent.deposit((long) penalty);
+        }
     }
 
     private static void validateBidding(Long userId, Bidding sellBidding) {

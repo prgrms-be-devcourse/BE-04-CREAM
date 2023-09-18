@@ -17,7 +17,9 @@ public enum ErrorCode {
     AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired."),
     OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price"),
     INSUFFICIENT_ACCOUNT_MONEY(BAD_REQUEST, -201, "not enough account money"),
-    INVALID_BIDDING_AUTHENTICATE(BAD_REQUEST, BAD_REQUEST.value(), "bidding is not authenticated.")
+    INVALID_BIDDING_AUTHENTICATE(BAD_REQUEST, BAD_REQUEST.value(), "bidding is not authenticated."),
+    CANNOT_CANCEL(BAD_REQUEST, BAD_REQUEST.value(), "bidding cannot be cancelled."),
+    SERVER_ERROR(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR.value(), "Something does not worked. please call xxx)xxx-xxxx")
     ;
 
     private final HttpStatus httpStatus;

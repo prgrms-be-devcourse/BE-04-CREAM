@@ -98,4 +98,13 @@ public class BiddingController {
         return ResponseEntity.ok(BiddingMessageResponse.of("successfully finished"));
     }
 
+    @PostMapping("/cancel/{biddingId}")
+    public ResponseEntity<BiddingMessageResponse> cancel(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long biddingId
+    ) {
+        biddingService.cancel(userId, biddingId);
+        return ResponseEntity.ok(BiddingMessageResponse.of("successfully cancelled"));
+    }
+
 }

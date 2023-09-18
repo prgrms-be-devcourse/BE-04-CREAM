@@ -347,6 +347,90 @@ class BiddingServiceTest {
 
     }
 
+    @Test
+    @DisplayName("구매자 혹은 판매자가 취소할 때 LIVE 인 경우 취소 가능하며, 별다른 페널티는 존재하지 않는다.")
+    void cancel_LIVE() {
+        // given
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product, 10L);
+
+
+        // when
+        biddingService.cancel(seller.getId(), sellBidding.getId());
+
+        // then
+        User savedSeller = userRepository.findById(seller.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(100000L),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.CANCELLED)
+        );
+    }
+
+    @Test
+    @DisplayName("두가지의 입찰 상태가 IN_TRANSACTION인 경우에는 취소가 가능하며 일부의 페널티가 존재한다. ")
+    void cancel_IN_TRANSACTION() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product, 10L);
+        BiddingResponse biddingResponse =
+                biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId()));
+
+        // when
+        biddingService.cancel(seller.getId(), sellBidding.getId());
+
+        // then
+        User savedBuyer = userRepository.findById(buyer.getId()).orElseThrow();
+        User savedSeller = userRepository.findById(seller.getId()).orElseThrow();
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        int penalty = savedSellBidding.getPrice() / 100;
+        assertAll(
+                () -> assertThat(savedSeller.getAccount()).isEqualTo(100000L - (long) penalty),
+                () -> assertThat(savedBuyer.getAccount()).isEqualTo(100000L + (long) penalty),
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.CANCELLED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.CANCELLED)
+        );
+    }
+
+    @Test
+    @DisplayName("판매 입찰의 상품이 검수 되었을 경우 거래를 취소할 수 없다.")
+    void cancel_AUTHENTICATED() {
+        // given
+        User buyer = saveUser("buyer@naver.com", "buyer");
+        User seller = saveUser("seller@naver.com", "seller");
+        Brand nike = saveBrand("nike");
+        Product product = saveProduct(nike);
+
+        Bidding sellBidding = saveSellBidding(seller, product, 10L);
+        BiddingResponse biddingResponse =
+                biddingService.transactSellBidding(buyer.getId(), "delivery", new TransactBiddingRequest(sellBidding.getId()));
+        biddingService.inspect(sellBidding.getId(), "ok");
+
+        // when
+        assertThatThrownBy(
+                () -> biddingService.cancel(seller.getId(), sellBidding.getId())
+        ).isInstanceOf(CreamException.class);
+
+        // then
+        Bidding savedSellBidding = biddingRepository.findById(sellBidding.getId()).orElseThrow();
+        Bidding savedPurchaseBidding = biddingRepository.findById(biddingResponse.biddingId()).orElseThrow();
+
+        assertAll(
+                () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.AUTHENTICATED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.IN_TRANSACTION)
+        );
+    }
+
 
     private User saveUser(String email, String nickname) {
         User user = new User(email, "password", nickname, 100000L, new Address("12345", "ilsan", "seo-gu"), UserRole.ROLE_USER);
