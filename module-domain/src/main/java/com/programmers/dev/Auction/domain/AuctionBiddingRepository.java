@@ -16,9 +16,10 @@ public interface AuctionBiddingRepository extends JpaRepository<AuctionBidding, 
         "limit 1")
     Optional<AuctionBidding> findTopBiddingPrice(@Param("auctionId") Long auctionId);
 
-    @Modifying(clearAutomatically = true)
-    @Query("delete from AuctionBidding ab where ab.user.id = :userId and ab.auction.id = :auctionId and ab.price = :price")
-    void deleteLastAuctionBidding(
+
+    @Query("select ab from AuctionBidding ab " +
+        "where ab.user.id = :userId and ab.auction.id = :auctionId and ab.price = :price")
+    Optional<AuctionBidding> findCancelBidding(
         @Param("userId") Long userId,
         @Param("auctionId") Long auctionId,
         @Param("price") Long price);

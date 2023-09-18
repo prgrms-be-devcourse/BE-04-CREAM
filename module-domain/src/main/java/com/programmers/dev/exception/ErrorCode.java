@@ -19,7 +19,8 @@ public enum ErrorCode {
     OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price"),
     INSUFFICIENT_ACCOUNT_MONEY(BAD_REQUEST, -201, "not enough account money"),
     INVALID_BIDDING_PRICE(BAD_REQUEST,BAD_REQUEST.value(),"please enter a higher price than the highest bid price"),
-    INVALID_CHANGE_STATUS(BAD_REQUEST,BAD_REQUEST.value(),"you cannot change ongoing or finished auction to before state")
+    INVALID_CHANGE_STATUS(BAD_REQUEST,BAD_REQUEST.value(),"you cannot change ongoing or finished auction to before state"),
+    INVALID_CANCEL_BIDDING(BAD_REQUEST,BAD_REQUEST.value(),"please check auction id and price")
     ;
 
     private final HttpStatus httpStatus;
