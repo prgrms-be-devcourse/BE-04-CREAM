@@ -5,11 +5,13 @@ import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Table(name = "AUCTION_BIDDINGS",
 indexes = @Index(name = "IDX_AUCTION_ID_PRICE", columnList = "AUCTION_ID ASC, PRICE DESC"))
 @Getter
+@Slf4j
 public class AuctionBidding {
 
     @Id
@@ -45,6 +47,7 @@ public class AuctionBidding {
 
     private static void validateTopBiddingPrice(Long price, Long topBiddingPrice) {
         if (price <= topBiddingPrice) {
+            log.info("[validateTopBiddingPrice] 주문하신 입찰 가격은 현재 최고 입찰가보다 낮습니다.");
             throw new CreamException(ErrorCode.INVALID_BIDDING_PRICE);
         }
     }
