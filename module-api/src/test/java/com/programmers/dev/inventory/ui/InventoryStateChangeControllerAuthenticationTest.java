@@ -5,8 +5,6 @@ import com.programmers.dev.common.PenaltyType;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
 import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
 import com.programmers.dev.product.domain.*;
@@ -35,7 +33,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.springframework.http.HttpHeaders.CONTENT_LENGTH;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;

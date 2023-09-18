@@ -25,7 +25,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 @SpringBootTest
 @Transactional
-class InventorySetPriceTest {
+class InventorySetPriceServiceTest {
 
     @Autowired
     private InventoryStateChangeService inventoryStateChangeService;
