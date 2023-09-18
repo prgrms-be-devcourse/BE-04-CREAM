@@ -6,13 +6,13 @@ import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
 import com.programmers.dev.exception.CreamException;
-import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.programmers.dev.exception.ErrorCode.INVALID_CANCEL_BIDDING;
 import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 
 @Service
@@ -44,10 +44,16 @@ public class AuctionBiddingService {
 
     @Transactional
     public void cancelAuctionBid(Long userId, AuctionBiddingCancelRequest request) {
-        auctionBiddingRepository.deleteLastAuctionBidding(userId, request.auctionId(), request.price());
+        AuctionBidding auctionBidding = getCancelAuctionBidding(userId, request);
+
+        auctionBiddingRepository.delete(auctionBidding);
     }
 
-    // TODO 인덱스 활용
+    private AuctionBidding getCancelAuctionBidding(Long userId, AuctionBiddingCancelRequest request) {
+        return auctionBiddingRepository.findCancelBidding(userId, request.auctionId(), request.price())
+            .orElseThrow(() -> new CreamException(INVALID_CANCEL_BIDDING));
+    }
+
     public BiddingPriceGetResponse getCurrentBiddingPrice(BiddingPriceGetRequest request) {
         Long topBiddingPrice = getTopBiddingPrice(request);
 
