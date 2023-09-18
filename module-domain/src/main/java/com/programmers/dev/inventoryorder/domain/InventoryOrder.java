@@ -11,11 +11,9 @@ import java.time.LocalDateTime;
 @Getter
 public class InventoryOrder {
 
-    enum InventoryOrderStatus {
+    public enum InventoryOrderStatus {
         DELIVERING,
-
         SHIPPED,
-
         FINISHED,
     }
 

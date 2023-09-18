@@ -28,13 +28,13 @@ public class InventoryStateChangeService {
     public void warehouseArrived(InventoryArrivedRequest request) {
         for (Long inventoryId : request.inventoryIds()) {
             Inventory inventory = inventoryFindService.findById(inventoryId);
-            inventory.changeStatusInWarehouse();
+            inventory.stockInWarehouse();
         }
     }
 
     public void authenticatePassed(Long inventoryId, InventoryAuthenticatePassRequest request) {
         Inventory inventory = inventoryFindService.findById(inventoryId);
-        inventory.changeStatusAuthenticatedWithProductQuality(request.productQuality());
+        inventory.authenticationPassedWithProductQuality(request.productQuality());
     }
 
     public void authenticateFailed(Long inventoryId, InventoryAuthenticateFailRequest request) {
@@ -42,12 +42,11 @@ public class InventoryStateChangeService {
         ProductResponse productResponse = productService.findById(inventory.getProductId());
 
         Long penaltyCost = costCalculator.calculatePenaltyCost(productResponse.productInfo().getReleasePrice(), request.penaltyType());
-        inventory.changeStatusAuthenticationFailed(penaltyCost);
+        inventory.authenticationFailed(penaltyCost);
     }
 
     public void setPrice(Long inventoryId, InventorySetPriceRequest request) {
         Inventory inventory = inventoryFindService.findById(inventoryId);
-        inventory.setPrice(request.hopedPrice());
-        inventory.changeStatusLive();
+        inventory.lived(request.hopedPrice());
     }
 }

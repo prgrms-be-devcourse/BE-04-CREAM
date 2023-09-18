@@ -72,12 +72,12 @@ public class Inventory {
         this.startDate = startDate;
     }
 
-    public void changeStatusInWarehouse() {
+    public void stockInWarehouse() {
         validate(Status.OUT_WAREHOUSE);
         changeStatus(Status.IN_WAREHOUSE);
     }
 
-    public void changeStatusAuthenticatedWithProductQuality(ProductQuality productQuality) {
+    public void authenticationPassedWithProductQuality(ProductQuality productQuality) {
         validate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATED);
         changeProductQuality(productQuality);
@@ -85,16 +85,17 @@ public class Inventory {
         EventManager.publish(new InventoryAuthenticationPassedEvent(this.userId, PROTECTION.getCost()));
     }
 
-    public void changeStatusAuthenticationFailed(Long penaltyCost) {
+    public void authenticationFailed(Long penaltyCost) {
         validate(Status.IN_WAREHOUSE);
         changeStatus(Status.AUTHENTICATION_FAILED);
 
         EventManager.publish(new InventoryAuthenticationFailedEvent(this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
     }
 
-    public void changeStatusLive() {
+    public void lived(Long price) {
         validate(Status.AUTHENTICATED);
         changeStatus(Status.LIVE);
+        setPrice(price);
     }
 
     public void ordered(LocalDateTime transactionDate) {
@@ -105,7 +106,7 @@ public class Inventory {
         EventManager.publish(new InventoryOrderedEvent(this.userId, this.price));
     }
 
-    public void setPrice(Long price) {
+    private void setPrice(Long price) {
         validate(price);
         this.price = price;
     }
