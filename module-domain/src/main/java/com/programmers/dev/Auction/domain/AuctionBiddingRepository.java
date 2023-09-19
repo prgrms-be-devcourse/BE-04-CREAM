@@ -23,4 +23,11 @@ public interface AuctionBiddingRepository extends JpaRepository<AuctionBidding, 
         @Param("userId") Long userId,
         @Param("auctionId") Long auctionId,
         @Param("price") Long price);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from AuctionBidding ab where ab.user.id = :userId and ab.auction.id = :auctionId and ab.price = :price")
+    void deleteLastAuctionBidding(
+        @Param("userId") Long userId,
+        @Param("auctionId") Long auctionId,
+        @Param("price") Long price);
 }
