@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 
@@ -48,10 +47,10 @@ public class AuctionService {
 
         Auction auction = findAuctionById(auctionStatusChangeRequest.id());
 
-        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.FINISHED) {
+        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.PENDING) {
             validateNowIsAfterEndTime(auction);
 
-            processFinishedAuction(auctionStatusChangeRequest);
+            processPendingAuction(auctionStatusChangeRequest);
         }
 
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
@@ -82,20 +81,12 @@ public class AuctionService {
         }
     }
 
-    private void processFinishedAuction(AuctionStatusChangeRequest auctionStatusChangeRequest) {
-        auctionBiddingRepository.findTopBiddingPrice(auctionStatusChangeRequest.id())
-            .ifPresentOrElse(
-                AuctionService::registerSuccessfulBidder,
-                () -> log.info("[processFinishedAuction] 해당 경매에 대한 입찰 내역이 존재하지 않으므로 낙찰자와 낙찰가는 null이 저장됩니다.")
-            );
-    }
-
-    private static void registerSuccessfulBidder(AuctionBidding auctionBidding) {
-        Long successfulBidderId = auctionBidding.getUser().getId();
-        Long successfulBidPrice = auctionBidding.getPrice();
-
-        auctionBidding.getAuction()
-            .registerSuccessfulBidder(successfulBidderId, successfulBidPrice);
+    private void processPendingAuction(AuctionStatusChangeRequest auctionStatusChangeRequest) {
+        boolean notPresentTopBiddingPrice = auctionBiddingRepository.findTopBiddingPrice(auctionStatusChangeRequest.id())
+            .isEmpty();
+        if (notPresentTopBiddingPrice) {
+            log.info("[processFinishedAuction] 해당 경매에 대한 입찰 내역이 존재하지 않으므로 낙찰자와 낙찰가는 null이 저장됩니다.");
+        }
     }
 
     private Auction findAuctionById(Long id) {

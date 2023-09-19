@@ -176,6 +176,9 @@ class AuctionControllerTest {
         AuctionStatusChangeRequest finishedRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.FINISHED);
         auctionService.changeAuctionStatus(finishedRequest);
 
+        BidderDecisionRequest bidderDecisionRequest = new BidderDecisionRequest(auctionSaveResponse.auctionId(), true, 5000L);
+        auctionBiddingService.decidePurchaseStatus(user.getId(), bidderDecisionRequest);
+
         SuccessfulBidderGetRequest successfulBidderGetRequest = new SuccessfulBidderGetRequest(finishedRequest.id());
 
         //when && then
@@ -183,7 +186,6 @@ class AuctionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(successfulBidderGetRequest)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.price").value(5000L))
             .andDo(print())
             .andDo(document("get-successful-bidder",
                 requestHeaders(
