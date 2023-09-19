@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
-import com.programmers.dev.inventory.dto.InventoryOrderRequest;
+import com.programmers.dev.inventory.dto.statechange.InventoryFinishedRequest;
+import com.programmers.dev.inventoryorder.domain.InventoryOrder;
+import com.programmers.dev.inventoryorder.domain.InventoryOrderRepository;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.JwtConfigure;
 import com.programmers.dev.security.jwt.JwtTokenUtils;
@@ -48,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class InventoryControllerOrderTest {
+class InventoryStateChangeControllerFinishedTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -58,6 +60,9 @@ class InventoryControllerOrderTest {
 
     @Autowired
     private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private InventoryOrderRepository inventoryOrderRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -84,36 +89,28 @@ class InventoryControllerOrderTest {
     }
 
     @Test
-    @DisplayName("보관판매 주문에 성공하면 보관판매주문 ID를 반환받는다.")
-    void 보관판매에_주문에_성공하면_생성된_보관판매주문ID를_반환받는다() throws Exception {
+    @DisplayName("요청한 inventoryId 대해 거래종료 처리가 되면, inventoryId 를 반환받는다.")
+    void 배송완료로_인한_거래종료() throws Exception {
         //given
-        Long havingAccountMoney = 200_000L;
-        User user = createUserHavingMoney(havingAccountMoney);
-        String accessToken = getAccessToken(user.getId(), user.getUserRole());
+        User orderer = createOrderUser();
+        User seller = createSellUser();
+
+        String accessToken = getAccessToken(orderer.getId(), orderer.getUserRole());
         Product product = createProduct();
-        Long hopedPrice = 100_000L;
-        Inventory livedStatusInventory = createLivedStatusInventory(user.getId(), product.getId(), hopedPrice, Inventory.ProductQuality.COMPLETE, user.getAddress());
+
+        Long price = 10000L;
+        LocalDateTime transactionTime = LocalDateTime.now();
+        Inventory inventory = createDeilveringStatusInventory(orderer.getId(), product.getId(), orderer.getAddress(), price, transactionTime);
+        InventoryOrder inventoryOrder = createdInventoryOrder(seller.getId(), inventory.getId(), price, transactionTime);
 
         //when && then
-        InventoryOrderRequest request = new InventoryOrderRequest(hopedPrice, product.getId());
-        mockMvc.perform(post("/api/inventories/order")
+        mockMvc.perform(post("/api/inventories/state-change/{inventoryId}/finished", inventory.getId())
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
-                        .param("productQuality", Inventory.ProductQuality.COMPLETE.name())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventory-order",
-                        requestHeaders(
-                                headerWithName(CONTENT_TYPE).description("content type"),
-                                headerWithName(CONTENT_LENGTH).description("content length")
-                        ),
-                        requestFields(
-                                fieldWithPath("price").description("price of inventory"),
-                                fieldWithPath("productId").description("productId of inventory")
-                        ),
+                .andDo(document("inventory-finished",
                         responseFields(
-                                fieldWithPath("inventoryOrderId").description("id of inventoryOrder")
+                                fieldWithPath("inventoryId").description("id of inventory")
                         )
                 ));
     }
@@ -122,9 +119,12 @@ class InventoryControllerOrderTest {
         return "Bearer " + JwtTokenUtils.generateAccessToken(String.valueOf(userId), userRole.toString(), jwtConfigure.getSecretKey(), jwtConfigure.getAccessTokenExpiryTimeMs());
     }
 
-    private User createUserHavingMoney(Long account) {
-        return userRepository.save(
-                new User("aaa@email.com", "aaa", "sellUser", account, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
+    private User createOrderUser() {
+        return userRepository.save(new User("orderer@email.com", "test", "orderUser", 10_000L, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
+    }
+
+    private User createSellUser() {
+        return userRepository.save(new User("seller@email.com", "test2", "sellUser", 10_000L, new Address("00001", "인천", "연수구"), UserRole.ROLE_USER));
     }
 
     private Product createProduct() {
@@ -137,11 +137,18 @@ class InventoryControllerOrderTest {
         return productRepository.save(product);
     }
 
-    private Inventory createLivedStatusInventory(Long userId, Long productId, Long price, Inventory.ProductQuality productQuality, Address address) {
+    private Inventory createDeilveringStatusInventory(Long userId, Long productId, Address address, Long price, LocalDateTime transactionTime) {
         Inventory inventory = new Inventory(userId, productId, Status.IN_WAREHOUSE, address, LocalDateTime.now());
-        inventory.authenticationPassedWithProductQuality(productQuality);
+        inventory.authenticationPassedWithProductQuality(Inventory.ProductQuality.COMPLETE);
         inventory.lived(price);
+        inventory.ordered(transactionTime);
 
         return inventoryRepository.save(inventory);
+    }
+
+    private InventoryOrder createdInventoryOrder(Long userId, Long inventoryId, Long orderedPrice, LocalDateTime transactionTime) {
+        InventoryOrder inventoryOrder = new InventoryOrder(userId, inventoryId, orderedPrice, transactionTime);
+
+        return inventoryOrderRepository.save(inventoryOrder);
     }
 }

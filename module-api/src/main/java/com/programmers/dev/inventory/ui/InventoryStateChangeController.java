@@ -42,4 +42,11 @@ public class InventoryStateChangeController {
 
         return ResponseEntity.ok(new InventorySingleStateChangeResponse(inventoryId));
     }
+
+    @PostMapping("/{inventoryId}/finished")
+    public ResponseEntity<InventorySingleStateChangeResponse> finished(@PathVariable Long inventoryId) {
+        inventoryStateChangeService.finished(inventoryId);
+
+        return ResponseEntity.ok(new InventorySingleStateChangeResponse(inventoryId));
+    }
 }

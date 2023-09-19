@@ -3,15 +3,16 @@ package com.programmers.dev.inventory.application;
 
 import com.programmers.dev.common.CostCalculator;
 import com.programmers.dev.inventory.domain.Inventory;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticateFailRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryAuthenticatePassRequest;
-import com.programmers.dev.inventory.dto.statechange.InventoryArrivedRequest;
-import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
+import com.programmers.dev.inventory.dto.statechange.*;
+import com.programmers.dev.inventoryorder.application.InvenotryOrderFindService;
+import com.programmers.dev.inventoryorder.domain.InventoryOrder;
 import com.programmers.dev.product.application.ProductService;
 import com.programmers.dev.product.dto.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 
 @Service
@@ -20,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryStateChangeService {
 
     private final InventoryFindService inventoryFindService;
+
+    private final InvenotryOrderFindService invenotryOrderFindService;
 
     private final CostCalculator costCalculator;
 
@@ -48,5 +51,13 @@ public class InventoryStateChangeService {
     public void setPrice(Long inventoryId, InventorySetPriceRequest request) {
         Inventory inventory = inventoryFindService.findById(inventoryId);
         inventory.lived(request.hopedPrice());
+    }
+
+    public void finished(Long inventoryId) {
+        Inventory inventory = inventoryFindService.findById(inventoryId);
+        InventoryOrder inventoryOrder = invenotryOrderFindService.findByInventoryId(inventoryId);
+
+        inventory.finished();
+        inventoryOrder.shipped();
     }
 }

@@ -1,6 +1,8 @@
 package com.programmers.dev.inventoryorder.domain;
 
 
+import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -13,7 +15,6 @@ public class InventoryOrder {
 
     public enum InventoryOrderStatus {
         DELIVERING,
-        SHIPPED,
         FINISHED,
     }
 
@@ -47,5 +48,20 @@ public class InventoryOrder {
         this.orderdPrice = orderdPrice;
         this.inventoryOrderStatus = InventoryOrderStatus.DELIVERING;
         this.transactionDate = transactionDate;
+    }
+
+    public void shipped() {
+        validate(InventoryOrderStatus.DELIVERING);
+        changeStatus(InventoryOrderStatus.FINISHED);
+    }
+
+    private void changeStatus(InventoryOrderStatus inventoryOrderStatus) {
+        this.inventoryOrderStatus = inventoryOrderStatus;
+    }
+
+    private void validate(InventoryOrderStatus inventoryOrderStatus) {
+        if (this.inventoryOrderStatus != inventoryOrderStatus) {
+            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+        }
     }
 }

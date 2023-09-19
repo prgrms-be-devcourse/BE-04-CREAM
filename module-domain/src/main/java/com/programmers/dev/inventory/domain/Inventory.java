@@ -106,6 +106,11 @@ public class Inventory {
         EventManager.publish(new InventoryOrderedEvent(this.id, this.userId, this.price));
     }
 
+    public void finished() {
+        validate(Status.DELIVERING);
+        changeStatus(Status.FINISHED);
+    }
+
     private void setPrice(Long price) {
         validate(price);
         this.price = price;
