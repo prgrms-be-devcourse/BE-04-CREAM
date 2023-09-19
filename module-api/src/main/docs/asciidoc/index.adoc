@@ -115,3 +115,41 @@ operation::post-bidder-decision[snippets = 'http-request,http-response']
 구매 입찰 등록의 API는 다음과 같습니다.
 
 operation::bidding-register-purchase[snippets ='http-request,http-response']
+
+[[Inventory]]
+== 보관판매
+
+[[inventory-register]]
+=== 보관판매 등록 API
+
+operation::inventory-register[snippets = 'http-request,http-response']
+
+[[inventory-arrived]]
+=== 보관판매 입고완료 API
+
+operation::inventory-arrived[snippets = 'http-request,http-response']
+
+[[inventory-authentication-passed]]
+=== 보관판매 검수성공 API
+
+operation::inventory-authentication-passed[snippets = 'http-request,http-response']
+
+[[inventory-authentication-failed]]
+=== 보관판매 검수실패 API
+
+operation::inventory-authentication-failed[snippets = 'http-request,http-response']
+
+[[inventory-set-price]]
+=== 보관판매 판매희망가 설정 API
+
+operation::inventory-set-price[snippets = 'http-request,http-response']
+
+[[inventory-order]]
+=== 보관판매 상품 구입 API
+
+operation::inventory-order[snippets = 'http-request,http-response']
+
+[[inventory-finished]]
+=== 보관판매 상품 배송완료 API
+
+operation::inventory-finished[snippets = 'http-request,http-response']
