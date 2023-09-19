@@ -92,4 +92,8 @@ public class User {
     public UserRole getUserRole() {
         return userRole;
     }
+
+    public void withdrawInsufficientMoney(Long money) {
+        this.account -= money;
+    }
 }
