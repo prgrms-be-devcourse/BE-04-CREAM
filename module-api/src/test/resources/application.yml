@@ -3,6 +3,7 @@ spring:
     active: test
   jpa:
     show-sql: true
+
 jwt:
   secret-key: EENY5W0eegTf1naQB2eDeyCLl5kRS2b8xa5c4qLdS0hmVjtbvo8tOyhPMcAmtPuQ
   access-token-expiry-time-ms: 60000000 # 100000분
