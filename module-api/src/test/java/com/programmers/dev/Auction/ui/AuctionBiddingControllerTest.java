@@ -244,7 +244,7 @@ class AuctionBiddingControllerTest {
 
         BidderDecisionRequest bidderDecisionRequest = new BidderDecisionRequest(pendingRequest.id(), true, 4000L);
 
-        mockMvc.perform(post("/api/auctions/bidding/decision")
+        mockMvc.perform(post("/api/auctions/bidding/decide")
                 .header(HttpHeaders.AUTHORIZATION, accessToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(bidderDecisionRequest)))
