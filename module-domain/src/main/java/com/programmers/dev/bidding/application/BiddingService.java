@@ -54,7 +54,7 @@ public class BiddingService {
     @Transactional
     public BiddingResponse registerSellBidding(Long userId, RegisterBiddingRequest request) {
         validateProductId(request);
-        checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.PURCHASE);
+        checkRequestPriceUnderBiddingPrice(request, Bidding.BiddingType.PURCHASE);
 
         Bidding savedBidding = biddingRepository.save(
                 Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate())
@@ -180,6 +180,17 @@ public class BiddingService {
         biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
                 bidding -> {
                     if (bidding.getPrice() < request.price()) {
+                        log.info("bidding price : {}, request price : {}", bidding.getPrice(), request.price());
+                        throw new CreamException(ErrorCode.OVER_PRICE);
+                    }
+                }
+        );
+    }
+
+    private void checkRequestPriceUnderBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
+                bidding -> {
+                    if (bidding.getPrice() > request.price()) {
                         log.info("bidding price : {}, request price : {}", bidding.getPrice(), request.price());
                         throw new CreamException(ErrorCode.OVER_PRICE);
                     }
