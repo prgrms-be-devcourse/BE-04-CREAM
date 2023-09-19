@@ -134,3 +134,8 @@ operation::inventory-set-price[snippets = 'http-request,http-response']
 === 보관판매 상품 구입 API
 
 operation::inventory-order[snippets = 'http-request,http-response']
+
+[[inventory-finished]]
+=== 보관판매 상품 배송완료 API
+
+operation::inventory-finished[snippets = 'http-request,http-response']
