@@ -20,4 +20,9 @@ public class InventoryFindService {
         return inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new CreamException(ErrorCode.INVALID_ID));
     }
+
+    public Inventory findOrderableInventory(Long productId, Long price, Inventory.ProductQuality productQuality) {
+        return inventoryRepository.findOrderableInventory(productId, price, productQuality)
+                .orElseThrow(() -> new CreamException(ErrorCode.BAD_BUSINESS_LOGIC));
+    }
 }
