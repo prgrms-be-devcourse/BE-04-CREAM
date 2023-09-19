@@ -255,7 +255,7 @@ class BiddingControllerTest {
                                 .content(objectMapper.writeValueAsString(transactBiddingRequest))
                                 .header(AUTHORIZATION, accessToken)
                 )
-                .andDo(document("bidding-transact-purchase",
+                .andDo(document("bidding-transact-sell",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
