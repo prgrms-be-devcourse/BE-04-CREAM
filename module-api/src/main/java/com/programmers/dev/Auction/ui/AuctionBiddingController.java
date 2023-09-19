@@ -40,4 +40,12 @@ public class AuctionBiddingController {
         ) {
         return ResponseEntity.ok().body(auctionBiddingService.getCurrentBiddingPrice(request));
     }
+
+    @PostMapping("/decide")
+    public ResponseEntity<BidderDecisionResponse> getBidderDecision(
+        @AuthenticationPrincipal Long userId,
+        @RequestBody @Validated BidderDecisionRequest request
+    ) {
+        return ResponseEntity.ok().body(auctionBiddingService.decidePurchaseStatus(userId, request));
+    }
 }

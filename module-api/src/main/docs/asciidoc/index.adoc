@@ -92,6 +92,20 @@ operation::cancel-auction-bidding[snippets = 'http-request,http-response']
 
 operation::get-current-bidding-price[snippets = 'http-request,http-response']
 
+[[Get-successful-bidder]]
+=== 해당 경매에 대한 낙찰자 조회
+
+해당 경매에 대한 낙찰자를 조회하는 API는 다음과 같습니다.
+
+operation::get-successful-bidder[snippets = 'http-request,http-response']
+
+[[Post-bidder-decision]]
+=== 경매 최고 입찰자의 구매 여부 등록
+
+해당 경매에 대한 낙찰자를 조회하는 API는 다음과 같습니다.
+
+operation::post-bidder-decision[snippets = 'http-request,http-response']
+
 [[Bidding]]
 == 입찰
 
