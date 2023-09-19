@@ -112,9 +112,61 @@ operation::post-bidder-decision[snippets = 'http-request,http-response']
 [[Bidding-register-purchase]]
 === 구매 입찰 등록 API
 
-구매 입찰 등록의 API는 다음과 같습니다.
+해당 API는 구매자가 구매 입찰을 올리려고 할 때 사용하는 API 입니다.
+만약 판매 입찰이 올라와 있다면, 판매 입찰가 보다 높은 가격으로는 입찰을 올릴 수 없습니다.
 
 operation::bidding-register-purchase[snippets ='http-request,http-response']
+
+[[Bidding-transact-purchase]]
+=== 판매 입찰 거래 체결
+
+해당 API는 판매 입찰 건에 대해서 거래를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-transact-purchase[snippets ='http-request,http-response']
+
+[[Bidding-register-sell]]
+=== 판매 입찰 등록 API
+
+해당 API는 판매자가 판매 입찰을 올리려고 할 때 사용하는 API 입니다.
+만약 구매 입찰이 올라와 있따면, 구매 입찰가 보다 낮은 가격으로는 입찰을 올릴 수 없습니다.
+
+operation::bidding-register-sell[snippets ='http-request,http-response']
+
+[[Bidding-transact-purchase]]
+=== 구매 입찰 거래 체결
+
+해당 API는 판매 입찰 건에 대해서 거래를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-transact-sell[snippets ='http-request,http-response']
+
+[[Bidding-inspect]]
+=== 판매 입찰 물품 검수
+
+해당 API는 판매 입찰자의 물품 상태를 검수할 때 사용하는 API입니다.
+
+operation::bidding-inspect[snippets ='http-request,http-response']
+
+[[Bidding-deposit]]
+=== 구매 입찰 입금
+
+해당 API는 구매자가 입찰건에 대해서 입금을 할 때 사용하는 API입니다.
+
+operation::bidding-deposit[snippets ='http-request,http-response']
+
+[[Bidding-finish]]
+=== 구매 입찰 입찰 종료
+
+해당 API는 구매자가 입찰건에 대해 거래를 종료하려고 할 때 사용하는 API입니다.
+
+operation::bidding-finish[snippets ='http-request,http-response']
+
+[[Bidding-cancel]]
+=== 구매 입찰 입찰 취소
+
+해당 API는 판매자 혹은 구매자가 입찰건에 대해 취소를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-cancel[snippets ='http-request,http-response']
+
 
 [[Inventory]]
 == 보관판매
