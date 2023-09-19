@@ -18,7 +18,7 @@ public enum ErrorCode {
     AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired."),
     OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price"),
     INSUFFICIENT_ACCOUNT_MONEY(BAD_REQUEST, -201, "not enough account money"),
-    BANKING_SERVICE_ERROR(BAD_REQUEST, -202, "banking services are currently unavailable. please try again"),
+    BANKING_SERVICE_ERROR(BAD_REQUEST, -202, "banking services are currently unavailable. please try again")
     ;
 
     private final HttpStatus httpStatus;
