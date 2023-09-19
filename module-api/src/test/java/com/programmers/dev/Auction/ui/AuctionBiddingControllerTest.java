@@ -99,7 +99,7 @@ class AuctionBiddingControllerTest {
         AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
 
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
-        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
         AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 3000L);
@@ -143,7 +143,7 @@ class AuctionBiddingControllerTest {
         AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
 
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
-        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
         AuctionBidRequest auctionBidRequest = createAuctionBidRequest(auctionSaveResponse, 3000L);
@@ -181,7 +181,7 @@ class AuctionBiddingControllerTest {
         AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
 
         AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
-        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
 
         AuctionBidRequest auctionBidRequest1 = createAuctionBidRequest(auctionSaveResponse, 3000L);
@@ -219,6 +219,59 @@ class AuctionBiddingControllerTest {
             ));
     }
 
+    @Test
+    @DisplayName("최고 낙찰자의 구매 결정 여부를 조사할 수 있다.")
+    void getBidderDecisionTest() throws Exception {
+        //given
+        User user = createUserHavingMoney(10_000L);
+        String accessToken = getAccessToken(user.getId(), user.getUserRole());
+
+        Product product = saveProduct();
+        AuctionSaveRequest auctionSaveRequest = createAuctionSaveRequest(product);
+
+        AuctionSaveResponse auctionSaveResponse = auctionService.save(auctionSaveRequest);
+        AuctionStatusChangeRequest ongoingRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.ONGOING);
+        auctionService.changeAuctionStatus(ongoingRequest);
+
+        AuctionBidRequest auctionBidRequest1 = createAuctionBidRequest(auctionSaveResponse, 3000L);
+        AuctionBidRequest auctionBidRequest2 = createAuctionBidRequest(auctionSaveResponse, 4000L);
+
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest1);
+        auctionBiddingService.bidAuction(user.getId(), auctionBidRequest2);
+
+        AuctionStatusChangeRequest pendingRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.PENDING);
+        auctionService.changeAuctionStatus(pendingRequest);
+
+        BidderDecisionRequest bidderDecisionRequest = new BidderDecisionRequest(pendingRequest.id(), true, 4000L);
+
+        mockMvc.perform(post("/api/auctions/bidding/decision")
+                .header(HttpHeaders.AUTHORIZATION, accessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(bidderDecisionRequest)))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andDo(document("post-bidder-decision",
+                requestHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                requestFields(
+                    fieldWithPath("auctionId").description("id of auction").type(JsonFieldType.NUMBER),
+                    fieldWithPath("purchaseStatus").description("purchase status of bidder").type(JsonFieldType.BOOLEAN),
+                    fieldWithPath("price").description("price of successful bid").type(JsonFieldType.NUMBER)
+                ),
+                responseHeaders(
+                    headerWithName(CONTENT_TYPE).description("content type"),
+                    headerWithName(CONTENT_LENGTH).description("content length")
+                ),
+                responseFields(
+                    fieldWithPath("userId").description("id of successful bidder").type(JsonFieldType.NUMBER),
+                    fieldWithPath("purchaseStatus").description("purchase status of bidder").type(JsonFieldType.BOOLEAN),
+                    fieldWithPath("price").description("price of successful bid").type(JsonFieldType.NUMBER)
+                )
+            ));
+    }
+
     private static AuctionBiddingCancelRequest createAuctionBiddingCancelRequest(AuctionBidRequest auctionBidRequest, AuctionBidResponse auctionBidResponse) {
         return new AuctionBiddingCancelRequest(auctionBidRequest.auctionId(), auctionBidResponse.price());
     }
@@ -227,8 +280,8 @@ class AuctionBiddingControllerTest {
         return new AuctionBidRequest(auctionSaveResponse.auctionId(), price);
     }
 
-    private static AuctionStatusChangeRequest createAuctionStatusChangeRequest(AuctionSaveResponse auctionSaveResponse) {
-        return new AuctionStatusChangeRequest(auctionSaveResponse.auctionId(), AuctionStatus.ONGOING);
+    private static AuctionStatusChangeRequest createAuctionStatusChangeRequest(AuctionSaveResponse auctionSaveResponse, AuctionStatus auctionStatus) {
+        return new AuctionStatusChangeRequest(auctionSaveResponse.auctionId(), auctionStatus);
     }
 
 
