@@ -140,9 +140,13 @@ class AuctionServiceTest {
 
         bidAuction(auctionSaveResponse, user);
 
-        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.FINISHED);
+        AuctionStatusChangeRequest auctionStatusChangeRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.PENDING);
 
         auctionService.changeAuctionStatus(auctionStatusChangeRequest);
+
+        BidderDecisionRequest bidderDecisionRequest = createBidderDecisionRequest(auctionSaveResponse);
+
+        auctionBiddingService.decidePurchaseStatus(user.getId(), bidderDecisionRequest);
 
         SuccessfulBidderGetRequest successfulBidderGetRequest = new SuccessfulBidderGetRequest(auctionStatusChangeRequest.id());
 
@@ -152,6 +156,10 @@ class AuctionServiceTest {
         //then
         assertThat(successfulBidder.price()).isEqualTo(4000);
 
+    }
+
+    private BidderDecisionRequest createBidderDecisionRequest(AuctionSaveResponse auctionSaveResponse) {
+        return new BidderDecisionRequest(auctionSaveResponse.auctionId(), true, 4000L);
     }
 
     private void bidAuction(AuctionSaveResponse auctionSaveResponse, User user) {

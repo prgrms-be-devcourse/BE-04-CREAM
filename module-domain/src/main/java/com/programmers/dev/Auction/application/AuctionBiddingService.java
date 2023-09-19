@@ -5,9 +5,12 @@ import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
+import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.user.application.UserFindService;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
+import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,9 @@ import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 public class AuctionBiddingService {
 
     private final AuctionBiddingRepository auctionBiddingRepository;
+
     private final UserRepository userRepository;
+
     private final AuctionRepository auctionRepository;
 
     // TODO 매일 자정 경매 입찰 테이블 정리
@@ -49,6 +54,20 @@ public class AuctionBiddingService {
         AuctionBidding auctionBidding = getCancelAuctionBidding(userId, request);
 
         auctionBiddingRepository.delete(auctionBidding);
+    }
+
+    @Transactional
+    public BidderDecisionResponse decidePurchaseStatus(Long userId, BidderDecisionRequest request) {
+        if (request.purchaseStatus()) {
+            Auction auction = findAuctionById(request.auctionId());
+            auction.registerSuccessfulBidder(userId, request.price());
+            auction.changeStatus(AuctionStatus.FINISHED);
+
+            return BidderDecisionResponse.of(userId, true, request.price());
+        }
+        auctionBiddingRepository.deleteLastAuctionBidding(userId, request.auctionId(), request.price());
+
+        return BidderDecisionResponse.of(userId, false, request.price());
     }
 
     private AuctionBidding getCancelAuctionBidding(Long userId, AuctionBiddingCancelRequest request) {
