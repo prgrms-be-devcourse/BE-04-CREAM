@@ -57,17 +57,11 @@ operation::update-product[snippets = 'http-request,http-response']
 [[Auction]]
 == 경매
 
-[[Auction-bid]]
-=== 경매 입찰
-
-경매에 입찰하는 API는 다음과 같습니다.
-
-operation::auction-bid[snippets = 'http-request,http-response']
-
 [[Auction-save]]
 === 경매 등록
 
 경매에 등록하는 API는 다음과 같습니다.
+존재하지 않는 상품에 대해서는 경매를 등록할 수 없습니다.
 
 operation::auction-save[snippets = 'http-request,http-response']
 
@@ -75,13 +69,27 @@ operation::auction-save[snippets = 'http-request,http-response']
 === 경매 상태 변경
 
 경매 상태를 변경하는 API는 다음과 같습니다.
+ONGOING, PENDING, FINISHED 상태로 변경이 가능합니다.
+ONGOING : 경매가 진행중인 상태
+PENDING : 경매는 종료되었지만 최고 입찰가가 구매 결정을 하지 않은 상태
+FINISHED : 경매가 종료되고 최고 입찰가가 구매 결정을 한 상태
 
 operation::auction-status-change[snippets = 'http-request,http-response']
+
+[[Auction-bid]]
+=== 경매 입찰
+
+경매에 입찰하는 API는 다음과 같습니다.
+현재 최고 입찰가보다 낮은 가격으로 입찰하는것은 불가능합니다.
+
+
+operation::auction-bid[snippets = 'http-request,http-response']
 
 [[Cancel-auction-bidding]]
 === 경매 입찰 취소
 
 경매 입찰을 취소하는 API는 다음과 같습니다.
+입찰한 경매 ID와 입찰가로 취소가 가능합니다. 존재하지 않는 경매 ID 또는 입찰가를 입력한다면 예외가 발생합니다.
 
 operation::cancel-auction-bidding[snippets = 'http-request,http-response']
 
@@ -89,6 +97,7 @@ operation::cancel-auction-bidding[snippets = 'http-request,http-response']
 === 현재 최고 입찰가 조회
 
 현재 최고 입찰가를 조회하는 API는 다음과 같습니다.
+만약 입찰이 없다면 경매 시작 가격을 응답해줍니다.
 
 operation::get-current-bidding-price[snippets = 'http-request,http-response']
 
@@ -96,13 +105,16 @@ operation::get-current-bidding-price[snippets = 'http-request,http-response']
 === 해당 경매에 대한 낙찰자 조회
 
 해당 경매에 대한 낙찰자를 조회하는 API는 다음과 같습니다.
+경매가 종료된 상태에서만 낙찰자를 조회할 수 있습니다.
 
 operation::get-successful-bidder[snippets = 'http-request,http-response']
 
 [[Post-bidder-decision]]
 === 경매 최고 입찰자의 구매 여부 등록
 
-해당 경매에 대한 낙찰자를 조회하는 API는 다음과 같습니다.
+해당 경매에 대한 최고가 입찰자의 구매 여부 등록 API는 다음과 같습니다.
+purchaseStatus - true : 구매 결정 / false : 구매 거부 결정
+구매 결정할 경우 해당 경매에 낙찰가와 낙찰자 정보가 저장됩니다.
 
 operation::post-bidder-decision[snippets = 'http-request,http-response']
 
