@@ -125,7 +125,7 @@ class InventoryAuthenticationServiceTest {
         List<Settlement> settlements = settlementService.findByUserId(user.getId());
 
         assertSoftly(soft -> {
-            soft.assertThat(updatedInventory.getStatus()).isEqualTo(Status.AUTHENTICATION_FAILED);
+            soft.assertThat(updatedInventory.getStatus()).isEqualTo(Status.AUTHENTICATED_FAILED);
             soft.assertThat(settlements.get(0).getSettlementType()).isEqualTo(Settlement.SettlementType.WITHDRAW);
             soft.assertThat(settlements.get(1).getSettlementType()).isEqualTo(Settlement.SettlementType.WITHDRAW);
             soft.assertThat(settlements.get(0).getSettlementAmount()).isEqualTo(-penaltyCost);

@@ -71,7 +71,7 @@ class InventoryOrderServiceTest {
         //then
         User updatedOrderer = userRepository.findById(orderer.getId()).get();
         Inventory updatedInventory = inventoryRepository.findById(inventory.getId()).get();
-        InventoryOrder inventoryOrder = inventoryOrderRepository.findById(response.inventoryOrder()).get();
+        InventoryOrder inventoryOrder = inventoryOrderRepository.findById(response.inventoryOrderId()).get();
 
         assertSoftly(soft -> {
             soft.assertThat(updatedOrderer.getAccount()).isEqualTo(havingAccountMoney-hopedPrice);
@@ -121,7 +121,7 @@ class InventoryOrderServiceTest {
         //then
         Settlement settlement = settlementService.findByUserId(inventory.getUserId()).get(0);
         Inventory updatedInventory = inventoryRepository.findById(inventory.getId()).get();
-        InventoryOrder inventoryOrder = inventoryOrderRepository.findById(response.inventoryOrder()).get();
+        InventoryOrder inventoryOrder = inventoryOrderRepository.findById(response.inventoryOrderId()).get();
 
         assertSoftly(soft -> {
             soft.assertThat(settlement.getSettlementType()).isEqualTo(Settlement.SettlementType.DEPOSIT);

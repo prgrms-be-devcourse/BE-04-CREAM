@@ -87,7 +87,7 @@ public class Inventory {
 
     public void authenticationFailed(Long penaltyCost) {
         validate(Status.IN_WAREHOUSE);
-        changeStatus(Status.AUTHENTICATION_FAILED);
+        changeStatus(Status.AUTHENTICATED_FAILED);
 
         EventManager.publish(new InventoryAuthenticationFailedEvent(this.id, this.userId, penaltyCost, RETURN_SHIPPING.getCost()));
     }
