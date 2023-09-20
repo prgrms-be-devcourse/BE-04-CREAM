@@ -6,6 +6,7 @@ import com.programmers.dev.common.Status;
 import com.programmers.dev.inventory.domain.Inventory;
 import com.programmers.dev.inventory.domain.InventoryRepository;
 
+import com.programmers.dev.inventory.dto.InventoryRegisterRequest;
 import com.programmers.dev.inventory.dto.statechange.InventorySetPriceRequest;
 import com.programmers.dev.product.domain.*;
 import com.programmers.dev.security.jwt.*;
@@ -95,25 +96,27 @@ class InventoryControllerRegisterTest {
         Inventory inventory = createInventory(user.getId(), product.getId(), user.getAddress());
 
         //when && then
-
-
-        InventorySetPriceRequest request = new InventorySetPriceRequest(hopedPrice);
-        mockMvc.perform(post("/api/inventories/state-change/{inventoryId}/set-price", inventory.getId())
+        InventoryRegisterRequest request = crateRegisterRequest(product.getId(), 3L, user.getAddress());
+        mockMvc.perform(post("/api/inventories/register", inventory.getId())
                         .header(HttpHeaders.AUTHORIZATION, accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
                 )
                 .andDo(print())
-                .andDo(document("inventory-set-price",
+                .andDo(document("inventory-register",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
                         ),
                         requestFields(
-                                fieldWithPath("hopedPrice").description("hopedPrice of inventory")
+                                fieldWithPath("productId").description("id of product"),
+                                fieldWithPath("quantity").description("price of bidding"),
+                                fieldWithPath("returnZipcode").description("returnZipcode of inventory"),
+                                fieldWithPath("returnAddress").description("returnAddress of inventory"),
+                                fieldWithPath("returnAddressDetail").description("returnAddressDetail of inventory")
                         ),
                         responseFields(
-                                fieldWithPath("inventoryId").description("id of inventory")
+                                fieldWithPath("inventoryIds").description("created inventoryIds")
                         )
                 ));
     }
@@ -140,5 +143,9 @@ class InventoryControllerRegisterTest {
         Inventory inventory = new Inventory(userId, productId, Status.AUTHENTICATED, address, LocalDateTime.now());
 
         return inventoryRepository.save(inventory);
+    }
+
+    private InventoryRegisterRequest crateRegisterRequest(Long productId, Long quantity, Address address) {
+        return new InventoryRegisterRequest(productId, quantity, address.getZipcode(), address.getAddress(), address.getAddressDetail());
     }
 }

@@ -86,7 +86,7 @@ class InventoryStateChangeControllerAuthenticationTest {
     }
 
     @Test
-    @DisplayName("요청한 inventoryId 상품이 검수에 합격하면 inventoryId를 반환받는다.")
+    @DisplayName("요청한 inventoryId 상품이 검수에 합격하면 inventoryId 를 반환받는다.")
     void 검수_합격() throws Exception {
         //given
         User user = createUser();

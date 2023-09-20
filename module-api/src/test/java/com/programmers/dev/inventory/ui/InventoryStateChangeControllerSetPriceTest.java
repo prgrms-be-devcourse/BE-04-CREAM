@@ -84,7 +84,7 @@ class InventoryStateChangeControllerSetPriceTest {
     }
 
     @Test
-    @DisplayName("요청한 inventoryId 상품에 대한 판매희망가를 입력하면 inventoryId를 반환받는다.")
+    @DisplayName("요청한 inventoryId 상품에 대한 판매희망가를 입력하면 inventoryId 를 반환받는다.")
     void 판매희망가_입력() throws Exception {
         //given
         User user = createUser();
