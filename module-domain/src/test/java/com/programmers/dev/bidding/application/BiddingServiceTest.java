@@ -341,7 +341,7 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedBuyer.getAccount()).isEqualTo((long) point),
                 () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERED),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED)
         );
 

@@ -92,25 +92,29 @@ public class Bidding {
 
     public static Bidding transactSellBidding(Long userId, String storage, Bidding sellBidding) {
         LocalDateTime transactionDate = LocalDateTime.now();
-        sellBidding.transactSellBidding(transactionDate);
+        sellBidding.doTransaction(transactionDate);
+        return makePurchaseBidding(userId, storage, sellBidding, transactionDate);
+    }
+
+    private static Bidding makePurchaseBidding(Long userId, String storage, Bidding sellBidding, LocalDateTime transactionDate) {
         if ("delivery".equalsIgnoreCase(storage)) {
-            return new Bidding(userId, sellBidding.getProductId(), sellBidding, sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.DELIVERY, LocalDateTime.now(), transactionDate);
+            return new Bidding(userId, sellBidding, Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.DELIVERY, LocalDateTime.now(), transactionDate);
         } else {
-            return new Bidding(userId, sellBidding.getProductId(), sellBidding, sellBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.IN_STOCK, LocalDateTime.now(), transactionDate);
+            return new Bidding(userId, sellBidding, Status.IN_TRANSACTION, BiddingType.PURCHASE, DeliveryType.IN_STOCK, LocalDateTime.now(), transactionDate);
         }
     }
 
     public static Bidding transactPurchaseBidding(Long userId, Bidding purchaseBidding) {
         LocalDateTime transactionDate = LocalDateTime.now();
-        purchaseBidding.transactPurchaseBidding(transactionDate);
-        return new Bidding(userId, purchaseBidding.getProductId(), purchaseBidding, purchaseBidding.getPrice(), Status.IN_TRANSACTION, BiddingType.SELL, null, LocalDateTime.now(), transactionDate);
+        purchaseBidding.doTransaction(transactionDate);
+        return new Bidding(userId, purchaseBidding, Status.IN_TRANSACTION, BiddingType.SELL, null, LocalDateTime.now(), transactionDate);
     }
 
-    private Bidding(Long userId, Long productId,Bidding bidding, int price, Status status, BiddingType biddingType, DeliveryType deliveryType, LocalDateTime startDate, LocalDateTime transactionDate) {
+    private Bidding(Long userId, Bidding bidding, Status status, BiddingType biddingType, DeliveryType deliveryType, LocalDateTime startDate, LocalDateTime transactionDate) {
         this.userId = userId;
-        this.productId = productId;
+        this.productId = bidding.getProductId();
         this.bidding = bidding;
-        this.price = price;
+        this.price = bidding.getPrice();
         this.status = status;
         this.biddingType = biddingType;
         this.deliveryType = deliveryType;
@@ -120,15 +124,10 @@ public class Bidding {
 
     // == Business Logic == //
 
-    public void transactBidding(Bidding bidding) {
+    public void relateBidding(Bidding bidding) {
         this.bidding = bidding;
     }
-    private void transactSellBidding(LocalDateTime transactionDate) {
-        this.status = Status.IN_TRANSACTION;
-        this.transactionDate = transactionDate;
-    }
-
-    private void transactPurchaseBidding(LocalDateTime transactionDate) {
+    private void doTransaction(LocalDateTime transactionDate) {
         this.status = Status.IN_TRANSACTION;
         this.transactionDate = transactionDate;
     }
@@ -144,7 +143,29 @@ public class Bidding {
         }
     }
 
+    public void checkStatusLive() {
+        validateStatus(Status.LIVE, ErrorCode.BIDDING_NOT_LIVE);
+    }
+
+    public void checkStatusDeposit() {
+        if (!((this.status == Status.DELIVERING) || (this.status == Status.IN_WAREHOUSE))) {
+            throw new CreamException(ErrorCode.BIDDING_NOT_DEPOSIT);
+        }
+    }
+
+
     public void inspect(String result) throws CreamException{
+        validateStatus(Status.IN_TRANSACTION, ErrorCode.BIDDING_NOT_IN_TRANSACTION);
+        changeStatus(result);
+    }
+
+    private void validateStatus(Status status, ErrorCode customErrorCode) {
+        if (this.status != status) {
+            throw new CreamException(customErrorCode);
+        }
+    }
+
+    private void changeStatus(String result) {
         if ("ok".equalsIgnoreCase(result)) {
             this.status = Status.AUTHENTICATED;
         } else if ("fail".equalsIgnoreCase(result)) {
@@ -164,10 +185,15 @@ public class Bidding {
         }
     }
 
-    public void finish() {
+    public void finishSellBidding() {
         this.status = Status.FINISHED;
     }
 
+    public void finishPurchaseBidding() {
+        if (this.deliveryType == DeliveryType.DELIVERY) {
+            this.status = Status.DELIVERED;
+        }
+    }
     public void checkAuthorityOfUser(Long userId) throws CreamException{
         if (!this.userId.equals(userId)) {
             log.info("bidding's user id does not match. userId : {}, bidding.userId : {}", userId, this.userId);
@@ -178,14 +204,14 @@ public class Bidding {
     private void checkSellBiddingAuthenticated() {
         if (this.getBidding().getStatus() != Status.AUTHENTICATED) {
             log.info("Sell Bidding Product is not authenticated yet, bidding Id : {}, status : {}", this.getBidding().getId(), this.getBidding().getStatus());
-            throw new CreamException(ErrorCode.INVALID_BIDDING_AUTHENTICATE);
+            throw new CreamException(ErrorCode.SELL_BIDDING_NOT_AUTHENTICATED);
         }
     }
 
     public void checkAbusing(Long userId) {
         if (this.userId.equals(userId)) {
             log.info("same seller and buyer. userId : {}", userId);
-            throw new CreamException(ErrorCode.BAD_BUSINESS_LOGIC);
+            throw new CreamException(ErrorCode.BIDDING_ABUSING);
         }
     }
 
