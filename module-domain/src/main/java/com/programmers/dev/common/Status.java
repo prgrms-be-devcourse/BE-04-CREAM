@@ -38,5 +38,7 @@ public enum Status {
 
     RETURN_SHIPPING,
 
+    DELIVERED,
+
     CANCELLED
 }
