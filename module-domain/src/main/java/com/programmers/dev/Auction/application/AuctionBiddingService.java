@@ -36,8 +36,6 @@ public class AuctionBiddingService {
 
     private final BankingService bankingService;
 
-    // TODO 매일 자정 경매 입찰 테이블 정리
-
     @Transactional
     public AuctionBidResponse bidAuction(Long userId, AuctionBidRequest auctionBidRequest) {
         Auction auction = findAuctionById(auctionBidRequest.auctionId());
