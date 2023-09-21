@@ -5,8 +5,11 @@ import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
+import com.programmers.dev.banking.application.BankingService;
 import com.programmers.dev.common.AuctionStatus;
 import com.programmers.dev.exception.CreamException;
+import com.programmers.dev.settlement.application.SettlementService;
+import com.programmers.dev.settlement.domain.Settlement;
 import com.programmers.dev.user.application.UserFindService;
 import com.programmers.dev.user.domain.User;
 import com.programmers.dev.user.domain.UserRepository;
@@ -30,6 +33,8 @@ public class AuctionBiddingService {
     private final UserRepository userRepository;
 
     private final AuctionRepository auctionRepository;
+
+    private final BankingService bankingService;
 
     // TODO 매일 자정 경매 입찰 테이블 정리
 
@@ -62,6 +67,10 @@ public class AuctionBiddingService {
             Auction auction = findAuctionById(request.auctionId());
             auction.registerSuccessfulBidder(userId, request.price());
             auction.changeStatus(AuctionStatus.FINISHED);
+
+            User successfulBidder = findUserById(userId);
+
+            bankingService.withdraw(successfulBidder, request.price());
 
             return BidderDecisionResponse.of(userId, true, request.price());
         }
