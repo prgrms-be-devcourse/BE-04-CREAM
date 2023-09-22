@@ -1,0 +1,173 @@
+<!--<!DOCTYPE HTML>-->
+<html xmlns:th="http://www.thymeleaf.org" lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<p class="text-7xl ... text-center"> 구매자 </p>
+<p class="text-3xl ... text-right">계좌: <span th:text="${purchaser.account}"></span></p>
+<td>
+    <div class="bg-white py-24 sm:py-32">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8 border-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${purchaserViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'BIDDING'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${purchaserViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'INVENTORY'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${purchaserViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'AUCTION'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+        </div>
+    </div>
+</td>
+
+<p class="text-7xl ... text-center"> 판매 </p>
+<p class="text-3xl ... text-right">계좌: <span th:text="${seller.account}"></span></p>
+<td>
+    <div class="bg-white py-24 sm:py-32">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8 border-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${sellerViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'BIDDING'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${sellerViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'INVENTORY'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="product : ${sellerViews}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${product.domainType.toString() == 'AUCTION'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                상품명   : <span th:text="${product.productName}">상품명</span>
+                            </div>
+                            <div>
+                                경매 상태 : <span th:text="${product.status}"> 경매 상태</span>
+                            </div>
+                            <div>
+                                금액     : <span th:text="${product.price}"> 경매 가격</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${product.domainType.toString()}">도메인 타입</dd>
+                    </div>
+                </tr>
+            </dl>
+        </div>
+    </div>
+</td>
+
+<p class="text-7xl ... text-center"> 정산 </p>
+<p class="text-5xl ... text-right"> </p>
+<td>
+    <div class="bg-white py-24 sm:py-32">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8 border-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="settlement : ${settlements}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${settlement.getSettlementType().toString() == 'WITHDRAW'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                회원ID   : <span th:text="${settlement.getUserId()}">사용자</span>
+                            </div>
+                            <div>
+                                정산 금액 : <span th:text="${settlement.getSettlementAmount()}"> 경매 상태</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${settlement.getSettlementType().toString()}">인출</dd>
+                    </div>
+                </tr>
+            </dl>
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-4 text-center lg:grid-cols-3">
+                <tr th:each="settlement : ${settlements}">
+                    <div class="mx-auto flex max-w-xs flex-col gap-y-4" th:if="${settlement.getSettlementType().toString() == 'DEPOSIT'}">
+                        <dt class="text-base leading-7 text-gray-600 text-2xl">
+                            <div>
+                                회원ID   : <span th:text="${settlement.getUserId()}">사용자</span>
+                            </div>
+                            <div>
+                                정산 금액 : <span th:text="${settlement.getSettlementAmount()}"> 경매 상태</span>
+                            </div>
+                        </dt>
+                        <dd class="order-first text-1xl font-semibold tracking-tight text-gray-900 sm:text-5xl" th:text="${settlement.getSettlementType().toString()}">입금</dd>
+                    </div>
+                </tr>
+            </dl>
+        </div>
+    </div>
+</td>
+</html>

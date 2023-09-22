@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:h2:mem:kream;MODE=MYSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: embedded
+      data-locations: classpath:sql/data.sql
+      encoding: UTF-8
+  h2:
+    console:
+      enabled: true
+
+logging:
+  config: classpath:log/logback-${spring.profiles.active}.xml
+
+jwt:
+  secret-key: EENY5W0eegTf1naQB2eDeyCLl5kRS2b8xa5c4qLdS0hmVjtbvo8tOyhPMcAmtPuQ
+  access-token-expiry-time-ms: 60000000 # 100000분
+  refresh-token-expiry-time-ms: 1800000
+
+sentry:
+  dsn: https://451cfd622a34c75aa5bfc604dd9facb4@o4505918636294144.ingest.sentry.io/4505918643109888
+  sentry.traces-sample-rate: 1.0
+
+url: localhost
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+
+url: 13.125.254.94

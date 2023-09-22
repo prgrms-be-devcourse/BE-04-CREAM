@@ -1,0 +1,237 @@
+= KREAM API 문서
+:doctype: book
+:icons: front
+:source-highlighter: highlightjs
+:toc: left
+:sectnums:
+:toclevels: 2
+
+[[Brand]]
+== 브랜드
+
+[[Find-all-brands]]
+=== 브랜드 전체 조회 API
+
+브랜드 전체 조회의 API는 다음과 같습니다.
+
+operation::find-all-brands[snippets = 'http-request,http-response']
+
+[[find-brand-by-id]]
+=== Id로 브랜드 조회
+
+Id로 브랜드를 조회하는 API는 다음과 같습니다.
+
+operation::find-brand-by-id[snippets = 'http-request,http-response']
+
+[[save-brand]]
+=== 브랜드 등록
+
+브랜드를 등록하는 API는 다음과 같습니다.
+
+operation::save-brand[snippets = 'http-request,http-response']
+
+[[Product]]
+== 상품
+
+[[Find-all-products]]
+=== 상품 전체 조회
+
+상품을 전체 조회하는 API는 다음과 같습니다.
+
+operation::find-all-products[snippets = 'http-request,http-response']
+
+[[Save-product]]
+=== 상품 등록
+
+상품을 등록하는 API는 다음과 같습니다. 
+
+operation::save-product[snippets = 'http-request,http-response']
+
+[[Update-product]]
+=== 상품 수정
+
+상품을 수정하는 API는 다음과 같습니다.
+
+operation::update-product[snippets = 'http-request,http-response']
+
+[[Auction]]
+== 경매
+
+[[Auction-save]]
+=== 경매 등록
+
+경매에 등록하는 API는 다음과 같습니다.
+존재하지 않는 상품에 대해서는 경매를 등록할 수 없습니다.
+
+operation::auction-save[snippets = 'http-request,http-response']
+
+[[Auction-status-change]]
+=== 경매 상태 변경
+
+경매 상태를 변경하는 API는 다음과 같습니다.
+ONGOING, PENDING, FINISHED 상태로 변경이 가능합니다.
+ONGOING : 경매가 진행중인 상태
+PENDING : 경매는 종료되었지만 최고 입찰가가 구매 결정을 하지 않은 상태
+FINISHED : 경매가 종료되고 최고 입찰가가 구매 결정을 한 상태
+
+operation::auction-status-change[snippets = 'http-request,http-response']
+
+[[Auction-bid]]
+=== 경매 입찰
+
+경매에 입찰하는 API는 다음과 같습니다.
+현재 최고 입찰가보다 낮은 가격으로 입찰하는것은 불가능합니다.
+
+
+operation::auction-bid[snippets = 'http-request,http-response']
+
+[[Cancel-auction-bidding]]
+=== 경매 입찰 취소
+
+경매 입찰을 취소하는 API는 다음과 같습니다.
+입찰한 경매 ID와 입찰가로 취소가 가능합니다. 존재하지 않는 경매 ID 또는 입찰가를 입력한다면 예외가 발생합니다.
+
+operation::cancel-auction-bidding[snippets = 'http-request,http-response']
+
+[[Get-current-bidding-price]]
+=== 현재 최고 입찰가 조회
+
+현재 최고 입찰가를 조회하는 API는 다음과 같습니다.
+만약 입찰이 없다면 경매 시작 가격을 응답해줍니다.
+
+operation::get-current-bidding-price[snippets = 'http-request,http-response']
+
+[[Get-successful-bidder]]
+=== 해당 경매에 대한 낙찰자 조회
+
+해당 경매에 대한 낙찰자를 조회하는 API는 다음과 같습니다.
+경매가 종료된 상태에서만 낙찰자를 조회할 수 있습니다.
+
+operation::get-successful-bidder[snippets = 'http-request,http-response']
+
+[[Post-bidder-decision]]
+=== 경매 최고 입찰자의 구매 여부 등록
+
+해당 경매에 대한 최고가 입찰자의 구매 여부 등록 API는 다음과 같습니다.
+purchaseStatus - true : 구매 결정 / false : 구매 거부 결정
+구매 결정할 경우 해당 경매에 낙찰가와 낙찰자 정보가 저장됩니다.
+
+operation::post-bidder-decision[snippets = 'http-request,http-response']
+
+[[Bidding]]
+== 입찰
+
+[[Bidding-register-purchase]]
+=== 구매 입찰 등록 API
+
+해당 API는 구매자가 구매 입찰을 올리려고 할 때 사용하는 API 입니다.
+만약 판매 입찰이 올라와 있다면, 판매 입찰가 보다 높은 가격으로는 입찰을 올릴 수 없습니다.
+
+operation::bidding-register-purchase[snippets ='http-request,http-response']
+
+[[Bidding-transact-purchase]]
+=== 판매 입찰 거래 체결
+
+해당 API는 판매 입찰 건에 대해서 거래를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-transact-purchase[snippets ='http-request,http-response']
+
+[[Bidding-register-sell]]
+=== 판매 입찰 등록 API
+
+해당 API는 판매자가 판매 입찰을 올리려고 할 때 사용하는 API 입니다.
+만약 구매 입찰이 올라와 있따면, 구매 입찰가 보다 낮은 가격으로는 입찰을 올릴 수 없습니다.
+
+operation::bidding-register-sell[snippets ='http-request,http-response']
+
+[[Bidding-transact-sell]]
+=== 구매 입찰 거래 체결
+
+해당 API는 판매 입찰 건에 대해서 거래를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-transact-sell[snippets ='http-request,http-response']
+
+[[Bidding-inspect]]
+=== 판매 입찰 물품 검수
+
+해당 API는 판매 입찰자의 물품 상태를 검수할 때 사용하는 API입니다.
+
+operation::bidding-inspect[snippets ='http-request,http-response']
+
+[[Bidding-deposit]]
+=== 구매 입찰 입금
+
+해당 API는 구매자가 입찰건에 대해서 입금을 할 때 사용하는 API입니다.
+
+operation::bidding-deposit[snippets ='http-request,http-response']
+
+[[Bidding-finish]]
+=== 구매 입찰 입찰 종료
+
+해당 API는 구매자가 입찰건에 대해 거래를 종료하려고 할 때 사용하는 API입니다.
+
+operation::bidding-finish[snippets ='http-request,http-response']
+
+[[Bidding-cancel]]
+=== 구매 입찰 입찰 취소
+
+해당 API는 판매자 혹은 구매자가 입찰건에 대해 취소를 하려고 할 때 사용하는 API 입니다.
+
+operation::bidding-cancel[snippets ='http-request,http-response']
+
+
+[[Inventory]]
+== 보관판매
+
+[[inventory-register]]
+=== 보관판매 등록 API
+
+해당 API는 판매자가 보관판매 등록을 위해 사용하는 API 입니다.
+보관판매에 등록할 상품의 수량과 검수 실패시 반송받을 주소를 포함하여 전송합니다.
+
+operation::inventory-register[snippets = 'http-request,http-response']
+
+[[inventory-arrived]]
+=== 보관판매 입고완료 API
+
+해당 API는 보관판매 입고완료 등록을 위해 사용하는 API 입니다.
+전송된 ID 에 해당하는 Inventory 객체들은 입고 처리로 변경 됩니다.
+
+operation::inventory-arrived[snippets = 'http-request,http-response']
+
+[[inventory-authentication-passed]]
+=== 보관판매 검수성공 API
+
+해당 API는 입고완료된 특정 제품에 대한 검수가 성공했을 경우 검수 성공으로 설정하기 위해 사용하는 API 입니다.
+검수 결과로 100점/95점 둘 중 하나를 포함하여 전송합니다.
+
+operation::inventory-authentication-passed[snippets = 'http-request,http-response']
+
+[[inventory-authentication-failed]]
+=== 보관판매 검수실패 API
+
+해당 API는 입고완료된 특정 제품에 대한 검수가 실패했을 경우 검수 실패로 설정하기 위해 사용하는 API 입니다.
+검수 실패 원인으로 상품불일치/사이즈불일치/가품/손상 중 하나를 포함하여 전송합니다.
+
+operation::inventory-authentication-failed[snippets = 'http-request,http-response']
+
+[[inventory-set-price]]
+=== 보관판매 판매희망가 설정 API
+
+해당 API는 검수 합격한 특정 제품에 대한 판매자의 희망가격을 설정하기 위해 사용하는 API 입니다.
+
+operation::inventory-set-price[snippets = 'http-request,http-response']
+
+[[inventory-order]]
+=== 보관판매 상품 구입 API
+
+해당 API는 현재 보관판매중인 제품을 구입하기 위해 사용하는 API 입니다.
+
+operation::inventory-order[snippets = 'http-request,http-response']
+
+[[inventory-finished]]
+=== 보관판매 상품 배송완료 API
+
+해당 API는 배송이 완료된 제품에 대해 거래완료 설정을 위해 사용하는 API 입니다.
+
+operation::inventory-finished[snippets = 'http-request,http-response']

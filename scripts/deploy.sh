@@ -8,7 +8,7 @@ TIME_NOW=$(date +%c)
 
 # file 복사
 echo "$TIME_NOW > 파일 복사" >> $DEPLOY_LOG
-cp /home/ec2-user/app/build/libs/kream-0.0.1-SNAPSHOT.jar   /home/ec2-user/app/kream.jar
+cp /home/ec2-user/app/module-api/build/libs/module-api-0.0.1-SNAPSHOT.jar   /home/ec2-user/app/kream.jar
 
 
 echo "현재 구동 중인 애플리케이션 pid 확인" >> $DEPLOY_LOG
