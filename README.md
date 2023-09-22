@@ -20,7 +20,9 @@
 <summary><b>ERD 설계 펼치기</b></summary>
 <div markdown="1">
 
-![FINAL](https://github.com/prgrms-be-devcourse/BE-04-CREAM/assets/78838534/c522eec7-b2c1-4d12-8442-0eca112979c8)
+
+![final](https://github.com/prgrms-be-devcourse/BE-04-CREAM/assets/70372188/aeafb61b-2a48-4cf5-9b8b-8bf56c14bc3b)
+
 
 </div>
 </details>
