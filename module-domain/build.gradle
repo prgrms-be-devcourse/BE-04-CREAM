@@ -35,6 +35,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     annotationProcessor 'org.projectlombok:lombok'
+    api 'io.sentry:sentry-spring-boot-starter-jakarta:6.29.0'
 }
 
 tasks.named('test') {
