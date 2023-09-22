@@ -35,6 +35,10 @@ jwt:
   access-token-expiry-time-ms: 60000000 # 100000분
   refresh-token-expiry-time-ms: 1800000
 
+sentry:
+  dsn: https://451cfd622a34c75aa5bfc604dd9facb4@o4505918636294144.ingest.sentry.io/4505918643109888
+  sentry.traces-sample-rate: 1.0
+
 url: localhost
 ---
 spring:

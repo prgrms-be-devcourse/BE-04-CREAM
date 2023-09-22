@@ -4,6 +4,7 @@ import com.programmers.dev.exception.BankingException;
 import com.programmers.dev.exception.CreamException;
 import com.programmers.dev.exception.ErrorCode;
 import com.programmers.dev.user.domain.User;
+import io.sentry.Sentry;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -36,6 +37,7 @@ public class BankingLoggingAspect {
         }
 
         log.info("[입금][실패] userId={}, money={}, errorMessage={}", user, money, exception.getMessage());
+        Sentry.captureException(exception);
 
         throw exception;
     }
@@ -60,6 +62,7 @@ public class BankingLoggingAspect {
         }
 
         log.info("[인출][실패] userId={}, money={}, errorMessage={}", user, money, exception.getMessage());
+        Sentry.captureException(exception);
 
         throw exception;
     }
