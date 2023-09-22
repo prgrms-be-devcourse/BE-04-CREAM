@@ -2,9 +2,9 @@ name: kream CI / CD
 
 on:
   push:
-    branches: [ main , release/2.0 ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, release/2.0 ]
+    branches: [ main ]
 
 env:
   S3_BUCKET_NAME: kream-deploy
