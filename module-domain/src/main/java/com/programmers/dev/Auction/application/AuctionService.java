@@ -1,7 +1,6 @@
 package com.programmers.dev.Auction.application;
 
 import com.programmers.dev.Auction.domain.Auction;
-import com.programmers.dev.Auction.domain.AuctionBidding;
 import com.programmers.dev.Auction.domain.AuctionBiddingRepository;
 import com.programmers.dev.Auction.domain.AuctionRepository;
 import com.programmers.dev.Auction.dto.*;
@@ -16,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static com.programmers.dev.exception.ErrorCode.INVALID_ID;
 
@@ -38,7 +40,6 @@ public class AuctionService {
         Auction auction = Auction.createAuctionFirst(product, auctionSaveRequest);
 
         return AuctionSaveResponse.of(auctionRepository.save(auction).getId());
-
     }
 
     @Transactional
@@ -53,9 +54,19 @@ public class AuctionService {
             processPendingAuction(auctionStatusChangeRequest);
         }
 
+        if (auctionStatusChangeRequest.auctionStatus() == AuctionStatus.FINISHED) {
+            List<Long> priceList = auctionBiddingRepository.selectTop2Price(auctionStatusChangeRequest.id());
+            deleteFromThirdPrice(auctionStatusChangeRequest, priceList);
+        }
+
         auction.changeStatus(auctionStatusChangeRequest.auctionStatus());
 
         return AuctionStatusChangeResponse.of(auction.getId(), auction.getAuctionStatus());
+    }
+
+    private void deleteFromThirdPrice(AuctionStatusChangeRequest auctionStatusChangeRequest, List<Long> priceList) {
+        priceList.stream().min(Comparator.comparingLong(x -> x))
+            .ifPresent(price -> auctionBiddingRepository.deleteFromThird(auctionStatusChangeRequest.id(), price));
     }
 
     private void validateNowIsAfterEndTime(Auction auction) {

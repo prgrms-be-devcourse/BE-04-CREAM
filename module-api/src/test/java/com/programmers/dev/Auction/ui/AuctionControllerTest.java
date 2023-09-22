@@ -216,7 +216,7 @@ class AuctionControllerTest {
             "aaa@mail.com",
             "123",
             "kkk",
-            3000L,
+            10000L,
             new Address("aaa", "bbb", "ccc"),
             UserRole.ROLE_USER);
         userRepository.save(user);
