@@ -2,9 +2,9 @@ name: kream CI / CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main , release/2.0 ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, release/2.0 ]
 
 env:
   S3_BUCKET_NAME: kream-deploy
@@ -28,7 +28,7 @@ jobs:
       shell: bash
     
     - name: Build with Gradle
-      run: ./gradlew clean build
+      run: ./gradlew clean :module-api:buildNeeded
       shell: bash
 
     - name: Make Directory
