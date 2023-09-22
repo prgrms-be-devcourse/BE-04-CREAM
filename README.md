@@ -20,23 +20,21 @@
 <summary><b>ERD 설계 펼치기</b></summary>
 <div markdown="1">
 
-![FINAL.png](..%2F..%2F..%2FDownloads%2FFINAL.png)
+![FINAL](https://github.com/prgrms-be-devcourse/BE-04-CREAM/assets/78838534/c522eec7-b2c1-4d12-8442-0eca112979c8)
 
 </div>
 </details>
 </h3>
 
 ## API 설계 
-<h3>
 <details>
 <summary><b>API 설계 펼치기</b></summary>
-
-#### [API 명세 바로가기](https://documenter.getpostman.com/view/22820804/2s9YCBuV9S#6d8f8849-e43f-43dc-9245-34fa69dcac6d)
 <div markdown="1">
+
+[API 설계 바로가기](https://documenter.getpostman.com/view/22820804/2s9YCBuV9S#6d8f8849-e43f-43dc-9245-34fa69dcac6d)
 
 </div>
 </details>
-</h3>
 
 ## 적용 기술 소개 
 #### [Wiki 바로가기](https://github.com/prgrms-be-devcourse/BE-04-CREAM/wiki)
