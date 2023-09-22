@@ -108,10 +108,17 @@ class AuctionServiceTest {
 
         bidAuction(auctionSaveResponse, user);
 
+        AuctionStatusChangeRequest statusChangePendingRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.PENDING);
+
+        auctionService.changeAuctionStatus(statusChangePendingRequest);
+
+        BidderDecisionRequest request = new BidderDecisionRequest(auctionSaveResponse.auctionId(), true, 4000L);
+        auctionBiddingService.decidePurchaseStatus(user.getId(),request);
+
         AuctionStatusChangeRequest statusChangeFinishedRequest = createAuctionStatusChangeRequest(auctionSaveResponse, AuctionStatus.FINISHED);
 
         //when
-        auctionService.changeAuctionStatus(statusChangeFinishedRequest);
+        AuctionStatusChangeResponse auctionStatusChangeResponse = auctionService.changeAuctionStatus(statusChangeFinishedRequest);
 
         //then
         em.flush();
@@ -119,7 +126,7 @@ class AuctionServiceTest {
 
         Auction auction = auctionRepository.findById(auctionSaveResponse.auctionId()).get();
 
-        assertThat(auction.getAuctionStatus()).isEqualTo(AuctionStatus.FINISHED);
+        assertThat(auctionStatusChangeResponse.auctionStatus()).isEqualTo(AuctionStatus.FINISHED);
     }
 
     @Test
@@ -201,7 +208,7 @@ class AuctionServiceTest {
             "aaa@mail.com",
             "123",
             "kkk",
-            3000L,
+            10000L,
             new Address("aaa", "bbb", "ccc"),
             UserRole.ROLE_USER);
         userRepository.save(user);

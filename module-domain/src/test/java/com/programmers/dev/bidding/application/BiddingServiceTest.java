@@ -208,7 +208,7 @@ class BiddingServiceTest {
     }
 
     @Test
-    @DisplayName("구매자가 판매 입찰에 등록된 금액보다 높은 금액으로 구매하려고 한다면 입찰 등록에 실패해야 한다.")
+    @DisplayName("구매자가 판매 입찰에 등록된 금액보다 낮은 금액으로 구매하려고 한다면 입찰 등록에 실패해야 한다.")
     void checkRequestPriceOverBiddingPrice_SELL() {
         // given
         User buyer = saveUser("user1@naver.com", "USER1");
@@ -217,7 +217,7 @@ class BiddingServiceTest {
         Product product = saveProduct(nike);
 
         savePurchaseBidding(buyer, product, 10L);
-        RegisterBiddingRequest registerBiddingRequest = RegisterBiddingRequest.of(product.getId(), 120000, 10L);
+        RegisterBiddingRequest registerBiddingRequest = RegisterBiddingRequest.of(product.getId(), 80000, 10L);
 
         // when  && then
         assertThatThrownBy(
@@ -341,7 +341,7 @@ class BiddingServiceTest {
         assertAll(
                 () -> assertThat(savedBuyer.getAccount()).isEqualTo((long) point),
                 () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED),
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERED),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED)
         );
 

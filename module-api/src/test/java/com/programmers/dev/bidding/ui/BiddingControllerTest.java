@@ -255,7 +255,7 @@ class BiddingControllerTest {
                                 .content(objectMapper.writeValueAsString(transactBiddingRequest))
                                 .header(AUTHORIZATION, accessToken)
                 )
-                .andDo(document("bidding-transact-purchase",
+                .andDo(document("bidding-transact-sell",
                         requestHeaders(
                                 headerWithName(CONTENT_TYPE).description("content type"),
                                 headerWithName(CONTENT_LENGTH).description("content length")
@@ -389,7 +389,7 @@ class BiddingControllerTest {
                 () -> assertThat(savedSeller.getAccount()).isEqualTo(200000L + point),
                 () -> assertThat(savedBuyer.getAccount()).isEqualTo(point),
                 () -> assertThat(savedSellBidding.getStatus()).isEqualTo(Status.FINISHED),
-                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.FINISHED)
+                () -> assertThat(savedPurchaseBidding.getStatus()).isEqualTo(Status.DELIVERED)
         );
 
     }

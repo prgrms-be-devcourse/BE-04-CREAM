@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface AuctionBiddingRepository extends JpaRepository<AuctionBidding, Long> {
@@ -30,4 +31,12 @@ public interface AuctionBiddingRepository extends JpaRepository<AuctionBidding, 
         @Param("userId") Long userId,
         @Param("auctionId") Long auctionId,
         @Param("price") Long price);
+
+    @Query("select ab.price from AuctionBidding ab where ab.auction.id = :auctionId order by ab.price desc limit 2")
+    List<Long> selectTop2Price(@Param("auctionId") Long auctionId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("delete from AuctionBidding ab where ab.auction.id = :auctionId and ab.price < :price")
+    void deleteFromThird(@Param("auctionId") Long auctionId,
+                         @Param("price") Long price);
 }

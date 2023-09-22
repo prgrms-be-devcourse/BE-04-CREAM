@@ -30,37 +30,36 @@ public class BiddingService {
         validateProductId(request);
         checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.SELL);
 
-        Bidding savedBidding = biddingRepository.save(
+        Bidding savedPurchaseBidding = biddingRepository.save(
                 Bidding.registerPurchaseBidding(userId, request.productId(), request.price(), storage, request.dueDate())
         );
 
-        return BiddingResponse.of(savedBidding.getId());
+        return BiddingResponse.of(savedPurchaseBidding.getId());
     }
 
     @Transactional
     public BiddingResponse transactSellBidding(Long userId, String storage, TransactBiddingRequest request) {
         Bidding sellBidding = getBiddingByBiddingId(request.biddingId());
-        validateBidding(userId,
-                sellBidding);
+        validateBidding(userId,sellBidding);
 
-        Bidding savedBidding = biddingRepository.save(
+        Bidding savedPurchaseBidding = biddingRepository.save(
                 Bidding.transactSellBidding(userId, storage, sellBidding)
         );
+        sellBidding.relateBidding(savedPurchaseBidding);
 
-        sellBidding.transactBidding(savedBidding);
-        return BiddingResponse.of(savedBidding.getId());
+        return BiddingResponse.of(savedPurchaseBidding.getId());
     }
 
     @Transactional
     public BiddingResponse registerSellBidding(Long userId, RegisterBiddingRequest request) {
         validateProductId(request);
-        checkRequestPriceOverBiddingPrice(request, Bidding.BiddingType.PURCHASE);
+        checkRequestPriceUnderBiddingPrice(request, Bidding.BiddingType.PURCHASE);
 
-        Bidding savedBidding = biddingRepository.save(
+        Bidding savedSellBidding = biddingRepository.save(
                 Bidding.registerSellBidding(userId, request.productId(), request.price(), request.dueDate())
         );
 
-        return BiddingResponse.of(savedBidding.getId());
+        return BiddingResponse.of(savedSellBidding.getId());
     }
 
     @Transactional
@@ -72,7 +71,7 @@ public class BiddingService {
                 Bidding.transactPurchaseBidding(userId, purchaseBidding)
         );
 
-        purchaseBidding.transactBidding(savedBidding);
+        purchaseBidding.relateBidding(savedBidding);
         return BiddingResponse.of(savedBidding.getId());
     }
 
@@ -85,7 +84,6 @@ public class BiddingService {
     public void sendMoneyForBidding(Long userId, Long biddingId) {
         User user = getUserByUserId(userId);
         Bidding bidding = getBiddingByBiddingId(biddingId);
-        bidding.checkAuthorityOfUser(userId);
         bidding.checkBiddingBeforeDeposit(userId);
         checkBalance(user, bidding);
         sendMoneyForBidding(bidding, user);
@@ -106,23 +104,36 @@ public class BiddingService {
     @Transactional
     public void finish(Long userId, Long biddingId) {
         Bidding purchaseBidding = getBiddingByBiddingId(biddingId);
-        finishPurchaseAndSellBidding(userId, purchaseBidding);
+        finishPurchaseBidding(userId, purchaseBidding);
+        finishSellBidding(purchaseBidding);
         depositMoneyAndPoint(userId, purchaseBidding);
     }
 
-    private void finishPurchaseAndSellBidding(Long userId, Bidding bidding) {
-        bidding.checkAuthorityOfUser(userId);
-        bidding.finish();
-        Bidding sellBidding = bidding.getBidding();
-        sellBidding.finish();
+    private void finishPurchaseBidding(Long userId, Bidding purchaseBidding) {
+        purchaseBidding.checkAuthorityOfUser(userId);
+        purchaseBidding.checkStatusDeposit();
+        purchaseBidding.finishPurchaseBidding();
+    }
+
+    private void finishSellBidding(Bidding purchaseBidding) {
+        Bidding sellBidding = purchaseBidding.getBidding();
+        sellBidding.finishSellBidding();
     }
 
     private void depositMoneyAndPoint(Long userId, Bidding purchaseBidding) {
         User seller = getUserByUserId(purchaseBidding.getBidding().getUserId());
-        seller.deposit((long) purchaseBidding.getPrice());
-        seller.deposit((long) purchaseBidding.getPoint());
+        depositBiddingMoney(purchaseBidding, seller);
+        depositPoint(seller, purchaseBidding.getPoint());
         User buyer = getUserByUserId(userId);
-        buyer.deposit((long) purchaseBidding.getPoint());
+        depositPoint(buyer, purchaseBidding.getPoint());
+    }
+
+    private void depositBiddingMoney(Bidding purchaseBidding, User seller) {
+        seller.deposit((long) purchaseBidding.getPrice());
+    }
+
+    private void depositPoint(User user, int point) {
+        user.deposit((long) point);
     }
 
     @Transactional
@@ -143,9 +154,10 @@ public class BiddingService {
         }
     }
 
-    private static void validateBidding(Long userId, Bidding sellBidding) {
-        sellBidding.checkAbusing(userId);
-        sellBidding.checkDurationOfBidding();
+    private void validateBidding(Long userId, Bidding toValidate) {
+        toValidate.checkStatusLive();
+        toValidate.checkAbusing(userId);
+        toValidate.checkDurationOfBidding();
     }
 
     private User getUserByUserId(Long userId) {
@@ -180,6 +192,17 @@ public class BiddingService {
         biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
                 bidding -> {
                     if (bidding.getPrice() < request.price()) {
+                        log.info("bidding price : {}, request price : {}", bidding.getPrice(), request.price());
+                        throw new CreamException(ErrorCode.OVER_PRICE);
+                    }
+                }
+        );
+    }
+
+    private void checkRequestPriceUnderBiddingPrice(RegisterBiddingRequest request, Bidding.BiddingType biddingType) {
+        biddingRepository.findSellBidding(request.productId(), Status.LIVE, biddingType).ifPresent(
+                bidding -> {
+                    if (bidding.getPrice() > request.price()) {
                         log.info("bidding price : {}, request price : {}", bidding.getPrice(), request.price());
                         throw new CreamException(ErrorCode.OVER_PRICE);
                     }

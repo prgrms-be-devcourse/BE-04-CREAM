@@ -56,6 +56,8 @@ public class SecurityConfiguration {
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/user/login")).permitAll()
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/user/me")).hasRole("USER")
                                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/*")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/web/myPage")).permitAll()
+                                .requestMatchers(AntPathRequestMatcher.antMatcher("/docs/index.html")).permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtConfigure), AnonymousAuthenticationFilter.class)

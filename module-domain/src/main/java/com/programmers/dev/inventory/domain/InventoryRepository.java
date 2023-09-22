@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
@@ -15,4 +16,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
             order by i.startDate limit 1
             """)
     Optional<Inventory> findOrderableInventory(@Param("productId") Long productId, @Param("price") Long price, @Param("productQuality")Inventory.ProductQuality productQuality);
+
+    List<Inventory> findAllByUserId(Long userId);
 }

@@ -19,13 +19,17 @@ public enum ErrorCode {
     AFTER_DUE_DATE(BAD_REQUEST, BAD_REQUEST.value(), "biding is expired."),
     OVER_PRICE(BAD_REQUEST, BAD_REQUEST.value(), "too much bidding price"),
     INSUFFICIENT_ACCOUNT_MONEY(BAD_REQUEST, -201, "not enough account money"),
-    INVALID_BIDDING_AUTHENTICATE(BAD_REQUEST, BAD_REQUEST.value(), "bidding is not authenticated."),
+    SELL_BIDDING_NOT_AUTHENTICATED(BAD_REQUEST, BAD_REQUEST.value(), "bidding is not authenticated."),
     CANNOT_CANCEL(BAD_REQUEST, BAD_REQUEST.value(), "bidding cannot be cancelled."),
     SERVER_ERROR(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR.value(), "Something does not worked. please call xxx)xxx-xxxx"),
     INVALID_BIDDING_PRICE(BAD_REQUEST,BAD_REQUEST.value(),"please enter a higher price than the highest bid price"),
     INVALID_CHANGE_STATUS(BAD_REQUEST,BAD_REQUEST.value(),"you cannot change ongoing or finished auction to before state"),
     INVALID_CANCEL_BIDDING(BAD_REQUEST,BAD_REQUEST.value(),"please check auction id and price"),
-    BANKING_SERVICE_ERROR(BAD_REQUEST, -202, "banking services are currently unavailable. please try again")
+    BANKING_SERVICE_ERROR(BAD_REQUEST, -202, "banking services are currently unavailable. please try again"),
+    BIDDING_NOT_LIVE(BAD_REQUEST, BAD_REQUEST.value(), "Bidding is not live. please transact other bidding."),
+    BIDDING_NOT_IN_TRANSACTION(BAD_REQUEST, BAD_REQUEST.value(), "Bidding is not in transaction. please check yout bidding id again."),
+    BIDDING_NOT_DEPOSIT(BAD_REQUEST, BAD_REQUEST.value(), "Bidding is not deposited yet. please send money first."),
+    BIDDING_ABUSING(BAD_REQUEST, BAD_REQUEST.value(), "cannot transact bidding for same owner")
     ;
 
     private final HttpStatus httpStatus;
